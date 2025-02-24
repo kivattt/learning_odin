@@ -22,16 +22,14 @@ main :: proc() {
 		width = 500, height = 100,
 	}
 
-
 	strings.builder_init_none(&app.textboxes[1].stringBuilder)
 	strings.write_byte(&app.textboxes[1].stringBuilder, 'a')
 	font := rl.LoadFontEx("monospace.ttf", 60, nil, 0)
 
-
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
-		draw_app(&app, &font, 60)
+		app_draw(&app, &font, 60)
 		rl.EndDrawing()
 	}
 }

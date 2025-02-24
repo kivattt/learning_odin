@@ -11,7 +11,7 @@ TextBox :: struct {
 	height: i32,
 }
 
-draw_textbox :: proc(t: ^TextBox, font: ^rl.Font, fontSize: f32) {
+textbox_draw :: proc(t: ^TextBox, font: ^rl.Font, fontSize: f32) {
 	//t.stringBuilder = strings.builder_from_bytes({'h', 'e', 'l', 'l', 'o'})
 
 	rl.DrawRectangle(t.x, t.y, t.width, t.height, {30,30,30,255})
