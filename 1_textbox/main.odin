@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:unicode/utf8"
 import "core:strings"
 import rl "vendor:raylib"
 
@@ -22,14 +23,20 @@ main :: proc() {
 		width = 500, height = 100,
 	}
 
-	strings.builder_init_none(&app.textboxes[1].stringBuilder)
-	strings.write_byte(&app.textboxes[1].stringBuilder, 'a')
+	/*x := "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+	for c in x {
+		append(&app.textboxes[1].str, c)
+	}*/
+
 	font := rl.LoadFontEx("monospace.ttf", 60, nil, 0)
 
 	for !rl.WindowShouldClose() {
+		app_update(&app, rl.GetFrameTime(), rl.GetCharPressed())
+
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
 		app_draw(&app, &font, 60)
+
 		rl.EndDrawing()
 	}
 }
