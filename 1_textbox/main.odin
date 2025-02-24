@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:strings"
 import rl "vendor:raylib"
 
 WIDTH :: 1280
@@ -12,19 +13,25 @@ main :: proc() {
 
 	app: App
 	app.textboxes[0] = {
-		position = {0,0},
-		size = {500,100},
+		x = 0, y = 0,
+		width = 500, height = 100,
 	}
 
 	app.textboxes[1] = {
-		position = {100,300},
-		size = {500,100},
+		x = 100, y = 300,
+		width = 500, height = 100,
 	}
+
+
+	strings.builder_init_none(&app.textboxes[1].stringBuilder)
+	strings.write_byte(&app.textboxes[1].stringBuilder, 'a')
+	font := rl.LoadFontEx("monospace.ttf", 60, nil, 0)
+
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
-		draw_app(&app)
+		draw_app(&app, &font, 60)
 		rl.EndDrawing()
 	}
 }
