@@ -25,7 +25,7 @@ main :: proc() {
 	rootNode.h = 100
 
 	nodes: [dynamic]^ui.Node
-	for i: u8 = 0; i < 4; i += 1 {
+	for i: u8 = 0; i < 7; i += 1 {
 		d := new(ui.Node)
 		d.element = ui.DebugSquare{}
 		d.relativeSize = 1
@@ -33,7 +33,10 @@ main :: proc() {
 		#partial switch &e in d.element {
 			case ui.DebugSquare:
 				high: u8 = 80
-				if i == 0 {
+				colorLol := u8(i*20)
+
+				e.color = {colorLol, colorLol/2, colorLol, 255}
+				/*if i == 0 {
 					e.color = {high, 0, 0, 255}
 				} else if i == 1 {
 					e.color = {0, high, 0, 255}
@@ -41,7 +44,7 @@ main :: proc() {
 					e.color = {0, 0, high, 255}
 				} else if i == 3 {
 					e.color = {high, high, high, 255}
-				}
+				} else i*/
 		}
 		append(&nodes, d)
 	}
@@ -50,11 +53,15 @@ main :: proc() {
 	//vertNode.parent = &rootNode
 	//rootNode.element = ui.vertical_split_from_nodes(nodes)^
 	vertSplit1 := ui.vertical_split_from_nodes(nodes[:2])^
-	vertSplit1.relativeSize = 1
-	vertSplit2 := ui.vertical_split_from_nodes(nodes[2:])^
-	vertSplit2.relativeSize = 1
+	vertSplit2 := ui.vertical_split_from_nodes(nodes[2:4])^
+	vertSplit3 := ui.vertical_split_from_nodes(nodes[4:])^
+	//vertSplit2 := ui.horizontal_split_from_nodes(nodes[2:])^
 
-	vertSplitTwoOfThem := ui.vertical_split_from_nodes([]^ui.Node{&vertSplit1, &vertSplit2})
+	vertSplit2.relativeSize = 1
+	vertSplit3.relativeSize = 2
+	horizSplit := ui.horizontal_split_from_nodes({&vertSplit2, &vertSplit3})^
+
+	vertSplitTwoOfThem := ui.vertical_split_from_nodes({&vertSplit1, &horizSplit})
 	rootNode = vertSplitTwoOfThem^
 	rootNode.x = 0
 	rootNode.y = 0
@@ -72,10 +79,20 @@ main :: proc() {
 		rl.ClearBackground({53, 53, 53, 255})
 
 		rootNode.w = rl.GetScreenWidth()
-		/*#partial switch &e in rootNode.element {
+		rootNode.h = rl.GetScreenHeight()
+		#partial switch &e in rootNode.element {
 			case ui.VerticalSplit:
-				e.children[0].relativeSize = abs(math.sin(i) * 1) + 1
-		}*/
+				e.children[0].relativeSize = 1 + (math.sin(i) + 1) / 2
+		}
+
+		#partial switch &e in rootNode.element {
+			case ui.VerticalSplit:
+				#partial switch &ee in e.children[1].element {
+					case ui.HorizontalSplit:
+						ee.children[0].relativeSize = 1 + (math.sin(i) + 1) / 2
+				}
+		}
+
 		ui.recompute_children_boxes(&rootNode)
 		ui.draw(&rootNode)
 		rl.EndDrawing()
