@@ -25,22 +25,43 @@ main :: proc() {
 	rootNode.h = 100
 
 	nodes: [dynamic]^ui.Node
-	for i: u8 = 0; i < 2; i += 1 {
+	for i: u8 = 0; i < 4; i += 1 {
 		d := new(ui.Node)
 		d.element = ui.DebugSquare{}
 		d.relativeSize = 1
-		ii: u8 = i * 20
-		fmt.println(ii)
+
 		#partial switch &e in d.element {
 			case ui.DebugSquare:
-				e.color = {ii, ii, ii, 255}
+				high: u8 = 80
+				if i == 0 {
+					e.color = {high, 0, 0, 255}
+				} else if i == 1 {
+					e.color = {0, high, 0, 255}
+				} else if i == 2 {
+					e.color = {0, 0, high, 255}
+				} else if i == 3 {
+					e.color = {high, high, high, 255}
+				}
 		}
 		append(&nodes, d)
 	}
 
-	vertNode: ui.Node
-	vertNode.parent = &rootNode
-	rootNode.element = ui.vertical_split_from_nodes(nodes)^
+	//vertNode: ui.Node
+	//vertNode.parent = &rootNode
+	//rootNode.element = ui.vertical_split_from_nodes(nodes)^
+	vertSplit1 := ui.vertical_split_from_nodes(nodes[:2])^
+	vertSplit1.relativeSize = 1
+	vertSplit2 := ui.vertical_split_from_nodes(nodes[2:])^
+	vertSplit2.relativeSize = 1
+
+	vertSplitTwoOfThem := ui.vertical_split_from_nodes([]^ui.Node{&vertSplit1, &vertSplit2})
+	rootNode = vertSplitTwoOfThem^
+	rootNode.x = 0
+	rootNode.y = 0
+	rootNode.w = 100
+	rootNode.h = 100
+
+	//rootNode.element = vertSplitTwoOfThem.element
 
 	fmt.println("rootNode:", rootNode)
 

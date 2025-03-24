@@ -1,6 +1,7 @@
 package ui
 
 import rl "vendor:raylib"
+import "core:fmt"
 
 Box :: struct {
 	x: i32,
@@ -50,7 +51,8 @@ draw :: proc(node: ^Node) {
 				draw(child)
 				x := child.x + child.w - 1
 				y := child.y
-				rl.DrawRectangle(x, y, 2, y + child.h, {100,100,100,255})
+				//rl.DrawRectangle(x, y, 2, y + child.h, {100,100,100,255})
+				rl.DrawRectangle(x, y, 4, y + child.h, {130,130,130,255})
 			}
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
@@ -73,16 +75,29 @@ recompute_children_boxes :: proc(node: ^Node) {
 				thisWidth := f64(node.w) * (child.relativeSize / divisor)
 				child.x = xPos
 				child.y = yPos
-				child.w = xPos + i32(thisWidth)
+				child.w = i32(thisWidth)
 				child.h = node.h
 
 				xPos += i32(thisWidth)
+
+			}
+			for &child in e.children {
+				recompute_children_boxes(child)
+				/*#partial switch &e in child.element {
+					case VerticalSplit:
+						recompute_children_boxes(child)
+				}*/
 			}
 	}
 }
 
-vertical_split_from_nodes :: proc(nodes: [dynamic]^Node) -> ^VerticalSplit {
+vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
+	node := new(Node)
 	n := new(VerticalSplit)
-	n.children = nodes
-	return n
+	for &node in nodes {
+		append(&n.children, node)
+	}
+	node.element = n^
+	node.relativeSize = 1
+	return node
 }
