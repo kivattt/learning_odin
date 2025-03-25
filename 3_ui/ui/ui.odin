@@ -2,6 +2,7 @@ package ui
 
 import rl "vendor:raylib"
 import "core:fmt"
+import "core:strings"
 
 Box :: struct {
 	x: i32,
@@ -48,26 +49,57 @@ handle_input :: proc(node: ^Node) {
 	}
 }
 
+n_parents :: proc(node: ^Node) -> int {
+	sum := 0
+	p := node.parent
+	for p != nil {
+		sum += 1
+		p = p.parent
+	}
+	//fmt.println(sum)
+	return sum
+}
+
 draw :: proc(node: ^Node) {
 	switch n in node.element {
 		case VerticalSplit:
 			for child in n.children {
 				draw(child)
 			}
-			for child in n.children {
+
+			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x + child.w - 1
 				y := child.y
-				rl.DrawRectangle(x, y, 2, child.h, {130,130,130,255})
+
+				//c := u8(255 / n_parents(child))
+				nParents := n_parents(child)
+				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				rl.DrawRectangle(x, y, 2, child.h, {c,c,c,255})
 			}
+
+			/*for child in n.children {
+				cString := fmt.ctprintf("{}", n_parents(child))
+				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
+			}*/
 		case HorizontalSplit:
 			for child in n.children {
 				draw(child)
 			}
-			for child in n.children {
+
+			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x
 				y := child.y + child.h - 1
-				rl.DrawRectangle(x, y, child.w, 2, {130,130,130,255})
+
+				//c := u8(255 / n_parents(child))
+				nParents := n_parents(child)
+				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				rl.DrawRectangle(x, y, child.w, 2, {c,c,c,255})
 			}
+
+			/*for child in n.children {
+				cString := fmt.ctprintf("{}", n_parents(child))
+				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
+			}*/
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 	}
@@ -80,12 +112,10 @@ recompute_children_boxes :: proc(node: ^Node) {
 			for child in e.children {
 				divisor += child.relativeSize
 			}
-			//divisor /= f64(len(e.children))
 
 			xPos := node.x
 			yPos := node.y
 			for &child in e.children {
-				//thisWidth := f64(node.w) / (child.relativeSize / divisor)
 				thisWidth := f64(node.w) * (child.relativeSize / divisor)
 				child.x = xPos
 				child.y = yPos
@@ -103,12 +133,10 @@ recompute_children_boxes :: proc(node: ^Node) {
 			for child in e.children {
 				divisor += child.relativeSize
 			}
-			//divisor /= f64(len(e.children))
 
 			xPos := node.x
 			yPos := node.y
 			for &child in e.children {
-				//thisWidth := f64(node.w) / (child.relativeSize / divisor)
 				thisHeight := f64(node.h) * (child.relativeSize / divisor)
 				child.x = xPos
 				child.y = yPos
@@ -126,8 +154,9 @@ recompute_children_boxes :: proc(node: ^Node) {
 vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	node := new(Node)
 	n := new(VerticalSplit)
-	for &node in nodes {
-		append(&n.children, node)
+	for &inNode in nodes {
+		inNode.parent = node
+		append(&n.children, inNode)
 	}
 	node.element = n^
 	node.relativeSize = 1
@@ -137,8 +166,9 @@ vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 horizontal_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	node := new(Node)
 	n := new(HorizontalSplit)
-	for &node in nodes {
-		append(&n.children, node)
+	for &inNode in nodes {
+		inNode.parent = node
+		append(&n.children, inNode)
 	}
 	node.element = n^
 	node.relativeSize = 1
