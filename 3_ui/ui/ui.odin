@@ -76,7 +76,7 @@ draw :: proc(node: ^Node) {
 				//c := u8(255 / n_parents(child))
 				nParents := n_parents(child)
 				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				//rl.DrawRectangle(x, y, 2, child.h, {c,c,c,255})
+				rl.DrawRectangle(x, y, 2, child.h, {c,c,c,255})
 			}
 
 			/*for child in n.children {
@@ -95,7 +95,7 @@ draw :: proc(node: ^Node) {
 				//c := u8(255 / n_parents(child))
 				nParents := n_parents(child)
 				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				//rl.DrawRectangle(x, y, child.w, 2, {c,c,c,255})
+				rl.DrawRectangle(x, y, child.w, 2, {c,c,c,255})
 			}
 
 			/*for child in n.children {
@@ -163,18 +163,6 @@ recompute_children_boxes :: proc(node: ^Node) {
 					child.h = yPositions[i+1] - yPositions[i]
 				}
 			}
-
-			/*xPos := node.x
-			yPos := f64(node.y)
-			for &child in e.children {
-				thisHeight := f64(node.h) * (child.relativeSize / divisor)
-				child.x = xPos
-				child.y = i32(yPos)
-				child.w = node.w
-				child.h = i32(thisHeight)
-
-				yPos += thisHeight
-			}*/
 
 			for &child in e.children {
 				recompute_children_boxes(child)
