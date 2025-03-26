@@ -3,6 +3,8 @@ package ui
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
+import "core:math"
+//import "core:math/fixed"
 
 Box :: struct {
 	x: i32,
@@ -74,7 +76,7 @@ draw :: proc(node: ^Node) {
 				//c := u8(255 / n_parents(child))
 				nParents := n_parents(child)
 				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				rl.DrawRectangle(x, y, 2, child.h, {c,c,c,255})
+				//rl.DrawRectangle(x, y, 2, child.h, {c,c,c,255})
 			}
 
 			/*for child in n.children {
@@ -93,7 +95,7 @@ draw :: proc(node: ^Node) {
 				//c := u8(255 / n_parents(child))
 				nParents := n_parents(child)
 				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				rl.DrawRectangle(x, y, child.w, 2, {c,c,c,255})
+				//rl.DrawRectangle(x, y, child.w, 2, {c,c,c,255})
 			}
 
 			/*for child in n.children {
@@ -113,18 +115,26 @@ recompute_children_boxes :: proc(node: ^Node) {
 				divisor += child.relativeSize
 			}
 
-			xPos := node.x
-			yPos := node.y
-			for &child in e.children {
-				thisWidth := f64(node.w) * (child.relativeSize / divisor)
-				child.x = xPos
-				child.y = yPos
-				child.w = i32(thisWidth)
+			xPositions := make([]i32, len(e.children))
+			xPos := f64(node.x)
+			for &child, i in e.children {
+				width := f64(node.w) * (child.relativeSize / divisor)
+				xPositions[i] = i32(xPos)
+				xPos += width
+			}
+
+			for &child, i in e.children {
+				child.x = xPositions[i]
+				child.y = node.y
 				child.h = node.h
 
-				xPos += i32(thisWidth)
-
+				if i == len(e.children) - 1 {
+					child.w = node.x + node.w - xPositions[i]
+				} else {
+					child.w = xPositions[i+1] - xPositions[i]
+				}
 			}
+
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
@@ -134,17 +144,38 @@ recompute_children_boxes :: proc(node: ^Node) {
 				divisor += child.relativeSize
 			}
 
-			xPos := node.x
-			yPos := node.y
+			yPositions := make([]i32, len(e.children))
+			yPos := f64(node.y)
+			for &child, i in e.children {
+				height := f64(node.h) * (child.relativeSize / divisor)
+				yPositions[i] = i32(yPos)
+				yPos += height
+			}
+
+			for &child, i in e.children {
+				child.x = node.x
+				child.y = yPositions[i]
+				child.w = node.w
+
+				if i == len(e.children) - 1 {
+					child.h = node.y + node.h - yPositions[i]
+				} else {
+					child.h = yPositions[i+1] - yPositions[i]
+				}
+			}
+
+			/*xPos := node.x
+			yPos := f64(node.y)
 			for &child in e.children {
 				thisHeight := f64(node.h) * (child.relativeSize / divisor)
 				child.x = xPos
-				child.y = yPos
+				child.y = i32(yPos)
 				child.w = node.w
 				child.h = i32(thisHeight)
 
-				yPos += i32(thisHeight)
-			}
+				yPos += thisHeight
+			}*/
+
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
