@@ -14,7 +14,7 @@ main :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE})
 	rl.InitWindow(WIDTH, HEIGHT, "ui test")
 	defer rl.CloseWindow()
-	//rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
+	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 
 	rootNode: ui.Node
 	rootNode.x = 0
@@ -23,7 +23,8 @@ main :: proc() {
 	rootNode.h = 100
 
 	nodes: [dynamic]^ui.Node
-	for i: u8 = 0; i < 10; i += 1 {
+	//for i: u8 = 0; i < 10; i += 1 {
+	for i: u8 = 0; i < 109; i += 1 {
 		d := new(ui.Node)
 		d.element = ui.DebugSquare{}
 		d.relativeSize = 1
@@ -64,6 +65,8 @@ main :: proc() {
 
 	fmt.println("rootNode:", rootNode)
 
+	state: ui.UserInterfaceState
+
 	i: f64 = 0
 	for !rl.WindowShouldClose() {
 		i += 0.05
@@ -73,6 +76,7 @@ main :: proc() {
 
 		rootNode.w = rl.GetScreenWidth()
 		rootNode.h = rl.GetScreenHeight()
+
 		/*#partial switch &e in rootNode.element {
 			case ui.VerticalSplit:
 				e.children[0].relativeSize = 1 + (math.sin(i) + 1) / 2
@@ -87,7 +91,8 @@ main :: proc() {
 		}*/
 
 		ui.recompute_children_boxes(&rootNode)
-		ui.draw(&rootNode)
+		ui.handle_input(&rootNode, &state)
+		ui.draw(&rootNode, &state)
 
 		rl.DrawFPS(5, 5)
 		rl.EndDrawing()

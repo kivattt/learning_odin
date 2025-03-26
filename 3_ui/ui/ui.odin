@@ -38,22 +38,9 @@ Node :: struct {
 	relativeSize: f64, // Used when it's in a VerticalSplit/HorizontalSplit
 }
 
-UserInterface :: struct {
-	rootNode: ^Node,
-	currentSelectedNode: ^Node,
-}
-
-handle_input :: proc(node: ^Node) {
-	x := rl.GetMouseX()
-	y := rl.GetMouseY()
-
-	#partial switch &e in node.element {
-		case VerticalSplit:
-			
-			for &child in e.children {
-				
-			}
-	}
+UserInterfaceState :: struct {
+	hoveredNode: ^Node,
+	selectedNode: ^Node,
 }
 
 n_parents :: proc(node: ^Node) -> int {
@@ -63,7 +50,6 @@ n_parents :: proc(node: ^Node) -> int {
 		sum += 1
 		p = p.parent
 	}
-	//fmt.println(sum)
 	return sum
 }
 
@@ -130,20 +116,106 @@ recompute_children_boxes :: proc(node: ^Node) {
 	}
 }
 
-draw :: proc(node: ^Node) {
+// Remember to delete() the return values?
+get_resizeable_children :: proc(node: ^Node) -> (horizBars: [dynamic]^Node, vertBars: [dynamic]^Node) {
+	#partial switch &e in node.element {
+		case VerticalSplit:
+			//for &child in e.children {
+			for &child in e.children[:max(0, len(e.children) - 1)] {
+				append(&vertBars, child)
+			}
+
+			for &child in e.children {
+				horizBarsToAdd, vertBarsToAdd := get_resizeable_children(child)
+				append(&vertBars, ..vertBarsToAdd[:])
+				append(&horizBars, ..horizBarsToAdd[:])
+
+				delete(horizBarsToAdd)
+				delete(vertBarsToAdd)
+			}
+		case HorizontalSplit:
+			//for &child in e.children {
+			for &child in e.children[:max(0, len(e.children) - 1)] {
+				append(&horizBars, child)
+			}
+
+			for &child in e.children {
+				horizBarsToAdd, vertBarsToAdd := get_resizeable_children(child)
+				append(&vertBars, ..vertBarsToAdd[:])
+				append(&horizBars, ..horizBarsToAdd[:])
+
+				delete(horizBarsToAdd)
+				delete(vertBarsToAdd)
+			}
+	}
+
+	return
+}
+
+handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
+	x := rl.GetMouseX()
+	y := rl.GetMouseY()
+
+	if state.selectedNode != nil {
+		state.hoveredNode = nil
+	} else {
+		// find hovered node.
+		state.hoveredNode = nil
+		horizBarPositions, vertBarPositions := get_resizeable_children(node)
+
+		for e in vertBarPositions {
+			if y < e.y || y > (e.y + e.h) {
+				continue
+			}
+
+			theX := e.x + e.w - 1
+			if x < (theX - 8) || x > (theX + 8) {
+				continue
+			}
+
+			state.hoveredNode = e
+			break
+		}
+
+		if state.hoveredNode == nil {
+			for e in horizBarPositions {
+				if x < e.x || x > (e.x + e.w) {
+					continue
+				}
+
+				theY := e.y + e.h - 1
+				if y < (theY - 8) || y > (theY + 8) {
+					continue
+				}
+
+				state.hoveredNode = e
+				break
+			}
+		}
+
+		delete(horizBarPositions)
+		delete(vertBarPositions)
+	}
+}
+
+draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 	switch n in node.element {
 		case VerticalSplit:
 			for child in n.children {
-				draw(child)
+				draw(child, state)
 			}
 
 			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x + child.w - 1
 				y := child.y
 
-				//c := u8(255 / n_parents(child))
-				nParents := n_parents(child)
-				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				//nParents := n_parents(child)
+				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+
+				c := u8(40)
+				if child == state.hoveredNode || child == state.selectedNode {
+					c = 255
+				}
 				rl.DrawRectangle(x, y, 1, child.h, {c,c,c,255})
 			}
 
@@ -153,16 +225,19 @@ draw :: proc(node: ^Node) {
 			}*/
 		case HorizontalSplit:
 			for child in n.children {
-				draw(child)
+				draw(child, state)
 			}
 
 			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x
 				y := child.y + child.h - 1
 
-				//c := u8(255 / n_parents(child))
-				nParents := n_parents(child)
-				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				//nParents := n_parents(child)
+				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				c := u8(40)
+				if child == state.hoveredNode || child == state.selectedNode {
+					c = 255
+				}
 				rl.DrawRectangle(x, y, child.w, 1, {c,c,c,255})
 			}
 
