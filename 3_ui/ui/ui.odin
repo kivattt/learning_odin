@@ -155,48 +155,74 @@ get_resizeable_children :: proc(node: ^Node) -> (horizBars: [dynamic]^Node, vert
 handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	x := rl.GetMouseX()
 	y := rl.GetMouseY()
+	state.hoveredNode = nil
 
 	if state.selectedNode != nil {
-		state.hoveredNode = nil
-	} else {
-		// find hovered node.
-		state.hoveredNode = nil
-		horizBarPositions, vertBarPositions := get_resizeable_children(node)
+		if rl.IsMouseButtonDown(.LEFT) {
+			// Not a huge fan.. We might want to store our own start-drag position in the UserInterfaceState
+			mouseDelta := rl.GetMouseDelta()
+			//#partial switch &e in state.selectedNode.element {
+			#partial switch &e in state.selectedNode.parent.element {
+				case VerticalSplit:
+					state.selectedNode.relativeSize += f64(mouseDelta[0]) / 100
+					state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
+					fmt.println(state.selectedNode.relativeSize)
+				case HorizontalSplit:
+					state.selectedNode.relativeSize += f64(mouseDelta[1]) / 100
+					state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
+					fmt.println(state.selectedNode.relativeSize)
+			}
+			return
+		} else {
+			state.selectedNode = nil
+		}
+	}
 
-		// Detect hover on vertical bars first, like Intellij IDEA does
-		for e in vertBarPositions {
-			if y < e.y || y > (e.y + e.h) {
+	// find hovered node.
+	horizBarPositions, vertBarPositions := get_resizeable_children(node)
+
+	// Detect hover on vertical bars first, like Intellij IDEA does
+	for e in vertBarPositions {
+		if y < e.y || y > (e.y + e.h) {
+			continue
+		}
+
+		theX := e.x + e.w - 1
+		if x < (theX - 8) || x > (theX + 8) {
+			continue
+		}
+
+		state.hoveredNode = e
+		break
+	}
+
+	if state.hoveredNode == nil {
+		for e in horizBarPositions {
+			if x < e.x || x > (e.x + e.w) {
 				continue
 			}
 
-			theX := e.x + e.w - 1
-			if x < (theX - 8) || x > (theX + 8) {
+			theY := e.y + e.h - 1
+			if y < (theY - 8) || y > (theY + 8) {
 				continue
 			}
 
 			state.hoveredNode = e
 			break
 		}
-
-		if state.hoveredNode == nil {
-			for e in horizBarPositions {
-				if x < e.x || x > (e.x + e.w) {
-					continue
-				}
-
-				theY := e.y + e.h - 1
-				if y < (theY - 8) || y > (theY + 8) {
-					continue
-				}
-
-				state.hoveredNode = e
-				break
-			}
-		}
-
-		delete(horizBarPositions)
-		delete(vertBarPositions)
 	}
+
+	if rl.IsMouseButtonDown(.LEFT) {
+		state.selectedNode = state.hoveredNode
+
+		// Probably unnecessary
+		//state.hoveredNode = nil
+	}
+
+	delete(horizBarPositions)
+	delete(vertBarPositions)
+
+	fmt.println(state.selectedNode)
 }
 
 draw :: proc(node: ^Node, state: ^UserInterfaceState) {
