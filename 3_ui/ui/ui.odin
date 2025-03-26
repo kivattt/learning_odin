@@ -163,6 +163,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		state.hoveredNode = nil
 		horizBarPositions, vertBarPositions := get_resizeable_children(node)
 
+		// Detect hover on vertical bars first, like Intellij IDEA does
 		for e in vertBarPositions {
 			if y < e.y || y > (e.y + e.h) {
 				continue
