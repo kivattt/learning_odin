@@ -38,6 +38,11 @@ Node :: struct {
 	relativeSize: f64, // Used when it's in a VerticalSplit/HorizontalSplit
 }
 
+UserInterface :: struct {
+	rootNode: ^Node,
+	currentSelectedNode: ^Node,
+}
+
 handle_input :: proc(node: ^Node) {
 	x := rl.GetMouseX()
 	y := rl.GetMouseY()
@@ -62,51 +67,6 @@ n_parents :: proc(node: ^Node) -> int {
 	return sum
 }
 
-draw :: proc(node: ^Node) {
-	switch n in node.element {
-		case VerticalSplit:
-			for child in n.children {
-				draw(child)
-			}
-
-			for child in n.children[:max(0, len(n.children)-1)] {
-				x := child.x + child.w - 1
-				y := child.y
-
-				//c := u8(255 / n_parents(child))
-				nParents := n_parents(child)
-				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				rl.DrawRectangle(x, y, 2, child.h, {c,c,c,255})
-			}
-
-			/*for child in n.children {
-				cString := fmt.ctprintf("{}", n_parents(child))
-				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
-			}*/
-		case HorizontalSplit:
-			for child in n.children {
-				draw(child)
-			}
-
-			for child in n.children[:max(0, len(n.children)-1)] {
-				x := child.x
-				y := child.y + child.h - 1
-
-				//c := u8(255 / n_parents(child))
-				nParents := n_parents(child)
-				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				rl.DrawRectangle(x, y, child.w, 2, {c,c,c,255})
-			}
-
-			/*for child in n.children {
-				cString := fmt.ctprintf("{}", n_parents(child))
-				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
-			}*/
-		case DebugSquare:
-			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
-	}
-}
-
 recompute_children_boxes :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
@@ -119,7 +79,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 			xPos := f64(node.x)
 			for &child, i in e.children {
 				width := f64(node.w) * (child.relativeSize / divisor)
-				xPositions[i] = i32(xPos)
+				xPositions[i] = i32(math.ceil(xPos))
 				xPos += width
 			}
 
@@ -148,7 +108,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 			yPos := f64(node.y)
 			for &child, i in e.children {
 				height := f64(node.h) * (child.relativeSize / divisor)
-				yPositions[i] = i32(yPos)
+				yPositions[i] = i32(math.ceil(yPos))
 				yPos += height
 			}
 
@@ -167,6 +127,51 @@ recompute_children_boxes :: proc(node: ^Node) {
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
+	}
+}
+
+draw :: proc(node: ^Node) {
+	switch n in node.element {
+		case VerticalSplit:
+			for child in n.children {
+				draw(child)
+			}
+
+			for child in n.children[:max(0, len(n.children)-1)] {
+				x := child.x + child.w - 1
+				y := child.y
+
+				//c := u8(255 / n_parents(child))
+				nParents := n_parents(child)
+				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				rl.DrawRectangle(x, y, 1, child.h, {c,c,c,255})
+			}
+
+			/*for child in n.children {
+				cString := fmt.ctprintf("{}", n_parents(child))
+				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
+			}*/
+		case HorizontalSplit:
+			for child in n.children {
+				draw(child)
+			}
+
+			for child in n.children[:max(0, len(n.children)-1)] {
+				x := child.x
+				y := child.y + child.h - 1
+
+				//c := u8(255 / n_parents(child))
+				nParents := n_parents(child)
+				c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
+				rl.DrawRectangle(x, y, child.w, 1, {c,c,c,255})
+			}
+
+			/*for child in n.children {
+				cString := fmt.ctprintf("{}", n_parents(child))
+				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
+			}*/
+		case DebugSquare:
+			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 	}
 }
 

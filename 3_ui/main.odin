@@ -14,7 +14,7 @@ main :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE})
 	rl.InitWindow(WIDTH, HEIGHT, "ui test")
 	defer rl.CloseWindow()
-	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
+	//rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 
 	rootNode: ui.Node
 	rootNode.x = 0
@@ -23,7 +23,7 @@ main :: proc() {
 	rootNode.h = 100
 
 	nodes: [dynamic]^ui.Node
-	for i: u8 = 0; i < 7; i += 1 {
+	for i: u8 = 0; i < 10; i += 1 {
 		d := new(ui.Node)
 		d.element = ui.DebugSquare{}
 		d.relativeSize = 1
@@ -38,14 +38,21 @@ main :: proc() {
 		append(&nodes, d)
 	}
 
-	vertSplit1 := ui.vertical_split_from_nodes(nodes[:2])
+	//vertSplit1 := ui.vertical_split_from_nodes(nodes[:2])
+	vertSplit1 := ui.horizontal_split_from_nodes(nodes[:2])
 	vertSplit2 := ui.vertical_split_from_nodes(nodes[2:4])
 	vertSplit3 := ui.vertical_split_from_nodes(nodes[4:])
 
 	horizSplit := ui.horizontal_split_from_nodes({vertSplit2, vertSplit3})
+	thing1 := horizSplit.element.(ui.HorizontalSplit)
+	thing1.children[0].relativeSize = 3
+	thing1.children[1].relativeSize = 1
 
 	vertSplitTwoOfThem := ui.vertical_split_from_nodes({vertSplit1, horizSplit})
 	vertSplitTwoOfThem.parent = nil
+	thing2 := vertSplitTwoOfThem.element.(ui.VerticalSplit)
+	thing2.children[0].relativeSize = 1
+	thing2.children[1].relativeSize = 3
 
 	rootNode = vertSplitTwoOfThem^
 	rootNode.x = 0
