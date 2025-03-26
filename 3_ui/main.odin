@@ -23,8 +23,8 @@ main :: proc() {
 	rootNode.h = 100
 
 	nodes: [dynamic]^ui.Node
-	//for i: u8 = 0; i < 10; i += 1 {
-	for i: u8 = 0; i < 109; i += 1 {
+	for i: u8 = 0; i < 7; i += 1 {
+	//for i: u8 = 0; i < 109; i += 1 {
 		d := new(ui.Node)
 		d.element = ui.DebugSquare{}
 		d.relativeSize = 1
@@ -39,29 +39,26 @@ main :: proc() {
 		append(&nodes, d)
 	}
 
-	//vertSplit1 := ui.vertical_split_from_nodes(nodes[:2])
-	vertSplit1 := ui.horizontal_split_from_nodes(nodes[:2])
-	vertSplit2 := ui.vertical_split_from_nodes(nodes[2:4])
-	vertSplit3 := ui.vertical_split_from_nodes(nodes[4:])
+	horizSplit1 := ui.horizontal_split_from_nodes(nodes[:2])
+	vertSplit1 := ui.vertical_split_from_nodes(nodes[2:4])
+	vertSplit2 := ui.vertical_split_from_nodes(nodes[4:])
 
-	horizSplit := ui.horizontal_split_from_nodes({vertSplit2, vertSplit3})
-	thing1 := horizSplit.element.(ui.HorizontalSplit)
+	horizSplit2 := ui.horizontal_split_from_nodes({vertSplit1, vertSplit2})
+	thing1 := horizSplit2.element.(ui.HorizontalSplit)
 	thing1.children[0].relativeSize = 3
 	thing1.children[1].relativeSize = 1
 
-	vertSplitTwoOfThem := ui.vertical_split_from_nodes({vertSplit1, horizSplit})
-	vertSplitTwoOfThem.parent = nil
-	thing2 := vertSplitTwoOfThem.element.(ui.VerticalSplit)
+	horizSplitTwoOfThem := ui.vertical_split_from_nodes({horizSplit1, horizSplit2})
+	horizSplitTwoOfThem.parent = nil
+	thing2 := horizSplitTwoOfThem.element.(ui.VerticalSplit)
 	thing2.children[0].relativeSize = 1
 	thing2.children[1].relativeSize = 3
 
-	rootNode = vertSplitTwoOfThem^
+	rootNode = horizSplitTwoOfThem^
 	rootNode.x = 0
 	rootNode.y = 0
 	rootNode.w = 100
 	rootNode.h = 100
-
-	fmt.println("vertSplit1[0] n parents (should be 2.):", ui.n_parents(nodes[0]))
 
 	fmt.println("rootNode:", rootNode)
 

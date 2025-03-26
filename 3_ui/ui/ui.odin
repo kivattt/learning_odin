@@ -164,13 +164,11 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 			//#partial switch &e in state.selectedNode.element {
 			#partial switch &e in state.selectedNode.parent.element {
 				case VerticalSplit:
-					state.selectedNode.relativeSize += f64(mouseDelta[0]) / 100
+					state.selectedNode.relativeSize += f64(mouseDelta[0]) / 140
 					state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
-					fmt.println(state.selectedNode.relativeSize)
 				case HorizontalSplit:
-					state.selectedNode.relativeSize += f64(mouseDelta[1]) / 100
+					state.selectedNode.relativeSize += f64(mouseDelta[1]) / 140
 					state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
-					fmt.println(state.selectedNode.relativeSize)
 			}
 			return
 		} else {
@@ -221,8 +219,6 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 	delete(horizBarPositions)
 	delete(vertBarPositions)
-
-	fmt.println(state.selectedNode)
 }
 
 draw :: proc(node: ^Node, state: ^UserInterfaceState) {
@@ -239,7 +235,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 				//nParents := n_parents(child)
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
 
-				c := u8(40)
+				c := u8(70)
 				if child == state.hoveredNode || child == state.selectedNode {
 					c = 255
 				}
@@ -261,7 +257,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 				//nParents := n_parents(child)
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				c := u8(40)
+				c := u8(70)
 				if child == state.hoveredNode || child == state.selectedNode {
 					c = 255
 				}
