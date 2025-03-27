@@ -1,3 +1,8 @@
+/*
+We assume a Node is only ever present once in the UI.
+If you use a Node twice in a VerticalSplit, for example, it will break resizing...
+*/
+
 package ui
 
 import rl "vendor:raylib"
@@ -156,6 +161,30 @@ get_resizeable_children :: proc(node: ^Node) -> (horizBars: [dynamic]^Node, vert
 	return
 }
 
+// Returns -1 on error
+index_of_node_in_parent_split :: proc(node: ^Node) -> int {
+	if node == nil || node.parent == nil {
+		return -1
+	}
+
+	#partial switch &e in node.parent.element {
+		case VerticalSplit:
+			for child, i in e.children {
+				if node == child {
+					return i
+				}
+			}
+		case HorizontalSplit:
+			for child, i in e.children {
+				if node == child {
+					return i
+				}
+			}
+	}
+
+	return -1
+}
+
 handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	x := rl.GetMouseX()
 	y := rl.GetMouseY()
@@ -168,11 +197,29 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 			//#partial switch &e in state.selectedNode.element {
 			#partial switch &e in state.selectedNode.parent.element {
 				case VerticalSplit:
-					state.selectedNode.relativeSize += f64(mouseDelta[0]) / 140
-					state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
+					index := index_of_node_in_parent_split(state.selectedNode)
+					if index == -1 {
+						fmt.println("WARNING: wtf 1")
+					} else {
+						for i := 0; i <= index; i += 1 {
+							e.children[i].relativeSize += f64(mouseDelta[0]) / 140 / f64(index + 1)
+							e.children[i].relativeSize = max(0, e.children[i].relativeSize)
+						}
+						//state.selectedNode.relativeSize += f64(mouseDelta[0]) / 140
+						//state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
+					}
 				case HorizontalSplit:
-					state.selectedNode.relativeSize += f64(mouseDelta[1]) / 140
-					state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
+					index := index_of_node_in_parent_split(state.selectedNode)
+					if index == -1 {
+						fmt.println("WARNING: wtf 2")
+					} else {
+						for i := 0; i <= index; i += 1 {
+							e.children[i].relativeSize += f64(mouseDelta[1]) / 140 / f64(index + 1)
+							e.children[i].relativeSize = max(0, e.children[i].relativeSize)
+						}
+						//state.selectedNode.relativeSize += f64(mouseDelta[1]) / 140
+						//state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
+					}
 			}
 			return
 		} else {
