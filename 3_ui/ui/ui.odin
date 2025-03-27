@@ -81,6 +81,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 				}
 			}
 
+			delete(xPositions)
+
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
@@ -109,6 +111,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 					child.h = yPositions[i+1] - yPositions[i]
 				}
 			}
+
+			delete(yPositions)
 
 			for &child in e.children {
 				recompute_children_boxes(child)
