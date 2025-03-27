@@ -205,8 +205,6 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 							e.children[i].relativeSize += f64(mouseDelta[0]) / 140 / f64(index + 1)
 							e.children[i].relativeSize = max(0, e.children[i].relativeSize)
 						}
-						//state.selectedNode.relativeSize += f64(mouseDelta[0]) / 140
-						//state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
 					}
 				case HorizontalSplit:
 					index := index_of_node_in_parent_split(state.selectedNode)
@@ -217,8 +215,6 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 							e.children[i].relativeSize += f64(mouseDelta[1]) / 140 / f64(index + 1)
 							e.children[i].relativeSize = max(0, e.children[i].relativeSize)
 						}
-						//state.selectedNode.relativeSize += f64(mouseDelta[1]) / 140
-						//state.selectedNode.relativeSize = max(0, state.selectedNode.relativeSize)
 					}
 			}
 			return
@@ -293,10 +289,12 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 				rl.DrawRectangle(x, y, 1, child.h, {c,c,c,255})
 			}
 
-			/*for child in n.children {
-				cString := fmt.ctprintf("{}", n_parents(child))
-				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
-			}*/
+			for child in n.children {
+				if n_parents(child) == 3 {
+					cString := fmt.ctprintf("%.3f", child.relativeSize)
+					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
+				}
+			}
 		case HorizontalSplit:
 			for child in n.children {
 				draw(child, state)
@@ -315,10 +313,12 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 				rl.DrawRectangle(x, y, child.w, 1, {c,c,c,255})
 			}
 
-			/*for child in n.children {
-				cString := fmt.ctprintf("{}", n_parents(child))
-				rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2 + i32(30 * n_parents(child)), i32(80 / f32(0 + n_parents(child))), rl.WHITE)
-			}*/
+			for child in n.children {
+				if n_parents(child) == 3 {
+					cString := fmt.ctprintf("%.3f", child.relativeSize)
+					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
+				}
+			}
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 	}
