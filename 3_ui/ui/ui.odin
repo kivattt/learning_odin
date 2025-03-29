@@ -40,7 +40,7 @@ Node :: struct {
 	parent: ^Node,
 	element: Element,
 	using box: Box,
-	relativeSize: f64, // Used when it's in a VerticalSplit/HorizontalSplit
+	size: i32, // Used when it's in a VerticalSplit/HorizontalSplit
 }
 
 UserInterfaceState :: struct {
@@ -61,63 +61,34 @@ n_parents :: proc(node: ^Node) -> int {
 recompute_children_boxes :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
-			divisor: f64 = 0
+			widthSum: i32 = 0
 			for child in e.children {
-				divisor += child.relativeSize
+				widthSum += child.size
 			}
 
-			xPositions := make([]i32, len(e.children))
-			xPos := f64(node.x)
-			for &child, i in e.children {
-				width := f64(node.w) * (child.relativeSize / divisor)
-				xPositions[i] = i32(math.ceil(xPos))
-				xPos += width
-			}
-
-			for &child, i in e.children {
-				child.x = xPositions[i]
-				child.y = node.y
-				child.h = node.h
-
-				if i == len(e.children) - 1 {
-					child.w = node.x + node.w - xPositions[i]
-				} else {
-					child.w = xPositions[i+1] - xPositions[i]
+			if widthSum != node.w {
+				fmt.println("didnt match:", widthSum, node.w)
+				ratio := f64(node.w) / f64(widthSum)
+				for child in e.children {
+					child.size = i32(f64(child.size) * ratio)
 				}
 			}
-
-			delete(xPositions)
 
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
 		case HorizontalSplit:
-			divisor: f64 = 0
+			widthSum: i32 = 0
 			for child in e.children {
-				divisor += child.relativeSize
+				widthSum += child.size
 			}
 
-			yPositions := make([]i32, len(e.children))
-			yPos := f64(node.y)
-			for &child, i in e.children {
-				height := f64(node.h) * (child.relativeSize / divisor)
-				yPositions[i] = i32(math.ceil(yPos))
-				yPos += height
-			}
-
-			for &child, i in e.children {
-				child.x = node.x
-				child.y = yPositions[i]
-				child.w = node.w
-
-				if i == len(e.children) - 1 {
-					child.h = node.y + node.h - yPositions[i]
-				} else {
-					child.h = yPositions[i+1] - yPositions[i]
+			if widthSum != node.w {
+				ratio := f64(widthSum) / f64(node.w)
+				for child in e.children {
+					child.size = i32(f64(child.size) * ratio)
 				}
 			}
-
-			delete(yPositions)
 
 			for &child in e.children {
 				recompute_children_boxes(child)
@@ -193,49 +164,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		if rl.IsMouseButtonDown(.LEFT) {
 			#partial switch &e in state.selectedNode.parent.element {
 				case VerticalSplit:
-					newXZeroToOne := f64(x - state.selectedNode.parent.x) / f64(state.selectedNode.parent.w)
-					newXZeroToOne = max(0, newXZeroToOne)
-					newXZeroToOne = min(1, newXZeroToOne)
-
-					currXZeroToOne := f64(state.selectedNode.x + state.selectedNode.w - state.selectedNode.parent.x) / f64(state.selectedNode.parent.w)
-					//fmt.println(newXZeroToOne, currXZeroToOne)
-
-					newScale := newXZeroToOne / currXZeroToOne
-					fmt.println(newScale)
-
-					index := index_of_node_in_parent_split(state.selectedNode)
-
-					leftSum: f64 = 0
-					for i := 0; i <= index; i += 1 {
-						leftSum += e.children[i].relativeSize
-					}
-					rightSum: f64 = 0
-					for i := index + 1; i < len(e.children); i += 1 {
-						rightSum += e.children[i].relativeSize
-					}
-
-					for i := 0; i <= index; i += 1 {
-						//e.children[i].relativeSize += newScale / f64(1 + index) * (e.children[i].relativeSize / divisor)
-						//e.children[i].relativeSize += newScale / f64(1 + index)
-						//e.children[i].relativeSize *= newScale / f64(1 + index) * (e.children[i].relativeSize / divisor)
-						//e.children[i].relativeSize *= newScale * (rightSum / leftSum)
-						e.children[i].relativeSize *= newScale
-
-						/*if newXZeroToOne == 0 || currXZeroToOne == 0 { // newScale == NaN
-							e.children[i].relativeSize = 0
-						} else {
-							e.children[i].relativeSize *= newScale
-						}*/
-
-						//e.children[i].relativeSize += f64(mouseDelta[0]) / 140 / f64(index + 1)
-						//e.children[i].relativeSize = max(0, e.children[i].relativeSize)
-					}
 				case HorizontalSplit:
-					index := index_of_node_in_parent_split(state.selectedNode)
-					/*for i := 0; i <= index; i += 1 {
-						e.children[i].relativeSize += f64(mouseDelta[1]) / 140 / f64(index + 1)
-						e.children[i].relativeSize = max(0, e.children[i].relativeSize)
-					}*/
 			}
 			return
 		} else {
@@ -311,7 +240,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 			for child in n.children {
 				if n_parents(child) == 3 {
-					cString := fmt.ctprintf("%.3f", child.relativeSize)
+					cString := fmt.ctprintf("%.3f", child.size)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -335,7 +264,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 			for child in n.children {
 				if n_parents(child) == 3 {
-					cString := fmt.ctprintf("%.3f", child.relativeSize)
+					cString := fmt.ctprintf("%.3f", child.size)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -352,7 +281,8 @@ vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 		append(&n.children, inNode)
 	}
 	node.element = n^
-	node.relativeSize = 1
+	//node.size = 1
+	node.size = 100
 	return node
 }
 
@@ -364,6 +294,7 @@ horizontal_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 		append(&n.children, inNode)
 	}
 	node.element = n^
-	node.relativeSize = 1
+	//node.size = 1
+	node.size = 100
 	return node
 }
