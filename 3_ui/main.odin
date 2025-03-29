@@ -27,7 +27,8 @@ main :: proc() {
 	//for i: u8 = 0; i < 109; i += 1 {
 		d := new(ui.Node)
 		d.element = ui.DebugSquare{}
-		d.size = 1
+		d.w = 1
+		d.h = 1
 
 		#partial switch &e in d.element {
 			case ui.DebugSquare:
@@ -45,14 +46,18 @@ main :: proc() {
 
 	horizSplit2 := ui.horizontal_split_from_nodes({vertSplit1, vertSplit2})
 	thing1 := horizSplit2.element.(ui.HorizontalSplit)
-	thing1.children[0].size = 3
-	thing1.children[1].size = 1
+	thing1.children[0].w = 3
+	thing1.children[0].h = 3
+	thing1.children[1].w = 1
+	thing1.children[1].h = 1
 
 	horizSplitTwoOfThem := ui.vertical_split_from_nodes({horizSplit1, horizSplit2})
 	horizSplitTwoOfThem.parent = nil
 	thing2 := horizSplitTwoOfThem.element.(ui.VerticalSplit)
-	thing2.children[0].size = 1
-	thing2.children[1].size = 3
+	thing2.children[0].w = 1
+	thing2.children[0].h = 1
+	thing2.children[1].w = 3
+	thing2.children[1].h = 3
 
 	rootNode = horizSplitTwoOfThem^
 	rootNode.x = 0
@@ -76,14 +81,16 @@ main :: proc() {
 
 		/*#partial switch &e in rootNode.element {
 			case ui.VerticalSplit:
-				e.children[0].size = 1 + (math.sin(i) + 1) / 2
+				e.children[0].w = 1 + (math.sin(i) + 1) / 2
+				e.children[0].h = 1 + (math.sin(i) + 1) / 2
 		}
 
 		#partial switch &e in rootNode.element {
 			case ui.VerticalSplit:
 				#partial switch &ee in e.children[1].element {
 					case ui.HorizontalSplit:
-						ee.children[0].size = 1 + (math.sin(i) + 1) / 2
+						ee.children[0].w = 1 + (math.sin(i) + 1) / 2
+						ee.children[0].h = 1 + (math.sin(i) + 1) / 2
 				}
 		}*/
 

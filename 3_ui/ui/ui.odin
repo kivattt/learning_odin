@@ -40,7 +40,6 @@ Node :: struct {
 	parent: ^Node,
 	element: Element,
 	using box: Box,
-	size: i32, // Used when it's in a VerticalSplit/HorizontalSplit
 }
 
 UserInterfaceState :: struct {
@@ -63,31 +62,56 @@ recompute_children_boxes :: proc(node: ^Node) {
 		case VerticalSplit:
 			widthSum: i32 = 0
 			for child in e.children {
-				widthSum += child.size
+				widthSum += child.w
 			}
 
 			if widthSum != node.w {
-				fmt.println("didnt match:", widthSum, node.w)
 				ratio := f64(node.w) / f64(widthSum)
-				for child in e.children {
-					child.size = i32(f64(child.size) * ratio)
+				currX := node.x
+				for child, i in e.children {
+					child.x = currX
+					child.y = node.y
+					child.h = node.h
+
+					if i == len(e.children) - 1 {
+						child.w = node.w - (currX - node.x)
+					} else {
+						child.w = i32(math.ceil(f64(child.w) * ratio))
+					}
+
+					currX += child.w
 				}
+
+				assert(currX - node.x == node.w)
 			}
 
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
 		case HorizontalSplit:
-			widthSum: i32 = 0
+			heightSum: i32 = 0
 			for child in e.children {
-				widthSum += child.size
+				heightSum += child.h
 			}
 
-			if widthSum != node.w {
-				ratio := f64(widthSum) / f64(node.w)
-				for child in e.children {
-					child.size = i32(f64(child.size) * ratio)
+			if heightSum != node.h {
+				ratio := f64(node.h) / f64(heightSum)
+				currY := node.y
+				for child, i in e.children {
+					child.x = node.x
+					child.y = currY
+					child.w = node.w
+
+					if i == len(e.children) - 1 {
+						child.h = node.h - (currY - node.y)
+					} else {
+						child.h = i32(math.ceil(f64(child.h) * ratio))
+					}
+
+					currY += child.h
 				}
+
+				assert(currY - node.y == node.h)
 			}
 
 			for &child in e.children {
@@ -240,7 +264,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 			for child in n.children {
 				if n_parents(child) == 3 {
-					cString := fmt.ctprintf("%.3f", child.size)
+					cString := fmt.ctprintf("{}", child.w)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -264,7 +288,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 			for child in n.children {
 				if n_parents(child) == 3 {
-					cString := fmt.ctprintf("%.3f", child.size)
+					cString := fmt.ctprintf("{}", child.h)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -281,8 +305,8 @@ vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 		append(&n.children, inNode)
 	}
 	node.element = n^
-	//node.size = 1
-	node.size = 100
+	node.w = 1
+	node.h = 1
 	return node
 }
 
@@ -294,7 +318,7 @@ horizontal_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 		append(&n.children, inNode)
 	}
 	node.element = n^
-	//node.size = 1
-	node.size = 100
+	node.w = 1
+	node.h = 1
 	return node
 }
