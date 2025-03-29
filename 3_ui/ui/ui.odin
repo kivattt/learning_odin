@@ -63,15 +63,16 @@ recompute_children_boxes :: proc(node: ^Node) {
 			widthSum: i32 = 0
 			for child in e.children {
 				widthSum += child.w
+				child.y = node.y
+				child.h = node.h
 			}
 
 			if widthSum != node.w {
+				fmt.println("changed width:", widthSum, node.w)
 				ratio := f64(node.w) / f64(widthSum)
 				currX := node.x
 				for child, i in e.children {
 					child.x = currX
-					child.y = node.y
-					child.h = node.h
 
 					if i == len(e.children) - 1 {
 						child.w = node.w - (currX - node.x)
@@ -92,15 +93,16 @@ recompute_children_boxes :: proc(node: ^Node) {
 			heightSum: i32 = 0
 			for child in e.children {
 				heightSum += child.h
+				child.x = node.x
+				child.w = node.w
 			}
 
 			if heightSum != node.h {
+				fmt.println("changed height:", heightSum, node.h)
 				ratio := f64(node.h) / f64(heightSum)
 				currY := node.y
 				for child, i in e.children {
-					child.x = node.x
 					child.y = currY
-					child.w = node.w
 
 					if i == len(e.children) - 1 {
 						child.h = node.h - (currY - node.y)
