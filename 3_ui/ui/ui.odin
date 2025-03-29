@@ -9,7 +9,6 @@ import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
 import "core:math"
-//import "core:math/fixed"
 
 Box :: struct {
 	x: i32,
