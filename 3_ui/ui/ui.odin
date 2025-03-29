@@ -163,9 +163,7 @@ get_resizeable_children :: proc(node: ^Node) -> (horizBars: [dynamic]^Node, vert
 
 // Returns -1 on error
 index_of_node_in_parent_split :: proc(node: ^Node) -> int {
-	if node == nil || node.parent == nil {
-		return -1
-	}
+	assert(node != nil && node.parent != nil)
 
 	#partial switch &e in node.parent.element {
 		case VerticalSplit:
@@ -182,6 +180,7 @@ index_of_node_in_parent_split :: proc(node: ^Node) -> int {
 			}
 	}
 
+	assert(false)
 	return -1
 }
 
@@ -192,30 +191,51 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 	if state.selectedNode != nil {
 		if rl.IsMouseButtonDown(.LEFT) {
-			// Not a huge fan.. We might want to store our own start-drag position in the UserInterfaceState
-			mouseDelta := rl.GetMouseDelta()
-			//#partial switch &e in state.selectedNode.element {
 			#partial switch &e in state.selectedNode.parent.element {
 				case VerticalSplit:
+					newXZeroToOne := f64(x - state.selectedNode.parent.x) / f64(state.selectedNode.parent.w)
+					newXZeroToOne = max(0, newXZeroToOne)
+					newXZeroToOne = min(1, newXZeroToOne)
+
+					currXZeroToOne := f64(state.selectedNode.x + state.selectedNode.w - state.selectedNode.parent.x) / f64(state.selectedNode.parent.w)
+					//fmt.println(newXZeroToOne, currXZeroToOne)
+
+					newScale := newXZeroToOne / currXZeroToOne
+					fmt.println(newScale)
+
 					index := index_of_node_in_parent_split(state.selectedNode)
-					if index == -1 {
-						fmt.println("WARNING: wtf 1")
-					} else {
-						for i := 0; i <= index; i += 1 {
-							e.children[i].relativeSize += f64(mouseDelta[0]) / 140 / f64(index + 1)
-							e.children[i].relativeSize = max(0, e.children[i].relativeSize)
-						}
+
+					leftSum: f64 = 0
+					for i := 0; i <= index; i += 1 {
+						leftSum += e.children[i].relativeSize
+					}
+					rightSum: f64 = 0
+					for i := index + 1; i < len(e.children); i += 1 {
+						rightSum += e.children[i].relativeSize
+					}
+
+					for i := 0; i <= index; i += 1 {
+						//e.children[i].relativeSize += newScale / f64(1 + index) * (e.children[i].relativeSize / divisor)
+						//e.children[i].relativeSize += newScale / f64(1 + index)
+						//e.children[i].relativeSize *= newScale / f64(1 + index) * (e.children[i].relativeSize / divisor)
+						//e.children[i].relativeSize *= newScale * (rightSum / leftSum)
+						e.children[i].relativeSize *= newScale
+
+						/*if newXZeroToOne == 0 || currXZeroToOne == 0 { // newScale == NaN
+							e.children[i].relativeSize = 0
+						} else {
+							e.children[i].relativeSize *= newScale
+						}*/
+
+						//e.children[i].relativeSize += f64(mouseDelta[0]) / 140 / f64(index + 1)
+						//e.children[i].relativeSize = max(0, e.children[i].relativeSize)
 					}
 				case HorizontalSplit:
 					index := index_of_node_in_parent_split(state.selectedNode)
-					if index == -1 {
-						fmt.println("WARNING: wtf 2")
-					} else {
-						for i := 0; i <= index; i += 1 {
-							e.children[i].relativeSize += f64(mouseDelta[1]) / 140 / f64(index + 1)
-							e.children[i].relativeSize = max(0, e.children[i].relativeSize)
-						}
-					}
+					/*for i := 0; i <= index; i += 1 {
+						e.children[i].relativeSize += f64(mouseDelta[1]) / 140 / f64(index + 1)
+						e.children[i].relativeSize = max(0, e.children[i].relativeSize)
+					}*/
 			}
 			return
 		} else {
