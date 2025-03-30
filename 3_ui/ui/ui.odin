@@ -39,6 +39,7 @@ Node :: struct {
 	parent: ^Node,
 	element: Element,
 	using box: Box,
+	preferNotResize: bool, // Used when in a VerticalSplit/HorizontalSplit
 }
 
 UserInterfaceState :: struct {
@@ -56,7 +57,7 @@ n_parents :: proc(node: ^Node) -> int {
 	return sum
 }
 
-recompute_children_boxes :: proc(node: ^Node) {
+scale_up_children :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
 			widthSum: i32 = 0
@@ -67,7 +68,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			if widthSum != node.w {
-				fmt.println("changed width:", widthSum, node.w)
+				//fmt.println("changed width:", widthSum, node.w)
+
 				ratio := f64(node.w) / f64(widthSum)
 				currX := node.x
 				for child, i in e.children {
@@ -86,7 +88,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			for &child in e.children {
-				recompute_children_boxes(child)
+				scale_up_children(child)
 			}
 		case HorizontalSplit:
 			heightSum: i32 = 0
@@ -97,7 +99,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			if heightSum != node.h {
-				fmt.println("changed height:", heightSum, node.h)
+				//fmt.println("changed height:", heightSum, node.h)
 				ratio := f64(node.h) / f64(heightSum)
 				currY := node.y
 				for child, i in e.children {
@@ -113,6 +115,85 @@ recompute_children_boxes :: proc(node: ^Node) {
 				}
 
 				assert(currY - node.y == node.h)
+			}
+
+			for &child in e.children {
+				scale_up_children(child)
+			}
+	}
+}
+
+recompute_children_boxes :: proc(node: ^Node) {
+	#partial switch &e in node.element {
+		case VerticalSplit:
+			widthSum: i32 = 0
+			for child in e.children {
+				widthSum += child.w
+				child.y = node.y
+				child.h = node.h
+			}
+
+			if node.x != e.children[0].x {
+				diff := node.x - e.children[0].x
+				for child in e.children {
+					child.x += diff
+				}
+			}
+
+			if true || widthSum != node.w {
+				//fmt.println("changed width:", widthSum, node.w)
+
+				for child, i in e.children {
+					if child.preferNotResize {
+						continue // FIXME
+					}
+
+					diff := node.w - widthSum
+					fmt.println("diff:", diff)
+					child.w += diff
+					//e.children[i+1].x += diff
+					for j := i+1; j < len(e.children); j += 1 {
+						e.children[j].x += diff
+					}
+					break
+				}
+			}
+
+			for &child in e.children {
+				recompute_children_boxes(child)
+			}
+		case HorizontalSplit:
+			heightSum: i32 = 0
+			for child in e.children {
+				heightSum += child.h
+				child.x = node.x
+				child.w = node.w
+			}
+
+			if node.y != e.children[0].y {
+				diff := node.y - e.children[0].y
+				for child in e.children {
+					child.y += diff
+				}
+			}
+
+			if true || heightSum != node.h {
+				//fmt.println("changed height:", heightSum, node.h)
+
+				for child, i in e.children {
+					if child.preferNotResize {
+						continue // FIXME
+					}
+
+					diff := node.h - heightSum
+					fmt.println("diff:", diff)
+					child.h += diff
+					//e.children[i+1].y += diff
+					for j := i+1; j < len(e.children); j += 1 {
+						e.children[j].y += diff
+					}
+					break
+				}
 			}
 
 			for &child in e.children {
@@ -264,8 +345,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if n_parents(child) == 3 {
-					cString := fmt.ctprintf("{}", child.w)
+				if true || n_parents(child) == 3 {
+					//cString := fmt.ctprintf("{}", child.w)
+					cString := fmt.ctprintf("{}", child.x)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -288,8 +370,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if n_parents(child) == 3 {
-					cString := fmt.ctprintf("{}", child.h)
+				if true || n_parents(child) == 3 {
+					//cString := fmt.ctprintf("{}", child.h)
+					cString := fmt.ctprintf("{}", child.x)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
