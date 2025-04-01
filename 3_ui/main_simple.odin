@@ -6,11 +6,14 @@ import rl "vendor:raylib"
 import "ui"
 import "core:fmt"
 import "core:math"
+import "core:time"
 
 WIDTH :: 2000
 HEIGHT :: 720
 
 main :: proc() {
+	debug := false
+
 	rl.SetConfigFlags({.WINDOW_RESIZABLE})
 	rl.InitWindow(WIDTH, HEIGHT, "ui test")
 	defer rl.CloseWindow()
@@ -40,7 +43,10 @@ main :: proc() {
 
 	rootNode.w = rl.GetScreenWidth()
 	rootNode.h = rl.GetScreenHeight()
+
+	t := time.now()
 	ui.scale_up_children(rootNode)
+	if debug do fmt.println("scale_up_children()         time:", time.since(t))
 
 	state: ui.UserInterfaceState
 
@@ -53,9 +59,17 @@ main :: proc() {
 		rootNode.w = rl.GetScreenWidth()
 		rootNode.h = rl.GetScreenHeight()
 
+		t = time.now()
 		ui.recompute_children_boxes(rootNode)
+		if debug do fmt.println("recompute_children_boxes() time:", time.since(t))
+
+		t = time.now()
 		ui.handle_input(rootNode, &state)
+		if debug do fmt.println("handle_input()             time:", time.since(t))
+
+		t = time.now()
 		ui.draw(rootNode, &state)
+		if debug do fmt.println("draw()                     time:", time.since(t))
 
 		rl.DrawFPS(5, 5)
 		rl.EndDrawing()
