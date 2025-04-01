@@ -16,12 +16,6 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 
-	rootNode: ui.Node
-	rootNode.x = 0
-	rootNode.y = 0
-	rootNode.w = 100
-	rootNode.h = 100
-
 	nodes: [dynamic]^ui.Node
 	for i: u8 = 0; i < 7; i += 1 {
 	//for i: u8 = 0; i < 109; i += 1 {
@@ -43,8 +37,9 @@ main :: proc() {
 	horizSplit1 := ui.horizontal_split_from_nodes(nodes[:2])
 	vertSplit1 := ui.vertical_split_from_nodes(nodes[2:4])
 	vertSplit2 := ui.vertical_split_from_nodes(nodes[4:])
-	//vertSplit2.element.(ui.VerticalSplit).children[0].preferNotResize = true
-	//vertSplit2.element.(ui.VerticalSplit).children[2].preferNotResize = true
+	// thing
+	vertSplit2.element.(ui.VerticalSplit).children[0].preferNotResize = true
+	vertSplit2.element.(ui.VerticalSplit).children[2].preferNotResize = true
 
 	horizSplit2 := ui.horizontal_split_from_nodes({vertSplit1, vertSplit2})
 	thing1 := horizSplit2.element.(ui.HorizontalSplit)
@@ -62,20 +57,17 @@ main :: proc() {
 	thing2.children[1].w = 3
 	thing2.children[1].h = 3
 
+	rootNode: ui.Node
 	rootNode = horizSplitTwoOfThem^
-	rootNode.x = 0
-	rootNode.y = 0
-	rootNode.w = 100
-	rootNode.h = 100
-
-	fmt.println("rootNode:", rootNode)
-
-	state: ui.UserInterfaceState
 	rootNode.x = 0
 	rootNode.y = 0
 	rootNode.w = rl.GetScreenWidth()
 	rootNode.h = rl.GetScreenHeight()
 	ui.scale_up_children(&rootNode)
+
+	fmt.println("rootNode:", rootNode)
+
+	state: ui.UserInterfaceState
 
 	i: f64 = 0
 	for !rl.WindowShouldClose() {

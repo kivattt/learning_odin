@@ -40,6 +40,7 @@ Node :: struct {
 	element: Element,
 	using box: Box,
 	preferNotResize: bool, // Used when in a VerticalSplit/HorizontalSplit
+	minimumSize: i32, // Used when in a VerticalSplit/HorizontalSplit
 }
 
 UserInterfaceState :: struct {
@@ -57,6 +58,7 @@ n_parents :: proc(node: ^Node) -> int {
 	return sum
 }
 
+// FIXME: Doesn't respect minimumSize
 scale_up_children :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
@@ -123,6 +125,91 @@ scale_up_children :: proc(node: ^Node) {
 	}
 }
 
+resize_vert :: proc(vert: ^VerticalSplit, index: int, diff: i32) {
+	vert.children[index].w += diff
+	for i := index + 1; i < len(vert.children); i += 1 {
+		vert.children[i].x += diff
+	}
+}
+
+// Returns -1 when none found
+// TODO: Could make a separate function for resizing up, since it would prob only return first that wants resize or 0
+find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> int {
+	secondChoice := -1
+
+	switch &e in node.element {
+		case VerticalSplit:
+			for child, index in e.children {
+				if respectMinimumSize && child.w <= child.minimumSize {
+					continue
+				}
+
+				if !child.preferNotResize {
+					return index
+				}
+
+				if child.preferNotResize && secondChoice == -1 {
+					secondChoice = index
+				}
+			}
+		case HorizontalSplit:
+			for child, index in e.children {
+				if respectMinimumSize && child.h <= child.minimumSize {
+					continue
+				}
+
+				if !child.preferNotResize {
+					return index
+				}
+
+				if child.preferNotResize && secondChoice == -1 {
+					secondChoice = index
+				}
+			}
+		case DebugSquare:
+	}
+
+	return secondChoice
+}
+
+// Returns the amount not yet resized.
+// Returns 0 if done resizing.
+try_resize_child :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
+	diffCopy := diff
+
+	#partial switch &e in node.parent.element {
+		case VerticalSplit:
+			remainder := (node.w + diffCopy) - node.minimumSize
+			if remainder < 0 {
+				diffCopy -= remainder
+			}
+
+			node.w += diffCopy
+			assert(node.w >= node.minimumSize)
+			for i := itsIndex + 1; i < len(e.children); i += 1 {
+				e.children[i].x += diffCopy
+			}
+
+			return remainder < 0 ? remainder : 0
+		case HorizontalSplit:
+			remainder := (node.h + diffCopy) - node.minimumSize
+			if remainder < 0 {
+				diffCopy -= remainder
+			}
+
+			node.h += diffCopy
+			assert(node.h >= node.minimumSize)
+			for i := itsIndex + 1; i < len(e.children); i += 1 {
+				e.children[i].y += diffCopy
+			}
+
+			return remainder < 0 ? remainder : 0
+	}
+
+	assert(false)
+	return 0
+}
+
 recompute_children_boxes :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
@@ -133,29 +220,28 @@ recompute_children_boxes :: proc(node: ^Node) {
 				child.h = node.h
 			}
 
-			if node.x != e.children[0].x {
-				diff := node.x - e.children[0].x
+			xDiff := node.x - e.children[0].x
+			if xDiff != 0 {
 				for child in e.children {
-					child.x += diff
+					child.x += xDiff
 				}
 			}
 
-			if true || widthSum != node.w {
-				//fmt.println("changed width:", widthSum, node.w)
+			diff := node.w - widthSum
+			if diff != 0 {
+				for {
+					//respectMinimumSize := diff < 0
+					respectMinimumSize := diff < 0 ? true : false
 
-				for child, i in e.children {
-					if child.preferNotResize {
-						continue // FIXME
+					resizeableIndex := find_resizeable_child_index(node, respectMinimumSize)
+					if resizeableIndex == -1 {
+						break
 					}
 
-					diff := node.w - widthSum
-					fmt.println("diff:", diff)
-					child.w += diff
-					//e.children[i+1].x += diff
-					for j := i+1; j < len(e.children); j += 1 {
-						e.children[j].x += diff
+					diff = try_resize_child(e.children[resizeableIndex], resizeableIndex, diff)
+					if diff == 0 {
+						break
 					}
-					break
 				}
 			}
 
@@ -281,7 +367,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	// find hovered node.
 	horizBarPositions, vertBarPositions := get_resizeable_children(node)
 
-	// Detect hover on vertical bars first, like Intellij IDEA does
+	// Detect hover on vertical bars first, like Intellij IDEA and Krita does
 	for e in vertBarPositions {
 		if y < e.y || y > (e.y + e.h) {
 			continue
@@ -345,9 +431,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if true || n_parents(child) == 3 {
-					//cString := fmt.ctprintf("{}", child.w)
-					cString := fmt.ctprintf("{}", child.x)
+				if false || n_parents(child) == 3 {
+					cString := fmt.ctprintf("{}", child.w)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -370,9 +455,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if true || n_parents(child) == 3 {
-					//cString := fmt.ctprintf("{}", child.h)
-					cString := fmt.ctprintf("{}", child.x)
+				if false || n_parents(child) == 3 {
+					cString := fmt.ctprintf("{}", child.h)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -386,11 +470,13 @@ vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	n := new(VerticalSplit)
 	for &inNode in nodes {
 		inNode.parent = node
+		inNode.minimumSize = 100
 		append(&n.children, inNode)
 	}
 	node.element = n^
 	node.w = 1
 	node.h = 1
+	node.minimumSize = 100
 	return node
 }
 
@@ -399,10 +485,12 @@ horizontal_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	n := new(HorizontalSplit)
 	for &inNode in nodes {
 		inNode.parent = node
+		inNode.minimumSize = 100
 		append(&n.children, inNode)
 	}
 	node.element = n^
 	node.w = 1
 	node.h = 1
+	node.minimumSize = 100
 	return node
 }
