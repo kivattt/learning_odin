@@ -34,12 +34,14 @@ main :: proc() {
 
 	vert1 := ui.vertical_split_from_nodes(boxes[:3])
 	vert1.element.(ui.VerticalSplit).children[0].preferNotResize = true
-	vert1.element.(ui.VerticalSplit).children[0].w = 2
+	vert1.element.(ui.VerticalSplit).children[0].minimumSize = 74
+	vert1.element.(ui.VerticalSplit).children[nBoxes - 2].minimumSize = 264
 	vert1.element.(ui.VerticalSplit).children[nBoxes - 2].preferNotResize = true
 
 	vert2 := ui.vertical_split_from_nodes(boxes[3:])
 
-	rootNode := ui.vertical_split_from_nodes({vert1, vert2})
+	//rootNode := ui.vertical_split_from_nodes({vert1, vert2})
+	rootNode := vert1
 
 	rootNode.w = rl.GetScreenWidth()
 	rootNode.h = rl.GetScreenHeight()
