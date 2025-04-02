@@ -19,7 +19,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 
-	nBoxes := 6
+	nBoxes := 7
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
 		ds: ui.DebugSquare
@@ -33,7 +33,8 @@ main :: proc() {
 		boxes[i] = node
 	}
 
-	horizSplit1 := ui.horizontal_split_from_nodes(boxes[2:])
+//	horizSplit1 := ui.horizontal_split_from_nodes(boxes[2:])
+	horizSplit1 := ui.horizontal_split_from_nodes(boxes[3:])
 	horizSplit1.element.(ui.HorizontalSplit).children[0].preferNotResize = true
 	horizSplit1.element.(ui.HorizontalSplit).children[2].preferNotResize = true
 	horizSplit1.element.(ui.HorizontalSplit).children[3].preferNotResize = true
@@ -44,13 +45,21 @@ main :: proc() {
 	vert1.element.(ui.VerticalSplit).children[2].preferNotResize = true
 	vert1.element.(ui.VerticalSplit).children[2].minimumSize = 264
 
-	rootNode := vert1
+	//horizSplit2 := ui.horizontal_split_from_nodes({boxes[2], vert1})
+	horizSplit2 := ui.horizontal_split_from_nodes({vert1, boxes[2]})
+	boxes[2].preferNotResize = true
+
+	//rootNode := vert1
+	rootNode := horizSplit2
 
 	rootNode.w = rl.GetScreenWidth()
 	rootNode.h = rl.GetScreenHeight()
 
 	t := time.now()
+
 	ui.scale_up_children(rootNode)
+	boxes[2].h = 100
+
 	if debug do fmt.println("scale_up_children()         time:", time.since(t))
 
 	state: ui.UserInterfaceState
