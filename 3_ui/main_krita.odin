@@ -38,6 +38,11 @@ main :: proc() {
 	horizSplit1.element.(ui.HorizontalSplit).children[2].preferNotResize = true
 	horizSplit1.element.(ui.HorizontalSplit).children[3].preferNotResize = true
 	vert1 := ui.vertical_split_from_nodes({boxes[0], boxes[1], horizSplit1})
+	vert1.element.(ui.VerticalSplit).children[0].preferNotResize = true
+	vert1.element.(ui.VerticalSplit).children[0].minimumSize = 74 // correct krita minsize
+
+	vert1.element.(ui.VerticalSplit).children[2].preferNotResize = true
+	vert1.element.(ui.VerticalSplit).children[2].minimumSize = 264
 
 	rootNode := vert1
 
