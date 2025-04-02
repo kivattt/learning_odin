@@ -256,29 +256,28 @@ recompute_children_boxes :: proc(node: ^Node) {
 				child.w = node.w
 			}
 
-			if node.y != e.children[0].y {
-				diff := node.y - e.children[0].y
+			yDiff := node.y - e.children[0].y
+			if yDiff != 0 {
 				for child in e.children {
-					child.y += diff
+					child.y += yDiff
 				}
 			}
 
-			if true || heightSum != node.h {
-				//fmt.println("changed height:", heightSum, node.h)
+			diff := node.h - heightSum
+			if diff != 0 {
+				for {
+					//respectMinimumSize := diff < 0
+					respectMinimumSize := diff < 0 ? true : false
 
-				for child, i in e.children {
-					if child.preferNotResize {
-						continue // FIXME
+					resizeableIndex := find_resizeable_child_index(node, respectMinimumSize)
+					if resizeableIndex == -1 {
+						break
 					}
 
-					diff := node.h - heightSum
-					fmt.println("diff:", diff)
-					child.h += diff
-					//e.children[i+1].y += diff
-					for j := i+1; j < len(e.children); j += 1 {
-						e.children[j].y += diff
+					diff = try_resize_child(e.children[resizeableIndex], resizeableIndex, diff)
+					if diff == 0 {
+						break
 					}
-					break
 				}
 			}
 
