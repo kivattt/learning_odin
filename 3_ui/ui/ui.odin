@@ -46,6 +46,7 @@ Node :: struct {
 UserInterfaceState :: struct {
 	hoveredNode: ^Node,
 	selectedNode: ^Node,
+	lastFrameCursor: rl.MouseCursor,
 }
 
 n_parents :: proc(node: ^Node) -> int {
@@ -403,6 +404,21 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		// Probably unnecessary
 		//state.hoveredNode = nil
 	}
+
+	cursorWanted := rl.MouseCursor.DEFAULT
+	if state.hoveredNode != nil {
+		#partial switch &e in state.hoveredNode.parent.element {
+			case VerticalSplit:
+				cursorWanted = rl.MouseCursor.RESIZE_EW
+			case HorizontalSplit:
+				cursorWanted = rl.MouseCursor.RESIZE_NS
+		}
+	}
+
+	if cursorWanted != state.lastFrameCursor {
+		rl.SetMouseCursor(cursorWanted)
+	}
+	state.lastFrameCursor = cursorWanted
 
 	delete(horizBarPositions)
 	delete(vertBarPositions)
