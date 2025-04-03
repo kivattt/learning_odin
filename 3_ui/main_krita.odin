@@ -62,7 +62,7 @@ main :: proc() {
 
 	if debug do fmt.println("scale_up_children()         time:", time.since(t))
 
-	state: ui.UserInterfaceState
+	state := ui.ui_state_default_values()
 
 	i: f64 = 0
 	for !rl.WindowShouldClose() {

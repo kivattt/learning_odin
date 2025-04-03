@@ -46,7 +46,14 @@ Node :: struct {
 UserInterfaceState :: struct {
 	hoveredNode: ^Node,
 	selectedNode: ^Node,
+	selectedNodeIndexInParent: int,
 	lastFrameCursor: rl.MouseCursor,
+}
+
+ui_state_default_values :: proc() -> UserInterfaceState {
+	return UserInterfaceState{
+		selectedNodeIndexInParent = -1
+	}
 }
 
 n_parents :: proc(node: ^Node) -> int {
@@ -347,27 +354,15 @@ index_of_node_in_parent_split :: proc(node: ^Node) -> int {
 	return -1
 }
 
-handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
-	x := rl.GetMouseX()
-	y := rl.GetMouseY()
-	state.hoveredNode = nil
-
-	if state.selectedNode != nil {
-		if rl.IsMouseButtonDown(.LEFT) {
-			#partial switch &e in state.selectedNode.parent.element {
-				case VerticalSplit:
-				case HorizontalSplit:
-			}
-			return
-		} else {
-			state.selectedNode = nil
-		}
+find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
+	horizBarPositions, vertBarPositions := get_resizeable_children(node)
+	defer {
+		delete(horizBarPositions)
+		delete(vertBarPositions)
 	}
 
-	// find hovered node.
-	horizBarPositions, vertBarPositions := get_resizeable_children(node)
-
-	// Detect hover on vertical bars first, like Intellij IDEA and Krita does
+	// Detect hover on vertical bars first. This feels the most intuitive
+	// Intellij IDEA, Krita and REAPER all seem to do this.
 	for e in vertBarPositions {
 		if y < e.y || y > (e.y + e.h) {
 			continue
@@ -378,32 +373,49 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 			continue
 		}
 
-		state.hoveredNode = e
-		break
+		return e
 	}
 
-	if state.hoveredNode == nil {
-		for e in horizBarPositions {
-			if x < e.x || x > (e.x + e.w) {
-				continue
+	for e in horizBarPositions {
+		if x < e.x || x > (e.x + e.w) {
+			continue
+		}
+
+		theY := e.y + e.h - 1
+		if y < (theY - 8) || y > (theY + 8) {
+			continue
+		}
+
+		return e
+	}
+
+	return nil
+}
+
+// Call this on your root node
+handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
+	x := rl.GetMouseX()
+	y := rl.GetMouseY()
+
+	if state.selectedNode != nil {
+		if state.selectedNodeIndexInParent == -1 {
+			state.selectedNodeIndexInParent = index_of_node_in_parent_split(state.selectedNode)
+		}
+
+		if rl.IsMouseButtonDown(.LEFT) {
+			#partial switch &e in state.selectedNode.parent.element {
+				case VerticalSplit:
+				case HorizontalSplit:
 			}
 
-			theY := e.y + e.h - 1
-			if y < (theY - 8) || y > (theY + 8) {
-				continue
-			}
-
-			state.hoveredNode = e
-			break
+			return
+		} else {
+			state.selectedNode = nil
+			state.selectedNodeIndexInParent = -1
 		}
 	}
 
-	if rl.IsMouseButtonDown(.LEFT) {
-		state.selectedNode = state.hoveredNode
-
-		// Probably unnecessary
-		//state.hoveredNode = nil
-	}
+	state.hoveredNode = find_hovered_node(node, x, y)
 
 	cursorWanted := rl.MouseCursor.DEFAULT
 	if state.hoveredNode != nil {
@@ -420,8 +432,9 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	}
 	state.lastFrameCursor = cursorWanted
 
-	delete(horizBarPositions)
-	delete(vertBarPositions)
+	if rl.IsMouseButtonDown(.LEFT) {
+		state.selectedNode = state.hoveredNode
+	}
 }
 
 draw :: proc(node: ^Node, state: ^UserInterfaceState) {
