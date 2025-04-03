@@ -220,6 +220,31 @@ try_resize_child :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
 	return 0
 }
 
+try_resize_preferred_child :: proc(rootNode: ^Node, rootNodeChildren: []^Node, prefferedChildIndex: int, diff: i32) {
+	if diff == 0 {
+		return
+	}
+
+	diffCopy := diff
+
+	for {
+		respectMinimumSize := diffCopy < 0 ? true : false
+
+		resizeableIndex := prefferedChildIndex
+		if prefferedChildIndex == -1 || respectMinimumSize && rootNodeChildren[resizeableIndex].w <= rootNodeChildren[resizeableIndex].minimumSize {
+			resizeableIndex = find_resizeable_child_index(rootNode, respectMinimumSize)
+			if resizeableIndex == -1 {
+				break
+			}
+		}
+
+		diffCopy = try_resize_child(rootNodeChildren[resizeableIndex], resizeableIndex, diffCopy)
+		if diffCopy == 0 {
+			break
+		}
+	}
+}
+
 recompute_children_boxes :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
@@ -238,9 +263,9 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			diff := node.w - widthSum
-			if diff != 0 {
+			try_resize_preferred_child(node, e.children[:], -1, diff)
+			/*if diff != 0 {
 				for {
-					//respectMinimumSize := diff < 0
 					respectMinimumSize := diff < 0 ? true : false
 
 					resizeableIndex := find_resizeable_child_index(node, respectMinimumSize)
@@ -253,7 +278,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 						break
 					}
 				}
-			}
+			}*/
 
 			for &child in e.children {
 				recompute_children_boxes(child)
@@ -274,7 +299,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			diff := node.h - heightSum
-			if diff != 0 {
+			try_resize_preferred_child(node, e.children[:], -1, diff)
+			/*if diff != 0 {
 				for {
 					//respectMinimumSize := diff < 0
 					respectMinimumSize := diff < 0 ? true : false
@@ -289,7 +315,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 						break
 					}
 				}
-			}
+			}*/
 
 			for &child in e.children {
 				recompute_children_boxes(child)
@@ -409,12 +435,12 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		if rl.IsMouseButtonDown(.LEFT) {
 			#partial switch &e in state.selectedResizeBar.parent.element {
 				case VerticalSplit:
-					//xDiff := x - (state.selectedResizeBar.x + state.selectedResizeBar.w - 1)
 					xDiff := x - state.resizeBarStartX
+					try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, xDiff)
 					fmt.println(xDiff)
 				case HorizontalSplit:
-					//yDiff := y - (state.selectedResizeBar.y + state.selectedResizeBar.h - 1)
 					yDiff := y - state.resizeBarStartY
+					try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, yDiff)
 					fmt.println(yDiff)
 			}
 
