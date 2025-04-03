@@ -296,16 +296,15 @@ recompute_children_boxes :: proc(node: ^Node) {
 }
 
 // Remember to delete() the return values?
-get_resizeable_children :: proc(node: ^Node) -> (horizBars: [dynamic]^Node, vertBars: [dynamic]^Node) {
+get_resizeable_children :: proc(node: ^Node) -> (vertBars: [dynamic]^Node, horizBars: [dynamic]^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
-			//for &child in e.children {
 			for &child in e.children[:max(0, len(e.children) - 1)] {
 				append(&vertBars, child)
 			}
 
 			for &child in e.children {
-				horizBarsToAdd, vertBarsToAdd := get_resizeable_children(child)
+				vertBarsToAdd, horizBarsToAdd := get_resizeable_children(child)
 				append(&vertBars, ..vertBarsToAdd[:])
 				append(&horizBars, ..horizBarsToAdd[:])
 
@@ -313,13 +312,12 @@ get_resizeable_children :: proc(node: ^Node) -> (horizBars: [dynamic]^Node, vert
 				delete(vertBarsToAdd)
 			}
 		case HorizontalSplit:
-			//for &child in e.children {
 			for &child in e.children[:max(0, len(e.children) - 1)] {
 				append(&horizBars, child)
 			}
 
 			for &child in e.children {
-				horizBarsToAdd, vertBarsToAdd := get_resizeable_children(child)
+				vertBarsToAdd, horizBarsToAdd := get_resizeable_children(child)
 				append(&vertBars, ..vertBarsToAdd[:])
 				append(&horizBars, ..horizBarsToAdd[:])
 
@@ -354,14 +352,15 @@ index_of_node_in_parent_split :: proc(node: ^Node) -> int {
 	return -1
 }
 
-find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
-	horizBarPositions, vertBarPositions := get_resizeable_children(node)
+find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
+	//horizBarPositions, vertBarPositions := get_resizeable_children(node)
+	vertBarPositions, horizBarPositions := get_resizeable_children(node)
 	defer {
-		delete(horizBarPositions)
 		delete(vertBarPositions)
+		delete(horizBarPositions)
 	}
 
-	// Detect hover on vertical bars first. This feels the most intuitive
+	// Detect hover on vertical bars first. This feels the most intuitive.
 	// Intellij IDEA, Krita and REAPER all seem to do this.
 	for e in vertBarPositions {
 		if y < e.y || y > (e.y + e.h) {
@@ -405,7 +404,11 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		if rl.IsMouseButtonDown(.LEFT) {
 			#partial switch &e in state.selectedNode.parent.element {
 				case VerticalSplit:
+					xDiff := x - (state.selectedNode.x + state.selectedNode.w - 1)
+					fmt.println(xDiff)
 				case HorizontalSplit:
+					yDiff := y - (state.selectedNode.y + state.selectedNode.h - 1)
+					fmt.println(yDiff)
 			}
 
 			return
@@ -415,7 +418,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		}
 	}
 
-	state.hoveredNode = find_hovered_node(node, x, y)
+	state.hoveredNode = find_hovered_resize_bar(node, x, y)
 
 	cursorWanted := rl.MouseCursor.DEFAULT
 	if state.hoveredNode != nil {
