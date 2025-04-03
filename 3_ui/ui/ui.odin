@@ -44,15 +44,17 @@ Node :: struct {
 }
 
 UserInterfaceState :: struct {
-	hoveredNode: ^Node,
-	selectedNode: ^Node,
-	selectedNodeIndexInParent: int,
 	lastFrameCursor: rl.MouseCursor,
+	hoveredNode: ^Node,
+	selectedResizeBar: ^Node,
+	selectedResizeBarIndexInParent: int,
+	resizeBarStartX: i32,
+	resizeBarStartY: i32,
 }
 
 ui_state_default_values :: proc() -> UserInterfaceState {
 	return UserInterfaceState{
-		selectedNodeIndexInParent = -1
+		selectedResizeBarIndexInParent = -1
 	}
 }
 
@@ -392,29 +394,34 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 }
 
 // Call this on your root node
+// FIXME: I think left-clicking has a 1-frame delay. Could add a test for that
 handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	x := rl.GetMouseX()
 	y := rl.GetMouseY()
 
-	if state.selectedNode != nil {
-		if state.selectedNodeIndexInParent == -1 {
-			state.selectedNodeIndexInParent = index_of_node_in_parent_split(state.selectedNode)
+	if state.selectedResizeBar != nil {
+		if state.selectedResizeBarIndexInParent == -1 {
+			state.resizeBarStartX = x
+			state.resizeBarStartY = y
+			state.selectedResizeBarIndexInParent = index_of_node_in_parent_split(state.selectedResizeBar)
 		}
 
 		if rl.IsMouseButtonDown(.LEFT) {
-			#partial switch &e in state.selectedNode.parent.element {
+			#partial switch &e in state.selectedResizeBar.parent.element {
 				case VerticalSplit:
-					xDiff := x - (state.selectedNode.x + state.selectedNode.w - 1)
+					//xDiff := x - (state.selectedResizeBar.x + state.selectedResizeBar.w - 1)
+					xDiff := x - state.resizeBarStartX
 					fmt.println(xDiff)
 				case HorizontalSplit:
-					yDiff := y - (state.selectedNode.y + state.selectedNode.h - 1)
+					//yDiff := y - (state.selectedResizeBar.y + state.selectedResizeBar.h - 1)
+					yDiff := y - state.resizeBarStartY
 					fmt.println(yDiff)
 			}
 
 			return
 		} else {
-			state.selectedNode = nil
-			state.selectedNodeIndexInParent = -1
+			state.selectedResizeBar = nil
+			state.selectedResizeBarIndexInParent = -1
 		}
 	}
 
@@ -436,7 +443,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	state.lastFrameCursor = cursorWanted
 
 	if rl.IsMouseButtonDown(.LEFT) {
-		state.selectedNode = state.hoveredNode
+		state.selectedResizeBar = state.hoveredNode
 	}
 }
 
@@ -455,7 +462,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
 
 				c := u8(70)
-				if child == state.hoveredNode || child == state.selectedNode {
+				if child == state.hoveredNode || child == state.selectedResizeBar {
 					c = 255
 				}
 				rl.DrawRectangle(x, y, 1, child.h, {c,c,c,255})
@@ -479,7 +486,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 				//nParents := n_parents(child)
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
 				c := u8(70)
-				if child == state.hoveredNode || child == state.selectedNode {
+				if child == state.hoveredNode || child == state.selectedResizeBar {
 					c = 255
 				}
 				rl.DrawRectangle(x, y, child.w, 1, {c,c,c,255})
@@ -493,18 +500,21 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
+			rl.DrawRectangle(node.x+1, node.y+1, 12, 12, {0,0,255,255})
 	}
 }
 
 vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	node := new(Node)
-	n := new(VerticalSplit)
+	n := VerticalSplit{}
+
 	for &inNode in nodes {
 		inNode.parent = node
 		inNode.minimumSize = 100
 		append(&n.children, inNode)
 	}
-	node.element = n^
+
+	node.element = n
 	node.w = 1
 	node.h = 1
 	node.minimumSize = 100
@@ -513,15 +523,57 @@ vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 
 horizontal_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	node := new(Node)
-	n := new(HorizontalSplit)
+	n := HorizontalSplit{}
+
 	for &inNode in nodes {
 		inNode.parent = node
 		inNode.minimumSize = 100
 		append(&n.children, inNode)
 	}
-	node.element = n^
+
+	node.element = n
 	node.w = 1
 	node.h = 1
 	node.minimumSize = 100
 	return node
+}
+
+delete_node_and_its_children :: proc(node: ^Node) {
+	switch &e in node.element {
+		case VerticalSplit:
+			for &child in e.children {
+				delete_node_and_its_children(child)
+			}
+
+			delete(e.children)
+			free(node)
+		case HorizontalSplit:
+			for &child in e.children {
+				delete_node_and_its_children(child)
+			}
+
+			delete(e.children)
+			free(node)
+		case DebugSquare:
+			free(node)
+	}
+}
+
+// Remember to delete() the return value!
+get_me_some_debug_squares :: proc(numBoxes: int) -> (boxes: []^Node) {
+	boxes = make([]^Node, numBoxes)
+
+	for i := 0; i < numBoxes; i += 1 {
+		ds: DebugSquare
+		c: u8 = u8(i) * 20
+		ds.color = {c, c, c, 255}
+
+		node := new(Node)
+		node.element = ds
+		node.w = 1
+		node.h = 1
+		boxes[i] = node
+	}
+
+	return
 }

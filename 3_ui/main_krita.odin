@@ -19,7 +19,8 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 
-	nBoxes := 7
+	//nBoxes := 7
+	nBoxes := 8
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
 		ds: ui.DebugSquare
@@ -34,7 +35,8 @@ main :: proc() {
 	}
 
 //	horizSplit1 := ui.horizontal_split_from_nodes(boxes[2:])
-	horizSplit1 := ui.horizontal_split_from_nodes(boxes[3:])
+//	horizSplit1 := ui.horizontal_split_from_nodes(boxes[3:])
+	horizSplit1 := ui.horizontal_split_from_nodes(boxes[4:])
 	horizSplit1.element.(ui.HorizontalSplit).children[0].preferNotResize = true
 	horizSplit1.element.(ui.HorizontalSplit).children[2].preferNotResize = true
 	horizSplit1.element.(ui.HorizontalSplit).children[3].preferNotResize = true
@@ -45,8 +47,8 @@ main :: proc() {
 	vert1.element.(ui.VerticalSplit).children[2].preferNotResize = true
 	vert1.element.(ui.VerticalSplit).children[2].minimumSize = 264
 
-	//horizSplit2 := ui.horizontal_split_from_nodes({boxes[2], vert1})
-	horizSplit2 := ui.horizontal_split_from_nodes({vert1, boxes[2]})
+	//horizSplit2 := ui.horizontal_split_from_nodes({vert1, boxes[2]})
+	horizSplit2 := ui.horizontal_split_from_nodes({vert1, ui.vertical_split_from_nodes(boxes[2:4])})
 	boxes[2].preferNotResize = true
 
 	//rootNode := vert1
