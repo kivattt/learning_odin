@@ -220,7 +220,7 @@ try_resize_child :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
 	return 0
 }
 
-try_resize_preferred_child :: proc(rootNode: ^Node, rootNodeChildren: []^Node, preferredChildIndex: int, diff: i32) {
+try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, diff: i32) {
 	if diff == 0 {
 		return
 	}
@@ -234,12 +234,9 @@ try_resize_preferred_child :: proc(rootNode: ^Node, rootNodeChildren: []^Node, p
 
 		respectMinimumSize := diffCopy < 0 ? true : false
 
-		resizeableIndex := preferredChildIndex
-		if preferredChildIndex == -1 || (respectMinimumSize && rootNodeChildren[resizeableIndex].w <= rootNodeChildren[resizeableIndex].minimumSize) {
-			resizeableIndex = find_resizeable_child_index(rootNode, respectMinimumSize)
-			if resizeableIndex == -1 {
-				break
-			}
+		resizeableIndex := find_resizeable_child_index(rootNode, respectMinimumSize)
+		if resizeableIndex == -1 {
+			break
 		}
 
 		diffCopy = try_resize_child(rootNodeChildren[resizeableIndex], resizeableIndex, diffCopy)
@@ -267,7 +264,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			diff := node.w - widthSum
-			try_resize_preferred_child(node, e.children[:], -1, diff)
+			try_resize_children_to_fit(node, e.children[:], diff)
 
 			for &child in e.children {
 				recompute_children_boxes(child)
@@ -288,7 +285,7 @@ recompute_children_boxes :: proc(node: ^Node) {
 			}
 
 			diff := node.h - heightSum
-			try_resize_preferred_child(node, e.children[:], -1, diff)
+			try_resize_children_to_fit(node, e.children[:], diff)
 
 			for &child in e.children {
 				recompute_children_boxes(child)
@@ -409,11 +406,13 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 			#partial switch &e in state.selectedResizeBar.parent.element {
 				case VerticalSplit:
 					xDiff := x - state.resizeBarStartX
-					try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, xDiff)
+					state.resizeBarStartX += xDiff
+					//try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, xDiff)
 					fmt.println(xDiff)
 				case HorizontalSplit:
 					yDiff := y - state.resizeBarStartY
-					try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, yDiff)
+					state.resizeBarStartY += yDiff
+					//try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, yDiff)
 					fmt.println(yDiff)
 			}
 
