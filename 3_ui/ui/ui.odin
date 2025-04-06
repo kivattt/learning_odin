@@ -311,8 +311,6 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 					e.children[i].x += diffCopy
 				}
 			}
-
-			return remainder
 		case HorizontalSplit:
 			// TODO: Do the horizontal split aswell
 	}
