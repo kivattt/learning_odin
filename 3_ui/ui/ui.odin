@@ -317,8 +317,7 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 			// TODO: Do the horizontal split aswell
 	}
 
-	assert(false)
-	return 0
+	return remainder
 }
 
 resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) {
