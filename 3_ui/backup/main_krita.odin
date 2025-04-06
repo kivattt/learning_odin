@@ -76,12 +76,14 @@ main :: proc() {
 		rootNode.h = rl.GetScreenHeight()
 
 		t = time.now()
-		ui.recompute_children_boxes(rootNode)
-		if debug do fmt.println("recompute_children_boxes() time:", time.since(t))
-
-		t = time.now()
 		ui.handle_input(rootNode, &state)
 		if debug do fmt.println("handle_input()             time:", time.since(t))
+
+		t = time.now()
+		if true || rl.IsKeyPressed(.F5) {
+			ui.recompute_children_boxes(rootNode)
+		}
+		if debug do fmt.println("recompute_children_boxes() time:", time.since(t))
 
 		t = time.now()
 		ui.draw(rootNode, &state)

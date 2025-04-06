@@ -21,7 +21,7 @@ main :: proc() {
 	rootNode.h = rl.GetScreenHeight()
 	ui.scale_up_children(rootNode)
 
-	state := ui.ui_state_default_values()
+	state: ui.UserInterfaceState
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
@@ -31,7 +31,9 @@ main :: proc() {
 		rootNode.h = rl.GetScreenHeight()
 
 		ui.handle_input(rootNode, &state)
-		ui.recompute_children_boxes(rootNode)
+		if rl.IsKeyPressed(.F5) {
+			ui.recompute_children_boxes(rootNode)
+		}
 		ui.draw(rootNode, &state)
 
 		rl.DrawFPS(5, 5)

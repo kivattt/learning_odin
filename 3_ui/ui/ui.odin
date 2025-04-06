@@ -143,7 +143,7 @@ resize_vert :: proc(vert: ^VerticalSplit, index: int, diff: i32) {
 }
 
 // Returns -1 when none found
-// TODO: Could make a separate function for resizing up, since it would prob only return first that wants resize or 0
+// TODO: Could make a separate function for (window) resizing up, since it would prob only return first that wants resize or 0
 find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> int {
 	secondChoice := -1
 
@@ -184,7 +184,7 @@ find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> in
 
 // Returns the amount not yet resized.
 // Returns 0 if done resizing.
-try_resize_child :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
+resize_child_until_minimum_size_for_window_resize :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
 	diffCopy := diff
 
 	#partial switch &e in node.parent.element {
@@ -220,6 +220,137 @@ try_resize_child :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
 	return 0
 }
 
+// direction: -1 for previous, 1 for next
+// Returns -1 if none found.
+find_first_resizeable_child_index :: proc(parentSplitNode: ^Node, index: int, direction: int) -> int {
+	directionCopy := direction
+
+	#partial switch &e in parentSplitNode.element {
+		case VerticalSplit:
+			if directionCopy == -1 { // Above/previous
+				for i := index; i >= 0; i -= 1 {
+					if e.children[i].w > e.children[i].minimumSize {
+						return i
+					}
+				}
+			} else if directionCopy == 1 { // Below/next
+				for i := index + 1; i < len(e.children); i += 1 {
+					if e.children[i].w > e.children[i].minimumSize {
+						return i
+					}
+				}
+			}
+		case HorizontalSplit:
+			if directionCopy == -1 { // Above/previous
+				for i := index; i >= 0; i -= 1 {
+					if e.children[i].h > e.children[i].minimumSize {
+						return i
+					}
+				}
+			} else if directionCopy == 1 { // Below/next
+				for i := index + 1; i < len(e.children); i += 1 {
+					if e.children[i].h > e.children[i].minimumSize {
+						return i
+					}
+				}
+			}
+	}
+
+	return -1
+}
+
+// Returns the amount not yet resized (remainder).
+// Returns 0 if done resizing.
+resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resizeableIndex: int, selectedIndex: int, diff: i32) -> i32 {
+	diffCopy := diff
+	remainder: i32 = 0
+
+	#partial switch &e in node.element {
+		case VerticalSplit:
+			resizeableChild := e.children[resizeableIndex]
+			selectedChild := e.children[selectedIndex]
+
+			if diffCopy < 0 {
+				newSize := resizeableChild.w + diffCopy
+				if newSize < resizeableChild.minimumSize {
+					remainder = newSize - resizeableChild.minimumSize
+					diffCopy -= remainder
+					remainder = 0 // Done resizing.
+				}
+			} else {
+				newSize := resizeableChild.w - diffCopy
+				if newSize < resizeableChild.minimumSize {
+					remainder = newSize - resizeableChild.minimumSize
+					diffCopy += remainder
+					remainder = 0 // Done resizing.
+				}
+			}
+
+			if diffCopy < 0 {
+				assert(resizeableIndex <= selectedIndex)
+
+				resizeableChild.w += diffCopy
+				assert(resizeableChild.w >= resizeableChild.minimumSize)
+
+				e.children[selectedIndex + 1].x += diffCopy
+				e.children[selectedIndex + 1].w -= diffCopy
+				assert(e.children[selectedIndex + 1].w >= e.children[selectedIndex + 1].minimumSize)
+
+				for i := resizeableIndex + 1; i < selectedIndex + 1; i += 1 {
+					e.children[i].x += diffCopy
+				}
+			} else if diffCopy > 0 {
+				assert(resizeableIndex > selectedIndex)
+
+				selectedChild.w += diffCopy
+				assert(selectedChild.w >= selectedChild.minimumSize)
+
+				resizeableChild.x += diffCopy
+				resizeableChild.w -= diffCopy
+				assert(resizeableChild.w >= resizeableChild.minimumSize)
+
+				for i := selectedIndex + 1; i < resizeableIndex; i += 1 {
+					e.children[i].x += diffCopy
+				}
+			}
+
+			return remainder
+		case HorizontalSplit:
+			// TODO: Do the horizontal split aswell
+	}
+
+	assert(false)
+	return 0
+}
+
+resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) {
+	if diff == 0 {
+		return
+	}
+
+
+	diffCopy := diff
+
+	iterations := 0
+	for {
+		iterations += 1
+		assert(iterations < 10000) // Infinite loop check
+
+		direction := diffCopy < 0 ? -1 : 1
+
+		// The index which we're going to lower its size
+		resizeableIndex := find_first_resizeable_child_index(parentSplitNode, index, direction)
+		if resizeableIndex == -1 {
+			break
+		}
+
+		diffCopy = resize_child_until_minimum_size_for_individual_resize(parentSplitNode, resizeableIndex, index, diffCopy)
+		if diffCopy == 0 {
+			break
+		}
+	}
+}
+
 try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, diff: i32) {
 	if diff == 0 {
 		return
@@ -239,7 +370,7 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 			break
 		}
 
-		diffCopy = try_resize_child(rootNodeChildren[resizeableIndex], resizeableIndex, diffCopy)
+		diffCopy = resize_child_until_minimum_size_for_window_resize(rootNodeChildren[resizeableIndex], resizeableIndex, diffCopy)
 		if diffCopy == 0 {
 			break
 		}
@@ -407,13 +538,11 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 				case VerticalSplit:
 					xDiff := x - state.resizeBarStartX
 					state.resizeBarStartX += xDiff
-					//try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, xDiff)
-					fmt.println(xDiff)
+					resize_individual_child(state.selectedResizeBar.parent, state.selectedResizeBarIndexInParent, xDiff)
 				case HorizontalSplit:
 					yDiff := y - state.resizeBarStartY
 					state.resizeBarStartY += yDiff
-					//try_resize_preferred_child(state.selectedResizeBar.parent, e.children[:], state.selectedResizeBarIndexInParent, yDiff)
-					fmt.println(yDiff)
+					resize_individual_child(state.selectedResizeBar.parent, state.selectedResizeBarIndexInParent, yDiff)
 			}
 
 			return
@@ -467,8 +596,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if false || n_parents(child) == 3 {
-					cString := fmt.ctprintf("{}", child.w)
+				if true || n_parents(child) == 3 {
+					//cString := fmt.ctprintf("{}", child.w)
+					cString := fmt.ctprintf("{}", child.minimumSize)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -491,8 +621,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if false || n_parents(child) == 3 {
-					cString := fmt.ctprintf("{}", child.h)
+				if true || n_parents(child) == 3 {
+					//cString := fmt.ctprintf("{}", child.h)
+					cString := fmt.ctprintf("{}", child.minimumSize)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
