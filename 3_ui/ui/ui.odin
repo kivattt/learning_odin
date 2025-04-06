@@ -270,27 +270,14 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 			resizeableChild := e.children[resizeableIndex]
 			selectedChild := e.children[selectedIndex]
 
-			/*newSize := resizeableChild.w - abs(diffCopy)
+			newSize := resizeableChild.w - abs(diffCopy)
 			if newSize < resizeableChild.minimumSize {
 				remainder = newSize - resizeableChild.minimumSize
 
-				remainder = 0
-			}*/
-			
-			if diffCopy < 0 {
-				newSize := resizeableChild.w + diffCopy
-				if newSize < resizeableChild.minimumSize {
-					remainder = newSize - resizeableChild.minimumSize
-					diffCopy -= remainder
-				}
-			} else {
-				newSize := resizeableChild.w - diffCopy
-				if newSize < resizeableChild.minimumSize {
-					remainder = newSize - resizeableChild.minimumSize
-					diffCopy += remainder
-
+				if diffCopy > 0 {
 					remainder = -remainder
 				}
+				diffCopy -= remainder
 			}
 
 			if diffCopy < 0 {
