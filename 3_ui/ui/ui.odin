@@ -358,13 +358,14 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 	return remainder
 }
 
-resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) {
+// Returns how much we moved
+resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) -> i32 {
 	if diff == 0 {
-		return
+		return 0
 	}
 
-
 	diffCopy := diff
+	howMuchWeMoved: i32 = 0
 
 	iterations := 0
 	for {
@@ -379,11 +380,15 @@ resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) {
 			break
 		}
 
+		howMuchWeMoved += diffCopy
 		diffCopy = resize_child_until_minimum_size_for_individual_resize(parentSplitNode, resizeableIndex, index, diffCopy)
+		howMuchWeMoved -= diffCopy
 		if diffCopy == 0 {
 			break
 		}
 	}
+
+	return howMuchWeMoved
 }
 
 try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, diff: i32) {
@@ -572,12 +577,12 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 			#partial switch &e in state.selectedResizeBar.parent.element {
 				case VerticalSplit:
 					xDiff := x - state.resizeBarStartX
-					state.resizeBarStartX += xDiff
-					resize_individual_child(state.selectedResizeBar.parent, state.selectedResizeBarIndexInParent, xDiff)
+					howMuchWeMoved := resize_individual_child(state.selectedResizeBar.parent, state.selectedResizeBarIndexInParent, xDiff)
+					state.resizeBarStartX += howMuchWeMoved
 				case HorizontalSplit:
 					yDiff := y - state.resizeBarStartY
-					state.resizeBarStartY += yDiff
-					resize_individual_child(state.selectedResizeBar.parent, state.selectedResizeBarIndexInParent, yDiff)
+					howMuchWeMoved := resize_individual_child(state.selectedResizeBar.parent, state.selectedResizeBarIndexInParent, yDiff)
+					state.resizeBarStartY += howMuchWeMoved
 			}
 
 			return
