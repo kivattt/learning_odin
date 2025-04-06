@@ -68,7 +68,8 @@ n_parents :: proc(node: ^Node) -> int {
 	return sum
 }
 
-// FIXME: Doesn't respect minimumSize
+// Scales up all children to the node's size.
+// It respects their minimum sizes.
 scale_up_children :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
@@ -88,15 +89,13 @@ scale_up_children :: proc(node: ^Node) {
 					child.x = currX
 
 					if i == len(e.children) - 1 {
-						child.w = node.w - (currX - node.x)
+						child.w = max(child.minimumSize, node.w - (currX - node.x))
 					} else {
-						child.w = i32(math.ceil(f64(child.w) * ratio))
+						child.w = max(child.minimumSize, i32(math.ceil(f64(child.w) * ratio)))
 					}
 
 					currX += child.w
 				}
-
-				assert(currX - node.x == node.w)
 			}
 
 			for &child in e.children {
@@ -118,15 +117,13 @@ scale_up_children :: proc(node: ^Node) {
 					child.y = currY
 
 					if i == len(e.children) - 1 {
-						child.h = node.h - (currY - node.y)
+						child.h = max(child.minimumSize, node.h - (currY - node.y))
 					} else {
-						child.h = i32(math.ceil(f64(child.h) * ratio))
+						child.h = max(child.minimumSize, i32(math.ceil(f64(child.h) * ratio)))
 					}
 
 					currY += child.h
 				}
-
-				assert(currY - node.y == node.h)
 			}
 
 			for &child in e.children {
@@ -312,7 +309,50 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 				}
 			}
 		case HorizontalSplit:
-			// TODO: Do the horizontal split aswell
+			resizeableChild := e.children[resizeableIndex]
+			selectedChild := e.children[selectedIndex]
+
+			newSize := resizeableChild.h - abs(diffCopy)
+			if newSize < resizeableChild.minimumSize {
+				remainder = newSize - resizeableChild.minimumSize
+
+				if diffCopy > 0 {
+					remainder = -remainder
+				}
+				diffCopy -= remainder
+			}
+
+			if diffCopy < 0 {
+				assert(resizeableIndex <= selectedIndex)
+
+				e.children[selectedIndex + 1].y += diffCopy
+				e.children[selectedIndex + 1].h -= diffCopy
+				assert(e.children[selectedIndex + 1].h >= e.children[selectedIndex + 1].minimumSize)
+
+				// Change size of the resizeable child
+				resizeableChild.h += diffCopy
+				assert(resizeableChild.h >= resizeableChild.minimumSize)
+
+				// Move all the ones inbetween
+				for i := resizeableIndex + 1; i < selectedIndex + 1; i += 1 {
+					e.children[i].y += diffCopy
+				}
+			} else if diffCopy > 0 {
+				assert(resizeableIndex > selectedIndex)
+
+				selectedChild.h += diffCopy
+				assert(selectedChild.h >= selectedChild.minimumSize)
+
+				// Change size of the resizeable child
+				resizeableChild.y += diffCopy
+				resizeableChild.h -= diffCopy
+				assert(resizeableChild.h >= resizeableChild.minimumSize)
+
+				// Move all the ones inbetween
+				for i := selectedIndex + 1; i < resizeableIndex; i += 1 {
+					e.children[i].y += diffCopy
+				}
+			}
 	}
 
 	return remainder
@@ -591,9 +631,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if true || n_parents(child) == 3 {
-					//cString := fmt.ctprintf("{}", child.w)
-					cString := fmt.ctprintf("{}", child.minimumSize)
+				if false && n_parents(child) == 3 {
+					cString := fmt.ctprintf("{}", child.w)
+					//cString := fmt.ctprintf("{}", child.minimumSize)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
@@ -616,15 +656,15 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 
 			for child in n.children {
-				if true || n_parents(child) == 3 {
-					//cString := fmt.ctprintf("{}", child.h)
-					cString := fmt.ctprintf("{}", child.minimumSize)
+				if false && n_parents(child) == 3 {
+					cString := fmt.ctprintf("{}", child.h)
+					//cString := fmt.ctprintf("{}", child.minimumSize)
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
-			rl.DrawRectangle(node.x+1, node.y+1, 12, 12, {0,0,255,255})
+			//rl.DrawRectangle(node.x+1, node.y+1, 12, 12, {0,0,255,255})
 	}
 }
 
