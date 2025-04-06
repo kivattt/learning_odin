@@ -283,13 +283,15 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 			if diffCopy < 0 {
 				assert(resizeableIndex <= selectedIndex)
 
-				resizeableChild.w += diffCopy
-				assert(resizeableChild.w >= resizeableChild.minimumSize)
-
 				e.children[selectedIndex + 1].x += diffCopy
 				e.children[selectedIndex + 1].w -= diffCopy
 				assert(e.children[selectedIndex + 1].w >= e.children[selectedIndex + 1].minimumSize)
 
+				// Change size of the resizeable child
+				resizeableChild.w += diffCopy
+				assert(resizeableChild.w >= resizeableChild.minimumSize)
+
+				// Move all the ones inbetween
 				for i := resizeableIndex + 1; i < selectedIndex + 1; i += 1 {
 					e.children[i].x += diffCopy
 				}
@@ -299,10 +301,12 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 				selectedChild.w += diffCopy
 				assert(selectedChild.w >= selectedChild.minimumSize)
 
+				// Change size of the resizeable child
 				resizeableChild.x += diffCopy
 				resizeableChild.w -= diffCopy
 				assert(resizeableChild.w >= resizeableChild.minimumSize)
 
+				// Move all the ones inbetween
 				for i := selectedIndex + 1; i < resizeableIndex; i += 1 {
 					e.children[i].x += diffCopy
 				}
