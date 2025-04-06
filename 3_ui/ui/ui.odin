@@ -45,6 +45,8 @@ Node :: struct {
 
 UserInterfaceState :: struct {
 	lastFrameCursor: rl.MouseCursor,
+	lastMouse1Pressed: bool,
+
 	hoveredNode: ^Node,
 	selectedResizeBar: ^Node,
 	selectedResizeBarIndexInParent: int,
@@ -566,6 +568,8 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	x := rl.GetMouseX()
 	y := rl.GetMouseY()
 
+	isLeftDown := rl.IsMouseButtonDown(.LEFT)
+
 	if state.selectedResizeBar != nil {
 		if state.selectedResizeBarIndexInParent == -1 {
 			state.resizeBarStartX = x
@@ -573,7 +577,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 			state.selectedResizeBarIndexInParent = index_of_node_in_parent_split(state.selectedResizeBar)
 		}
 
-		if rl.IsMouseButtonDown(.LEFT) {
+		if isLeftDown {
 			#partial switch &e in state.selectedResizeBar.parent.element {
 				case VerticalSplit:
 					xDiff := x - state.resizeBarStartX
@@ -609,9 +613,11 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	}
 	state.lastFrameCursor = cursorWanted
 
-	if rl.IsMouseButtonDown(.LEFT) {
+	if isLeftDown && !state.lastMouse1Pressed {
 		state.selectedResizeBar = state.hoveredNode
 	}
+
+	state.lastMouse1Pressed = isLeftDown
 }
 
 draw :: proc(node: ^Node, state: ^UserInterfaceState) {
