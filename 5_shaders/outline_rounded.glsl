@@ -11,12 +11,13 @@ void main() {
 	int w = box.z;
 	int h = box.w;
 
+	// Cap the pixels_rounded value
+	int pixels_rounded = min(min(w,h) / 2, pixels_rounded_in);
+
 	int realX = int(gl_FragCoord.x - x);
 	int realY = int((screen_height - gl_FragCoord.y) - y);
 
 	float val = 0;
-
-	int pixels_rounded = min(min(w,h) / 2, pixels_rounded_in);
 
 	// Straight lines
 	if (realX == 0 || realX == w-1) {
@@ -30,14 +31,9 @@ void main() {
 	}
 
 	int maxDistance = 2 * pixels_rounded*pixels_rounded;
-	float steepness = pixels_rounded;
-	if (pixels_rounded < 6) {
-		steepness = pixels_rounded * 1.5;
-	}
-	float theOffset = steepness / 2 - 1;
+	float steepness = pixels_rounded * max(1.0, 1.7 - float(pixels_rounded)/20);
 
 	bool corner = true;
-
 	int relativeX = 0;
 	int relativeY = 0;
 	if (realX < pixels_rounded && realY < pixels_rounded ) { // Top-left corner
@@ -58,9 +54,8 @@ void main() {
 
 	if (corner) {
 		float distance = float(relativeX*relativeX + relativeY*relativeY) / maxDistance;
-		val = 1 - (steepness * distance - theOffset) * (steepness * distance - theOffset);
+		val = 1 - (steepness * distance - (steepness/2 - 1)) * (steepness * distance - (steepness/2 - 1));
 	}
-
 
 	gl_FragColor = vec4(color.x, color.y, color.z, val * color.w);
 }

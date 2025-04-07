@@ -1,6 +1,7 @@
 package main
 
 import "core:math"
+import "core:fmt"
 import rl "vendor:raylib"
 import rlgl "vendor:raylib/rlgl"
 
@@ -70,6 +71,7 @@ main :: proc() {
 		pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(200))
 		//pixelsRounded := i32((math.sin(time) + 1) * 16)
 		//pixelsRounded := 4 + i32((math.sin(time) + 1) * 4)
+		fmt.println(pixelsRounded)
 
 		//rl.DrawRectangle(x-1, y-1, w+2, h+2, {0,75,0,255})
 
