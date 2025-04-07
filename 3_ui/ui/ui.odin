@@ -9,12 +9,23 @@ import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
 import "core:math"
+import "core:c"
+
+PASSIVE_COLOR :: 70
+HOVERED_COLOR :: 150
 
 Box :: struct {
 	x: i32,
 	y: i32,
 	w: i32,
 	h: i32,
+}
+
+Color :: struct {
+	r: f32,
+	g: f32,
+	b: f32,
+	a: f32,
 }
 
 VerticalSplit :: struct {
@@ -25,12 +36,19 @@ HorizontalSplit :: struct {
 	children: [dynamic]^Node,
 }
 
+Button :: struct {
+	pixels_rounded: i32,
+	color: rl.Color,
+	backgroundColor: rl.Color,
+}
+
 DebugSquare :: struct {
 	color: rl.Color,
 }
 
 Element :: union {
 	DebugSquare,
+	Button,
 	VerticalSplit,
 	HorizontalSplit,
 }
@@ -39,6 +57,7 @@ Node :: struct {
 	parent: ^Node,
 	element: Element,
 	using box: Box,
+	innerBox: Box,
 	preferNotResize: bool, // Used when in a VerticalSplit/HorizontalSplit
 	minimumSize: i32, // Used when in a VerticalSplit/HorizontalSplit
 }
@@ -48,10 +67,50 @@ UserInterfaceState :: struct {
 	lastMouse1Pressed: bool,
 
 	hoveredNode: ^Node,
+
+	hoveredResizeBar: ^Node,
 	selectedResizeBar: ^Node,
 	selectedResizeBarIndexInParent: int,
 	resizeBarStartX: i32,
 	resizeBarStartY: i32,
+}
+
+UiColors :: struct {
+	passiveColor: u8,
+	hoveredColor: u8,
+}
+
+UserInterfaceData :: struct {
+	colors: UiColors,
+
+	buttonShader: rl.Shader,
+	buttonShaderBoxLoc: c.int,
+	buttonShaderScreenHeightLoc: c.int,
+	buttonShaderColorLoc: c.int,
+	buttonShaderPixelsRoundedLoc: c.int,
+}
+
+get_default_ui_colors :: proc() -> UiColors {
+	return UiColors{
+		passiveColor = PASSIVE_COLOR,
+		hoveredColor = HOVERED_COLOR,
+	}
+}
+
+init_ui_data :: proc() -> UserInterfaceData {
+	ret := UserInterfaceData{}
+	ret.colors = get_default_ui_colors()
+
+	ret.buttonShader = rl.LoadShader(nil, "ui/shaders/outline_rounded.glsl") // FIXME: Use filepath join
+	ret.buttonShaderBoxLoc = rl.GetShaderLocation(ret.buttonShader, "box")
+	ret.buttonShaderScreenHeightLoc = rl.GetShaderLocation(ret.buttonShader, "screen_height")
+	ret.buttonShaderColorLoc = rl.GetShaderLocation(ret.buttonShader, "color")
+	ret.buttonShaderPixelsRoundedLoc = rl.GetShaderLocation(ret.buttonShader, "pixels_rounded_in")
+	return ret
+}
+
+deinit_ui_data :: proc(uiData: ^UserInterfaceData) {
+	rl.UnloadShader(uiData.buttonShader)
 }
 
 ui_state_default_values :: proc() -> UserInterfaceState {
@@ -146,7 +205,7 @@ resize_vert :: proc(vert: ^VerticalSplit, index: int, diff: i32) {
 find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> int {
 	secondChoice := -1
 
-	switch &e in node.element {
+	#partial switch &e in node.element {
 		case VerticalSplit:
 			for child, index in e.children {
 				if respectMinimumSize && child.w <= child.minimumSize {
@@ -175,7 +234,6 @@ find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> in
 					secondChoice = index
 				}
 			}
-		case DebugSquare:
 	}
 
 	return secondChoice
@@ -419,6 +477,15 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 	}
 }
 
+inner_box_from_box :: proc(box: Box) -> Box {
+	return Box{
+		x = box.x + 5,
+		y = box.y + 5,
+		w = box.w - 10 - 1, // Resize bar size
+		h = box.h - 10,
+	}
+}
+
 recompute_children_boxes :: proc(node: ^Node) {
 	#partial switch &e in node.element {
 		case VerticalSplit:
@@ -439,8 +506,11 @@ recompute_children_boxes :: proc(node: ^Node) {
 			diff := node.w - widthSum
 			try_resize_children_to_fit(node, e.children[:], diff)
 
+			//node.innerBox = inner_box_from_box(node.box)
+
 			for &child in e.children {
 				recompute_children_boxes(child)
+				child.innerBox = inner_box_from_box(child.box)
 			}
 		case HorizontalSplit:
 			heightSum: i32 = 0
@@ -460,8 +530,11 @@ recompute_children_boxes :: proc(node: ^Node) {
 			diff := node.h - heightSum
 			try_resize_children_to_fit(node, e.children[:], diff)
 
+			//node.innerBox = inner_box_from_box(node.box)
+
 			for &child in e.children {
 				recompute_children_boxes(child)
+				child.innerBox = inner_box_from_box(child.box)
 			}
 	}
 }
@@ -523,8 +596,40 @@ index_of_node_in_parent_split :: proc(node: ^Node) -> int {
 	return -1
 }
 
+find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
+	switch &e in node.element {
+		case VerticalSplit:
+			for child in e.children {
+				found := find_hovered_node(child, x, y)
+				if found != nil {
+					return found
+				}
+			}
+		case HorizontalSplit:
+			for child in e.children {
+				found := find_hovered_node(child, x, y)
+				if found != nil {
+					return found
+				}
+			}
+		case DebugSquare:
+			if x >= node.x && x <= node.x + node.w {
+				if y >= node.y && y <= node.y + node.h {
+					return node
+				}
+			}
+		case Button:
+			if x >= node.x && x <= node.x + node.w {
+				if y >= node.y && y <= node.y + node.h {
+					return node
+				}
+			}
+	}
+
+	return nil
+}
+
 find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
-	//horizBarPositions, vertBarPositions := get_resizeable_children(node)
 	vertBarPositions, horizBarPositions := get_resizeable_children(node)
 	defer {
 		delete(vertBarPositions)
@@ -565,6 +670,13 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 // Call this on your root node
 // FIXME: I think left-clicking has a 1-frame delay. Could add a test for that
 handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
+	if !rl.IsWindowFocused() {
+		state.hoveredResizeBar = nil
+		state.selectedResizeBar = nil
+		state.hoveredNode = nil
+		return
+	}
+
 	x := rl.GetMouseX()
 	y := rl.GetMouseY()
 
@@ -596,16 +708,20 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 		}
 	}
 
-	state.hoveredNode = find_hovered_resize_bar(node, x, y)
+	state.hoveredResizeBar = find_hovered_resize_bar(node, x, y)
 
 	cursorWanted := rl.MouseCursor.DEFAULT
-	if state.hoveredNode != nil {
-		#partial switch &e in state.hoveredNode.parent.element {
+	if state.hoveredResizeBar != nil {
+		state.hoveredNode = nil
+
+		#partial switch &e in state.hoveredResizeBar.parent.element {
 			case VerticalSplit:
 				cursorWanted = rl.MouseCursor.RESIZE_EW
 			case HorizontalSplit:
 				cursorWanted = rl.MouseCursor.RESIZE_NS
 		}
+	} else {
+		state.hoveredNode = find_hovered_node(node, x, y)
 	}
 
 	if cursorWanted != state.lastFrameCursor {
@@ -614,17 +730,17 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	state.lastFrameCursor = cursorWanted
 
 	if isLeftDown && !state.lastMouse1Pressed {
-		state.selectedResizeBar = state.hoveredNode
+		state.selectedResizeBar = state.hoveredResizeBar
 	}
 
 	state.lastMouse1Pressed = isLeftDown
 }
 
-draw :: proc(node: ^Node, state: ^UserInterfaceState) {
+draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32) {
 	switch n in node.element {
 		case VerticalSplit:
 			for child in n.children {
-				draw(child, state)
+				draw(child, state, uiData, screenHeight)
 			}
 
 			for child in n.children[:max(0, len(n.children)-1)] {
@@ -634,9 +750,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 				//nParents := n_parents(child)
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
 
-				c := u8(70)
-				if child == state.hoveredNode || child == state.selectedResizeBar {
-					c = 255
+				c := uiData.colors.passiveColor
+				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
+					c = uiData.colors.hoveredColor
 				}
 				rl.DrawRectangle(x, y, 1, child.h, {c,c,c,255})
 			}
@@ -650,7 +766,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 		case HorizontalSplit:
 			for child in n.children {
-				draw(child, state)
+				draw(child, state, uiData, screenHeight)
 			}
 
 			for child in n.children[:max(0, len(n.children)-1)] {
@@ -659,9 +775,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 
 				//nParents := n_parents(child)
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-				c := u8(70)
-				if child == state.hoveredNode || child == state.selectedResizeBar {
-					c = 255
+				c := uiData.colors.passiveColor
+				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
+					c = uiData.colors.hoveredColor
 				}
 				rl.DrawRectangle(x, y, child.w, 1, {c,c,c,255})
 			}
@@ -675,7 +791,34 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState) {
 			}
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
-			//rl.DrawRectangle(node.x+1, node.y+1, 12, 12, {0,0,255,255})
+			//rl.DrawRectangle(node.innerBox.x, node.innerBox.y, node.innerBox.w, node.innerBox.h, n.color)
+		case Button:
+			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.backgroundColor)
+
+			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &node.innerBox, .IVEC4)
+			screenHeightThing := screenHeight
+			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
+
+			color := Color{
+				r = f32(n.color.r) / 255,
+				g = f32(n.color.g) / 255,
+				b = f32(n.color.b) / 255,
+				a = f32(n.color.a) / 255,
+			}
+
+			if state.hoveredNode == node {
+				c := f32(uiData.colors.hoveredColor) / 255
+				color = {c,c,c,1}
+			}
+
+			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderColorLoc, &color, .VEC4)
+			pixelsRounded := n.pixels_rounded
+			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
+
+			rl.BeginShaderMode(uiData.buttonShader)
+			//rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0})
+			rl.DrawRectangle(node.innerBox.x, node.innerBox.y, node.innerBox.w, node.innerBox.h, {0,0,0,0})
+			rl.EndShaderMode()
 	}
 }
 
@@ -731,6 +874,8 @@ delete_node_and_its_children :: proc(node: ^Node) {
 			free(node)
 		case DebugSquare:
 			free(node)
+		case Button:
+			free(node)
 	}
 }
 
@@ -751,4 +896,19 @@ get_me_some_debug_squares :: proc(numBoxes: int) -> (boxes: []^Node) {
 	}
 
 	return
+}
+
+new_button :: proc() -> ^Node {
+	node := new(Node)
+	button := Button{
+		//color = {50,50,50,255},
+		color = {PASSIVE_COLOR,PASSIVE_COLOR,PASSIVE_COLOR,255},
+		pixels_rounded = 15,
+		backgroundColor = {0,0,0, 255},
+	}
+	node.element = button
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
 }

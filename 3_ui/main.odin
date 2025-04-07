@@ -12,8 +12,13 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 
-	boxes := ui.get_me_some_debug_squares(4)
-	vert1 := ui.vertical_split_from_nodes(boxes)
+	boxes := ui.get_me_some_debug_squares(3)
+	button1 := ui.new_button()
+	button2 := ui.new_button()
+	button3 := ui.new_button()
+	button4 := ui.new_button()
+	//vert1 := ui.vertical_split_from_nodes({boxes[0], boxes[1], boxes[2], button1})
+	vert1 := ui.vertical_split_from_nodes({button1, button2, button3, button4})
 
 	rootNode := vert1
 
@@ -22,6 +27,8 @@ main :: proc() {
 	ui.scale_up_children(rootNode)
 
 	state := ui.ui_state_default_values()
+	uiData := ui.init_ui_data()
+	defer ui.deinit_ui_data(&uiData)
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
@@ -32,7 +39,7 @@ main :: proc() {
 
 		ui.handle_input(rootNode, &state)
 		ui.recompute_children_boxes(rootNode)
-		ui.draw(rootNode, &state)
+		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight())
 
 		rl.DrawFPS(5, 5)
 		rl.EndDrawing()
