@@ -47,16 +47,27 @@ main :: proc() {
 	time: f32 = 0
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
-		rl.ClearBackground({0,0,0, 255})
+		rl.ClearBackground({0,80,100, 255})
 
 		//x = rl.GetMouseX() - w/2
 		//y = rl.GetMouseY() - h/2
 		height: i32 = rl.GetScreenHeight()
 
+		for i := 0; i < 2; i += 1 {
 		w = i32(f32(rl.GetScreenWidth()) / 1.5)
 		h = i32(f32(rl.GetScreenHeight()) / 1.5)
 		x = i32(f32(rl.GetScreenWidth() - w) / 2)
 		y = i32(f32(rl.GetScreenHeight() - h) / 2)
+
+		if i == 1 {
+			x += 1
+			y += 1
+			w -= 2
+			h -= 2
+			color = {1,1,1,0.4}
+		} else {
+			color = {0,0,0, 0.7}
+		}
 
 		box := Box{
 			x = x,
@@ -83,6 +94,7 @@ main :: proc() {
 		rl.BeginShaderMode(shader)
 		rl.DrawRectangle(x, y, w, h, {0,0,0,0})
 		rl.EndShaderMode()
+		}
 
 		rl.DrawFPS(10, 10)
 		rl.EndDrawing()
