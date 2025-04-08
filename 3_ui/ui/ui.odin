@@ -840,6 +840,16 @@ vertical_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	return node
 }
 
+new_horizontal_split :: proc() -> ^Node {
+	node := new(Node)
+	horizSplit := HorizontalSplit{}
+	node.element = horizSplit
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
+}
+
 horizontal_split_from_nodes :: proc(nodes: []^Node) -> ^Node {
 	node := new(Node)
 	n := HorizontalSplit{}
