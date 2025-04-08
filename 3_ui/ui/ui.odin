@@ -58,7 +58,6 @@ Node :: struct {
 	parent: ^Node,
 	element: Element,
 	using box: Box,
-	innerBox: Box,
 	preferNotResize: bool, // Used when in a VerticalSplit/HorizontalSplit
 	minimumSize: i32, // Used when in a VerticalSplit/HorizontalSplit
 }
@@ -245,6 +244,7 @@ find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> in
 resize_child_until_minimum_size_for_window_resize :: proc(node: ^Node, itsIndex: int, diff: i32) -> i32 {
 	diffCopy := diff
 
+	assert(node.parent != nil)
 	#partial switch &e in node.parent.element {
 		case VerticalSplit:
 			remainder := (node.w + diffCopy) - node.minimumSize
@@ -482,8 +482,53 @@ inner_box_from_box :: proc(box: Box) -> Box {
 	return Box{
 		x = box.x + 5,
 		y = box.y + 5,
-		w = box.w - 10 - 1, // Resize bar size
+		w = box.w - 10,
 		h = box.h - 10,
+	}
+}
+
+correct_boxes :: proc(node: ^Node, undo: bool) {
+	#partial switch &e in node.element {
+	case VerticalSplit:
+		for child in e.children {
+			child.h = node.h
+		}
+
+		lastChild := e.children[len(e.children) - 1]
+		diff := lastChild.x + lastChild.w - (node.x + node.w)
+		lastChild.w -= diff
+
+		for i := 0; i < len(e.children) - 1; i += 1 {
+			if undo {
+				e.children[i].w += 1
+			} else {
+				e.children[i].w -= 1
+			}
+		}
+
+		for child in e.children {
+			correct_boxes(child, undo)
+		}
+	case HorizontalSplit:
+		for child in e.children {
+			child.w = node.w
+		}
+
+		lastChild := e.children[len(e.children) - 1]
+		diff := lastChild.y + lastChild.h - (node.y + node.h)
+		lastChild.h -= diff
+
+		for i := 0; i < len(e.children) - 1; i += 1 {
+			if undo {
+				e.children[i].h += 1
+			} else {
+				e.children[i].h -= 1
+			}
+		}
+
+		for child in e.children {
+			correct_boxes(child, undo)
+		}
 	}
 }
 
@@ -507,11 +552,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 			diff := node.w - widthSum
 			try_resize_children_to_fit(node, e.children[:], diff)
 
-			//node.innerBox = inner_box_from_box(node.box)
-
 			for &child in e.children {
 				recompute_children_boxes(child)
-				child.innerBox = inner_box_from_box(child.box)
 			}
 		case HorizontalSplit:
 			heightSum: i32 = 0
@@ -531,11 +573,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 			diff := node.h - heightSum
 			try_resize_children_to_fit(node, e.children[:], diff)
 
-			//node.innerBox = inner_box_from_box(node.box)
-
 			for &child in e.children {
 				recompute_children_boxes(child)
-				child.innerBox = inner_box_from_box(child.box)
 			}
 	}
 }
@@ -715,6 +754,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState) {
 	if state.hoveredResizeBar != nil {
 		state.hoveredNode = nil
 
+		assert(state.hoveredResizeBar.parent != nil)
 		#partial switch &e in state.hoveredResizeBar.parent.element {
 			case VerticalSplit:
 				cursorWanted = rl.MouseCursor.RESIZE_EW
@@ -744,8 +784,9 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				draw(child, state, uiData, screenHeight)
 			}
 
+			// Resize bars
 			for child in n.children[:max(0, len(n.children)-1)] {
-				x := child.x + child.w - 1
+				x := child.x + child.w
 				y := child.y
 
 				//nParents := n_parents(child)
@@ -770,9 +811,10 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				draw(child, state, uiData, screenHeight)
 			}
 
+			// Resize bars
 			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x
-				y := child.y + child.h - 1
+				y := child.y + child.h
 
 				//nParents := n_parents(child)
 				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
@@ -796,7 +838,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 		case Button:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.backgroundColor)
 
-			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &node.innerBox, .IVEC4)
+			innerBox := inner_box_from_box(node.box)
+			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &innerBox, .IVEC4)
 			screenHeightThing := screenHeight
 			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
@@ -817,8 +860,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 			rl.BeginShaderMode(uiData.buttonShader)
-			//rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0})
-			rl.DrawRectangle(node.innerBox.x, node.innerBox.y, node.innerBox.w, node.innerBox.h, {0,0,0,0})
+			rl.DrawRectangle(innerBox.x, innerBox.y, innerBox.w, innerBox.h, {0,0,0,0})
 			rl.EndShaderMode()
 	}
 }
@@ -844,6 +886,16 @@ new_horizontal_split :: proc() -> ^Node {
 	node := new(Node)
 	horizSplit := HorizontalSplit{}
 	node.element = horizSplit
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
+}
+
+new_vertical_split :: proc() -> ^Node {
+	node := new(Node)
+	vertSplit := VerticalSplit{}
+	node.element = vertSplit
 	node.w = 1
 	node.h = 1
 	node.minimumSize = 100
