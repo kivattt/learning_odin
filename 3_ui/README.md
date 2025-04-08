@@ -1,3 +1,3 @@
-compute the resizeable edges and store in a list every time recompute boxes is called
+TODO: calculate minimum window size and don't handle resizing beyond (below) that point
 
 <img src="screenshot.png" width="80%"></img>
