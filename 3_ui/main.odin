@@ -17,8 +17,8 @@ main :: proc() {
 	button2 := ui.new_button()
 	button3 := ui.new_button()
 	button4 := ui.new_button()
-	//vert1 := ui.vertical_split_from_nodes({boxes[0], boxes[1], boxes[2], button1})
-	vert1 := ui.vertical_split_from_nodes({button1, button2, button3, button4})
+	vert1 := ui.vertical_split_from_nodes({boxes[0], boxes[1], boxes[2], button1})
+	//vert1 := ui.vertical_split_from_nodes({button1, button2, button3, button4})
 
 	rootNode := vert1
 

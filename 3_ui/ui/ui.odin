@@ -11,8 +11,9 @@ import "core:strings"
 import "core:math"
 import "core:c"
 
-PASSIVE_COLOR :: 70
-HOVERED_COLOR :: 150
+PASSIVE_OUTLINE_COLOR :: 70
+HOVERED_OUTLINE_COLOR :: 150
+BACKGROUND_COLOR :: 25
 
 Box :: struct {
 	x: i32,
@@ -92,8 +93,8 @@ UserInterfaceData :: struct {
 
 get_default_ui_colors :: proc() -> UiColors {
 	return UiColors{
-		passiveColor = PASSIVE_COLOR,
-		hoveredColor = HOVERED_COLOR,
+		passiveColor = PASSIVE_OUTLINE_COLOR,
+		hoveredColor = HOVERED_OUTLINE_COLOR,
 	}
 }
 
@@ -879,32 +880,41 @@ delete_node_and_its_children :: proc(node: ^Node) {
 	}
 }
 
+// Remember to free() the return value!
+new_debug_square :: proc() -> ^Node {
+	node := new(Node)
+	debugSquare := DebugSquare{
+		color = {BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 255},
+	}
+	node.element = debugSquare
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
+}
+
 // Remember to delete() the return value!
 get_me_some_debug_squares :: proc(numBoxes: int) -> (boxes: []^Node) {
 	boxes = make([]^Node, numBoxes)
 
 	for i := 0; i < numBoxes; i += 1 {
-		ds: DebugSquare
+		debugSquare := new_debug_square()
 		c: u8 = u8(i) * 20
-		ds.color = {c, c, c, 255}
-
-		node := new(Node)
-		node.element = ds
-		node.w = 1
-		node.h = 1
-		boxes[i] = node
+		//ds := &debugSquare.element.(DebugSquare)
+		//ds.color = {c, c, c, 255}
+		boxes[i] = debugSquare
 	}
 
 	return
 }
 
+// Remember to free() the return value!
 new_button :: proc() -> ^Node {
 	node := new(Node)
 	button := Button{
-		//color = {50,50,50,255},
-		color = {PASSIVE_COLOR,PASSIVE_COLOR,PASSIVE_COLOR,255},
+		color = {PASSIVE_OUTLINE_COLOR,PASSIVE_OUTLINE_COLOR,PASSIVE_OUTLINE_COLOR,255},
 		pixels_rounded = 15,
-		backgroundColor = {0,0,0, 255},
+		backgroundColor = {BACKGROUND_COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR, 255},
 	}
 	node.element = button
 	node.w = 1
