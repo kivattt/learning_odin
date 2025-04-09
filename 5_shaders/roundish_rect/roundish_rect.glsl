@@ -20,20 +20,15 @@ void main() {
 		angle = 0.5 + ((atan(y / x) / (M_PI/2)) + 1) / 4;
 	}
 
-	bool pyramid = true;
+	angle *= 2*M_PI;
 
-	if (pyramid) {
-		float xx = gl_FragCoord.x - box.x;
-		float yy = gl_FragCoord.y - box.y;
-		float aspect = float(box.z) / float(box.w);
+	float maxDistance = box.z/2 * box.z/2 + box.w/2 * box.w/2;
+	float distance = (x*x + y*y) / maxDistance;
 
-		bool aa = gl_FragCoord.y > midPointY ? true : false;
-		bool bb = (!aa && xx/aspect < yy) ? true : false;
-		bool cc = (!aa && !bb && (box.z/2 - (xx - box.z/2))/aspect < yy) ? true : false;
-		if (aa || bb || cc) {
-			angle /= 3;
-		}
-	}
+	float wantedDistance = 0.1 + (sin(4*angle - M_PI/2) + 1)/100;
 
-	gl_FragColor = vec4(angle,angle,angle,1);
+	float result = (distance - wantedDistance);
+	float resultBorder = 1 - pow(800*result, 2);
+
+	gl_FragColor = vec4(resultBorder, resultBorder, resultBorder, 1);
 }
