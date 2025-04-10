@@ -224,7 +224,6 @@ resize_vert :: proc(vert: ^VerticalSplit, index: int, diff: i32) {
 }
 
 // Returns -1 when none found
-// TODO: Could make a separate function for (window) resizing up, since it would prob only return first that wants resize or 0
 find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> int {
 	secondChoice := -1
 
@@ -503,15 +502,15 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 
 inner_box_from_box :: proc(box: Box) -> Box {
 	return Box{
-		/*x = box.x + 5,
+		x = box.x + 5,
 		y = box.y + 5,
 		w = box.w - 10,
-		h = box.h - 10,*/
+		h = box.h - 10,
 
-		x = box.x + 20,
+		/*x = box.x + 20,
 		y = box.y + 20,
 		w = box.w - 40,
-		h = box.h - 40,
+		h = box.h - 40,*/
 	}
 }
 
@@ -760,7 +759,6 @@ inputs_from_raylib :: proc() -> (inputs: Inputs) {
 }
 
 // Call this on your root node
-// FIXME: I think left-clicking has a 1-frame delay. Could add a test for that
 handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: PlatformProcs, inputs: Inputs) {
 	if !rl.IsWindowFocused() {
 		state.hoveredResizeBar = nil
