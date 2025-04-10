@@ -42,12 +42,12 @@ main :: proc() {
 	horizSplit1.element.(ui.HorizontalSplit).children[2].preferNotResize = true
 	horizSplit1.element.(ui.HorizontalSplit).children[3].preferNotResize = true*/
 
-	horizSplit1 := ui.new_horizontal_split()
+	horizSplit1 := ui.new_horizontal_split(nil)
 	for i := 0; i < 4; i += 1 {
 		append_elem(&(&horizSplit1.element.(ui.HorizontalSplit)).children, nil)
 	}
 
-	vertSplitMoment := ui.new_vertical_split()
+	vertSplitMoment := ui.new_vertical_split(nil)
 	for i := 0; i < 4; i += 1 {
 		append_elem(&(&vertSplitMoment.element.(ui.VerticalSplit)).children, nil)
 	}
@@ -69,15 +69,18 @@ main :: proc() {
 	rootNode := horizSplit2
 
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
-		button := ui.new_button()
+		button := ui.new_button(nil)
+
 		button.minimumSize = 15
 		(&button.element.(ui.Button)).pixels_rounded = 6
-		vert := ui.vertical_split_from_nodes({button, ui.new_debug_square()})
+		vert := ui.vertical_split_from_nodes({button, ui.new_debug_square(nil)})
 		vert.parent = rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2]
 		vert.minimumSize = 15
 		vert.element.(ui.VerticalSplit).children[0].preferNotResize = true
 		//rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplit).children[i] = vert
 		horizSplit1.element.(ui.HorizontalSplit).children[i] = vert
+
+		button.parent = vert
 	}
 
 	append_elem(&(&bottomVertSplit.element.(ui.VerticalSplit)).children, nil)
@@ -86,12 +89,28 @@ main :: proc() {
 	vertSplitMoment.parent = bottomVertSplit
 	bottomVertSplit.element.(ui.VerticalSplit).children[0] = vertSplitMoment
 	for i := 0; i < len(vertSplitMoment.element.(ui.VerticalSplit).children); i += 1 {
-		button := ui.new_button()
+		button := ui.new_button(vertSplitMoment)
 		button.minimumSize = 15
 		(&button.element.(ui.Button)).pixels_rounded = 6
-		button.parent = vertSplitMoment
+		//button.parent = vertSplitMoment
 
 		vertSplitMoment.element.(ui.VerticalSplit).children[i] = button
+
+		/*iCopy := new(int)
+		iCopy^ = i
+		(&button.element.(ui.Button)).onClickData = iCopy*/
+
+		buttonCopy := new(^ui.Node)
+		buttonCopy^ = button
+
+		(&button.element.(ui.Button)).onClickData = buttonCopy
+		(&button.element.(ui.Button)).onClickProc = proc(nodeIn: rawptr) {
+			node := (transmute(^^ui.Node)nodeIn)^
+			x := ui.index_of_node_in_parent_split(node)
+			fmt.println("hello from", x)
+
+		//fmt.println("hello from horiz button #", (transmute(^int)i)^)
+		}
 	}
 
 	rootNode.w = rl.GetScreenWidth()
@@ -116,8 +135,11 @@ main :: proc() {
 		rootNode.w = rl.GetScreenWidth()
 		rootNode.h = rl.GetScreenHeight()
 
+		totalTime := time.now()
+
+		inputs := ui.inputs_from_raylib()
 		t = time.now()
-		ui.handle_input(rootNode, &state)
+		ui.handle_input(rootNode, &state, inputs)
 		if debug do fmt.println("handle_input()             time:", time.since(t))
 
 		t = time.now()
@@ -126,14 +148,21 @@ main :: proc() {
 		}
 		if debug do fmt.println("recompute_children_boxes() time:", time.since(t))
 
+		t = time.now()
 		ui.correct_boxes(rootNode, false)
+		if debug do fmt.println("correct_boxes(..., false)  time:", time.since(t))
 
 		t = time.now()
-		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight())
+		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight(), inputs)
 		if debug do fmt.println("draw()                     time:", time.since(t))
 
+		t = time.now()
 		ui.correct_boxes(rootNode, true)
+		if debug do fmt.println("correct_boxes(..., true)  time:", time.since(t))
 		//fmt.println("root parent:", rootNode.parent)
+
+		if debug do fmt.println("TOTAL                     time:", time.since(totalTime))
+		if debug do fmt.println()
 
 		rl.DrawFPS(5, 5)
 		rl.EndDrawing()
