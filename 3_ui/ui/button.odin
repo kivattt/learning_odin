@@ -68,4 +68,8 @@ button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inp
 	}
 }
 
-//button_set_on_click :: proc()
+button_set_on_click :: proc(node: ^Node, data: rawptr, onClickProc: proc(data: rawptr)) {
+	button := &node.element.(Button)
+	button.onClickData = data
+	button.onClickProc = onClickProc
+}
