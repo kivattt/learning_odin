@@ -14,7 +14,7 @@ Button :: struct {
 	//onClickProc: proc(data: any),
 }
 
-draw_button :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	button := node.element.(Button)
 
 	rl.DrawRectangle(node.x, node.y, node.w, node.h, button.backgroundColor)
@@ -52,7 +52,7 @@ draw_button :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.EndShaderMode()
 }
 
-handle_input_button :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
+button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
 	if state.lastMouse1Pressed {
 		return
 	}
@@ -67,3 +67,5 @@ handle_input_button :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inp
 		}
 	}
 }
+
+//button_set_on_click :: proc()

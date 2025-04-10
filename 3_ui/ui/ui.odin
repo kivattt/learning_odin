@@ -816,7 +816,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 		if state.hoveredNode != nil {
 			#partial switch &e in state.hoveredNode.element {
 				case Button:
-					handle_input_button(state.hoveredNode, state, inputs)
+					button_handle_input(state.hoveredNode, state, inputs)
 			}
 		}
 	}
@@ -893,7 +893,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 		case Button:
-			draw_button(node, state, uiData, screenHeight, inputs)
+			button_draw(node, state, uiData, screenHeight, inputs)
 	}
 }
 
