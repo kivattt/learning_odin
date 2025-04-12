@@ -686,16 +686,12 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 				}
 			}
 		case DebugSquare:
-			if x >= node.x && x <= node.x + node.w {
-				if y >= node.y && y <= node.y + node.h {
-					return node
-				}
+			if is_coord_in_box(node.box, x, y) {
+				return node
 			}
 		case Button:
-			if x >= node.x && x <= node.x + node.w {
-				if y >= node.y && y <= node.y + node.h {
-					return node
-				}
+			if is_coord_in_box(node.box, x, y) {
+				return node
 			}
 	}
 
