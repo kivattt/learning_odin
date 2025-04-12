@@ -671,30 +671,37 @@ index_of_node_in_parent_split :: proc(node: ^Node) -> int {
 
 find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 	switch &e in node.element {
-		case VerticalSplit:
-			for child in e.children {
-				found := find_hovered_node(child, x, y)
-				if found != nil {
-					return found
-				}
+	case VerticalSplit:
+		for child in e.children {
+			if is_coord_in_box(child.box, x, y) {
+				return find_hovered_node(child, x, y)
 			}
-		case HorizontalSplit:
-			for child in e.children {
-				found := find_hovered_node(child, x, y)
-				if found != nil {
-					return found
-				}
+		}
+
+		return nil
+	case HorizontalSplit:
+		for child in e.children {
+			if is_coord_in_box(child.box, x, y) {
+				return find_hovered_node(child, x, y)
 			}
-		case DebugSquare:
-			if is_coord_in_box(node.box, x, y) {
-				return node
-			}
-		case Button:
-			if is_coord_in_box(node.box, x, y) {
-				return node
-			}
+		}
+
+		return nil
+	case Button:
+		if is_coord_in_box(node.box, x, y) {
+			return node
+		} else {
+			return nil
+		}
+	case DebugSquare:
+		if is_coord_in_box(node.box, x, y) {
+			return node
+		} else {
+			return nil
+		}
 	}
 
+	assert(false)
 	return nil
 }
 
