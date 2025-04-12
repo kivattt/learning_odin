@@ -9,9 +9,6 @@ Button :: struct {
 
 	onClickData: rawptr,
 	onClickProc: proc(data: rawptr),
-
-	//onClickData: any,
-	//onClickProc: proc(data: any),
 }
 
 button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
