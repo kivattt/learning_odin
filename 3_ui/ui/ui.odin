@@ -31,10 +31,12 @@ Color :: struct {
 
 VerticalSplit :: struct {
 	children: [dynamic]^Node,
+	resizeBarWidth: i32,
 }
 
 HorizontalSplit :: struct {
 	children: [dynamic]^Node,
+	resizeBarHeight: i32,
 }
 
 DebugSquare :: struct {
@@ -529,9 +531,9 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 
 		for i := 0; i < len(e.children) - 1; i += 1 {
 			if undo {
-				e.children[i].w += 1
+				e.children[i].w += e.resizeBarWidth
 			} else {
-				e.children[i].w -= 1
+				e.children[i].w -= e.resizeBarWidth
 			}
 		}
 
@@ -545,9 +547,9 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 
 		for i := 0; i < len(e.children) - 1; i += 1 {
 			if undo {
-				e.children[i].h += 1
+				e.children[i].h += e.resizeBarHeight
 			} else {
-				e.children[i].h -= 1
+				e.children[i].h -= e.resizeBarHeight
 			}
 		}
 
@@ -719,7 +721,7 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 			continue
 		}
 
-		theX := e.x + e.w
+		theX := e.x + e.w - e.parent.element.(VerticalSplit).resizeBarWidth >> 1
 		if x < (theX - 8) || x > (theX + 8) {
 			continue
 		}
@@ -732,7 +734,7 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 			continue
 		}
 
-		theY := e.y + e.h
+		theY := e.y + e.h - e.parent.element.(HorizontalSplit).resizeBarHeight >> 1
 		if y < (theY - 8) || y > (theY + 8) {
 			continue
 		}
@@ -855,14 +857,11 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				x := child.x + child.w
 				y := child.y
 
-				//nParents := n_parents(child)
-				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
-
 				color := uiData.colors.passiveOutlineColor
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
 					color = uiData.colors.hoveredOutlineColor
 				}
-				rl.DrawRectangle(x, y, 1, child.h, color)
+				rl.DrawRectangle(x, y, n.resizeBarWidth, child.h, color)
 			}
 
 			for child in n.children {
@@ -882,13 +881,11 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				x := child.x
 				y := child.y + child.h
 
-				//nParents := n_parents(child)
-				//c := u8(nParents == 1 ? 255 : (nParents == 2 ? 127 : 40))
 				color := uiData.colors.passiveOutlineColor
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
 					color = uiData.colors.hoveredOutlineColor
 				}
-				rl.DrawRectangle(x, y, child.w, 1, color)
+				rl.DrawRectangle(x, y, child.w, n.resizeBarHeight, color)
 			}
 
 			for child in n.children {
@@ -908,6 +905,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 new_vertical_split_from_nodes :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
 	node := new(Node)
 	n := VerticalSplit{}
+	n.resizeBarWidth = 1
 
 	for &inNode in nodes {
 		inNode.parent = node
@@ -926,6 +924,7 @@ new_vertical_split_from_nodes :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
 new_horizontal_split :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	horizSplit := HorizontalSplit{}
+	horizSplit.resizeBarHeight = 1
 	node.element = horizSplit
 	node.parent = parent
 	node.w = 1
@@ -937,6 +936,8 @@ new_horizontal_split :: proc(parent: ^Node) -> ^Node {
 new_vertical_split :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	vertSplit := VerticalSplit{}
+	vertSplit.resizeBarWidth = 1
+
 	node.element = vertSplit
 	node.parent = parent
 	node.w = 1
@@ -948,6 +949,7 @@ new_vertical_split :: proc(parent: ^Node) -> ^Node {
 new_horizontal_split_from_nodes :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
 	node := new(Node)
 	n := HorizontalSplit{}
+	n.resizeBarHeight = 1
 
 	for &inNode in nodes {
 		inNode.parent = node

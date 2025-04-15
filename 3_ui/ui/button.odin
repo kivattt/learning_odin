@@ -12,6 +12,9 @@ Button :: struct {
 }
 
 button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+	rl.BeginScissorMode(node.x, node.y, node.w, node.h)
+	defer rl.EndScissorMode()
+
 	button := node.element.(Button)
 
 	rl.DrawRectangle(node.x, node.y, node.w, node.h, button.backgroundColor)
@@ -47,6 +50,9 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.BeginShaderMode(uiData.buttonShader)
 	rl.DrawRectangle(innerBox.x, innerBox.y, innerBox.w, innerBox.h, {0,0,0,0})
 	rl.EndShaderMode()
+
+	// Out of bounds drawing test
+	//rl.DrawRectangle(innerBox.x-50, innerBox.y, innerBox.w+90, innerBox.h, {0,255,0,80})
 }
 
 button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
