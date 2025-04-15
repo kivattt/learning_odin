@@ -721,6 +721,11 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 			continue
 		}
 
+		theXLeftMost := e.x + e.w - e.parent.element.(VerticalSplit).resizeBarWidth
+		if theXLeftMost >= e.parent.x + e.parent.w {
+			continue
+		}
+
 		theX := e.x + e.w - e.parent.element.(VerticalSplit).resizeBarWidth / 2
 		if x < (theX - 8) || x > (theX + 8) {
 			continue
@@ -731,6 +736,11 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 
 	for e in horizBarPositions {
 		if x < e.x || x > (e.x + e.w) {
+			continue
+		}
+
+		theYLeftMost := e.y + e.h - e.parent.element.(HorizontalSplit).resizeBarHeight
+		if theYLeftMost >= e.parent.y + e.parent.h {
 			continue
 		}
 
