@@ -45,7 +45,8 @@ main :: proc() {
 	horizSplit1.element.(ui.HorizontalSplit).children[3].preferNotResize = true*/
 
 	horizSplit1 := ui.new_horizontal_split(nil)
-	for i := 0; i < 100; i += 1 {
+	//for i := 0; i < 100; i += 1 {
+	for i := 0; i < 5; i += 1 {
 		append_elem(&(&horizSplit1.element.(ui.HorizontalSplit)).children, nil)
 	}
 
@@ -66,15 +67,16 @@ main :: proc() {
 
 	//horizSplit2 := ui.horizontal_split_from_nodes({vert1, boxes[2]})
 	horizSplit2 := ui.new_horizontal_split_from_nodes(nil, {vert1, bottomVertSplit})
-	horizSplit2.element.(ui.HorizontalSplit).children[0].h = 2
+	//horizSplit2.element.(ui.HorizontalSplit).children[0].h = 2
+	horizSplit2.element.(ui.HorizontalSplit).children[0].h = 5
 	boxes[2].preferNotResize = true
 
 	//rootNode := vert1
 	rootNode := horizSplit2
-	(&rootNode.element.(ui.HorizontalSplit)).resizeBarHeight = 8
+	//(&rootNode.element.(ui.HorizontalSplit)).resizeBarHeight = 8
 	(&rootNode.element.(ui.HorizontalSplit)).children[0].minimumSize = 400
 
-	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
+	/*for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 		button := ui.new_button(nil)
 
 		button.minimumSize = 15
@@ -87,6 +89,10 @@ main :: proc() {
 		horizSplit1.element.(ui.HorizontalSplit).children[i] = vert
 
 		button.parent = vert
+	}*/
+
+	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
+		horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_button(horizSplit1)
 	}
 
 	append_elem(&(&bottomVertSplit.element.(ui.VerticalSplit)).children, nil)
@@ -149,6 +155,8 @@ main :: proc() {
 	uiData := ui.init_ui_data()
 	platformProcs := ui.get_raylib_platform_procs()
 
+	lastmousey: i32 = 0
+
 	i: f64 = 0
 	for !rl.WindowShouldClose() {
 		i += 0.05
@@ -173,6 +181,12 @@ main :: proc() {
 		if debug do fmt.println("recompute_children_boxes() time:", time.since(t))
 
 		t = time.now()
+
+		if inputs.mouseLeftDown && inputs.mouseY != lastmousey {
+			fmt.println("test")
+		}
+		lastmousey = inputs.mouseY
+
 		ui.correct_boxes(rootNode, false)
 		if debug do fmt.println("correct_boxes(..., false)  time:", time.since(t))
 
@@ -187,6 +201,9 @@ main :: proc() {
 
 		if debug do fmt.println("TOTAL                   time:", time.since(totalTime))
 		if debug do fmt.println()
+
+		text := fmt.ctprintf("x: {}, y: {}", inputs.mouseX, inputs.mouseY)
+		rl.DrawText(text, 5, 40, 24, {255,255,255,255})
 
 		rl.DrawFPS(5, 5)
 		rl.EndDrawing()
