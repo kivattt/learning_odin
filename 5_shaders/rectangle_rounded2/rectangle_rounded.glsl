@@ -50,20 +50,29 @@ void main() {
 	int pixels_rounded = int(min(min(w, h) / 2, pixels_rounded_in));
 
 	float maxSize = float(max(w, h));
-	vec2 p = vec2(float(x) - float(w)/2, float(y) - float(h)/2) / maxSize;
+	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
 
 	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
 
 	float bbb = float(pixels_rounded) / maxSize;
 	float val = sdRoundBox(p, b, vec4(bbb,bbb,bbb,bbb));
+	float gug = 0;
 	if (val <= 0) {
 	//if (val < 0) {
-		//val = 1;
-		val = 0.2;
-	} else {
 		val = 1;
+		//val = 0.2;
+	} else {
+		//gug = val * 512;
+		//val = 0;
+
+		//val = 1 - val*512;
+		val = val*512;
+		//val = 0;
+
+		//val = 1;
 	}
 
 	gl_FragColor = vec4(color.x, color.y, color.z, val * color.w);
+	//gl_FragColor = vec4(val, gug, val, 1);
 	//gl_FragColor = vec4(color.x, bruh, color.z, val * color.w);
 }
