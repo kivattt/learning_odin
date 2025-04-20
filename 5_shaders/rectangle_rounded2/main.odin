@@ -53,15 +53,15 @@ main :: proc() {
 		height: i32 = rl.GetScreenHeight()
 		width: i32 = rl.GetScreenWidth()
 
-		/*w := i32(f32(rl.GetScreenWidth()) / 1.5)
+		w := i32(f32(rl.GetScreenWidth()) / 1.5)
 		h := i32(f32(rl.GetScreenHeight()) / 1.5)
 		x := i32(f32(rl.GetScreenWidth() - w) / 2)
-		y := i32(f32(rl.GetScreenHeight() - h) / 2)*/
+		y := i32(f32(rl.GetScreenHeight() - h) / 2)
 
-		x: i32 = 50
+		/*x: i32 = 50
 		y: i32 = 50
 		w: i32 = 300
-		h: i32 = 200
+		h: i32 = 200*/
 
 		box := Box{
 			x = x,
@@ -70,7 +70,9 @@ main :: proc() {
 			h = h,
 		}
 
-		pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(200))
+//		pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(200))
+		//pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(350))
+		pixelsRounded := i32(rl.GetMouseY()) - y
 		//pixelsRounded := i32(7)
 		//pixelsRounded := i32(6)
 		//pixelsRounded: i32 = 10
