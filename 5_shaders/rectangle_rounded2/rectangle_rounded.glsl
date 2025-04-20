@@ -4,7 +4,6 @@ uniform ivec4 rect; // x y w h
 uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
 uniform int pixels_rounded_in = 10;
-uniform float smoothness = 1;
 
 // The MIT License
 // Copyright © 2015 Inigo Quilez
