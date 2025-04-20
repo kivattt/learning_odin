@@ -60,8 +60,8 @@ main :: proc() {
 
 		/*x: i32 = 50
 		y: i32 = 50
-		w: i32 = 300
-		h: i32 = 200*/
+		w: i32 = 150
+		h: i32 = 100*/
 
 		box := Box{
 			x = x,
@@ -73,6 +73,8 @@ main :: proc() {
 //		pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(200))
 		//pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(350))
 		pixelsRounded := i32(rl.GetMouseY()) - y
+		//pixelsRounded := i32(4)
+
 		//pixelsRounded := i32(7)
 		//pixelsRounded := i32(6)
 		//pixelsRounded: i32 = 10

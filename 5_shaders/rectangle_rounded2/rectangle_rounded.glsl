@@ -4,6 +4,7 @@ uniform ivec4 rect; // x y w h
 uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
 uniform int pixels_rounded_in = 10;
+uniform float smoothness = 1;
 
 // The MIT License
 // Copyright © 2015 Inigo Quilez
@@ -51,28 +52,9 @@ void main() {
 
 	float maxSize = float(max(w, h));
 	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
-
 	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
-
-	float bbb = float(pixels_rounded) / maxSize;
-	float val = sdRoundBox(p, b, vec4(bbb,bbb,bbb,bbb));
-	float gug = 0;
-	if (val <= 0) {
-	//if (val < 0) {
-		val = 1;
-		//val = 0.2;
-	} else {
-		//gug = val * 512;
-		//val = 0;
-
-		//val = 1 - val*512;
-		val = val*512;
-		//val = 0;
-
-		//val = 1;
-	}
+	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
+	val = 1 - max(0, val * maxSize); // Anti-aliasing at the outer edges
 
 	gl_FragColor = vec4(color.x, color.y, color.z, val * color.w);
-	//gl_FragColor = vec4(val, gug, val, 1);
-	//gl_FragColor = vec4(color.x, bruh, color.z, val * color.w);
 }
