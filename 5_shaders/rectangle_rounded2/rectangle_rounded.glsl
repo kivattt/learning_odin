@@ -5,9 +5,10 @@ uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
 uniform int pixels_rounded_in = 10;
 
-uniform ivec4 dropshadow_rect; // x y w h
+//uniform ivec4 dropshadow_rect; // x y w h
+uniform ivec2 dropshadow_offset; // x y
 uniform vec4 dropshadow_color = vec4(0, 0, 0, 1);
-//uniform float dropshadow_smoothness;
+uniform float dropshadow_smoothness = 1.0;
 
 // The MIT License
 // Copyright © 2015 Inigo Quilez
@@ -44,12 +45,18 @@ float sdRoundBox(in vec2 p, in vec2 b, in vec4 r) {
     return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
 }
 
-float round_box(int x, int y, int w, int h, int pixels_rounded) {
+float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness = 1.0) {
 	float maxSize = float(max(w, h));
 	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
 	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
 	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
-	return 1 - max(0, val * maxSize); // Anti-aliasing at the outer edges
+	//return 1 - max(0, val * maxSize * smoothness); // Anti-aliasing at the outer edges
+
+	float bruh = 1 - min(1, max(0, val * maxSize * smoothness));
+	return bruh * bruh; // Anti-aliasing at the outer edges
+
+	//float bruh = max(0, min(1, val * maxSize * smoothness));
+	//return 1 - bruh * bruh; // Anti-aliasing at the outer edges
 }
 
 void main() {
@@ -62,6 +69,22 @@ void main() {
 	int pixels_rounded = int(min(min(w, h) / 2, pixels_rounded_in));
 
 	float val = round_box(x, y, w, h, pixels_rounded);
+	float dropshadow = round_box(x - dropshadow_offset.x, y - dropshadow_offset.y, w, h, pixels_rounded+1, 1.0 / dropshadow_smoothness);
+	val = max(0, min(1, val));
+	//dropshadow = 2*dropshadow - 1;
+	dropshadow = max(0, min(1, dropshadow));
+	//dropshadow = dropshadow * dropshadow;
 
-	gl_FragColor = vec4(color.x, color.y, color.z, val * color.w);
+	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
+	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
+
+	gl_FragColor = theColor;
+
+	//gl_FragColor = mix(theColor, theDropshadowColor, 1-val);
+	//gl_FragColor = mix(theColor, theDropshadowColor, 1-val * theColor.a);
+	//gl_FragColor = mix(theColor, theDropshadowColor, (1-val) * theColor.a);
+
+	//gl_FragColor = mix(theColor, theDropshadowColor, dropshadow * dropshadow_color.w);
+
+	//gl_FragColor = mix(theDropshadowColor, theColor, theColor.a);
 }
