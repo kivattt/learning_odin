@@ -54,8 +54,20 @@ main :: proc() {
 		rl.BeginDrawing()
 		//rl.ClearBackground({0,80,100, 255})
 		//rl.ClearBackground({36,36,36, 255})
-		//rl.ClearBackground({48,48,48, 255})
-		rl.ClearBackground({255,255,255, 255})
+		rl.ClearBackground({48,48,48, 255})
+		//rl.ClearBackground({170,170,170, 255})
+
+		for i := 0; i < 3; i += 1 {
+			if i == 0 {
+				color = {bruh,bruh,bruh,1}
+				dropshadowColor = {0,0,0,0.2}
+			} else if i == 1 {
+				color = {0,0,0,0}
+				dropshadowColor = {0,0,0,0.2}
+			} else if i == 2 {
+				color = {bruh,bruh,bruh,1}
+				dropshadowColor = {0,0,0,0}
+			}
 
 		//x = rl.GetMouseX() - w/2
 		//y = rl.GetMouseY() - h/2
@@ -72,6 +84,8 @@ main :: proc() {
 		w: i32 = 228
 		h: i32 = 37
 
+		x = i32(i * 250 + 150)
+
 		box := Box{
 			x = x,
 			y = y,
@@ -87,14 +101,14 @@ main :: proc() {
 
 //		pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(200))
 		//pixelsRounded := i32(f32(rl.GetMouseY()) / f32(height) * f32(350))
-		//pixelsRounded := i32(rl.GetMouseY()) - y
-		pixelsRounded := i32(4)
+		pixelsRounded := i32(rl.GetMouseY()) - y
+		//pixelsRounded := i32(4)
 
 		//pixelsRounded := i32(7)
 		//pixelsRounded := i32(6)
 		//pixelsRounded: i32 = 10
-		//fmt.println(pixelsRounded)
-		fmt.println(dropshadowSmoothness)
+		fmt.println(pixelsRounded)
+		//fmt.println(dropshadowSmoothness)
 
 		rl.SetShaderValue(shader, rectLoc, &box, .IVEC4)
 		rl.SetShaderValue(shader, screenHeightLoc, &height, .INT)
@@ -111,6 +125,8 @@ main :: proc() {
 		//rl.DrawRectangle(x, y, w, h, {0,0,0,0})
 		rl.DrawRectangle(0, 0, width, height, {0,0,0,0})
 		rl.EndShaderMode()
+
+		}
 
 		rl.DrawFPS(10, 10)
 		rl.EndDrawing()

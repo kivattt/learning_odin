@@ -52,11 +52,11 @@ float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness
 	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
 	//return 1 - max(0, val * maxSize * smoothness); // Anti-aliasing at the outer edges
 
-	float bruh = 1 - min(1, max(0, val * maxSize * smoothness));
-	return bruh * bruh; // Anti-aliasing at the outer edges
+	//float bruh = 1 - min(1, max(0, val * maxSize * smoothness));
+	//return bruh * bruh; // Anti-aliasing at the outer edges
 
-	//float bruh = max(0, min(1, val * maxSize * smoothness));
-	//return 1 - bruh * bruh; // Anti-aliasing at the outer edges
+	float bruh = max(0, min(1, val * maxSize * smoothness));
+	return 1 - bruh * bruh; // Anti-aliasing at the outer edges
 }
 
 void main() {
@@ -73,12 +73,12 @@ void main() {
 	val = max(0, min(1, val));
 	//dropshadow = 2*dropshadow - 1;
 	dropshadow = max(0, min(1, dropshadow));
-	//dropshadow = dropshadow * dropshadow;
+	dropshadow = dropshadow * dropshadow * dropshadow * dropshadow;
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
 
-	gl_FragColor = theColor;
+	//gl_FragColor = theColor;
 
 	//gl_FragColor = mix(theColor, theDropshadowColor, 1-val);
 	//gl_FragColor = mix(theColor, theDropshadowColor, 1-val * theColor.a);
@@ -86,5 +86,6 @@ void main() {
 
 	//gl_FragColor = mix(theColor, theDropshadowColor, dropshadow * dropshadow_color.w);
 
-	//gl_FragColor = mix(theDropshadowColor, theColor, theColor.a);
+	gl_FragColor = mix(theDropshadowColor, theColor, theColor.a);
+	//gl_FragColor = mix(theDropshadowColor, theColor, val * theColor.a);
 }
