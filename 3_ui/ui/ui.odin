@@ -99,16 +99,24 @@ UserInterfaceData :: struct {
 	buttonShaderScreenHeightLoc: c.int,
 	buttonShaderColorLoc: c.int,
 	buttonShaderPixelsRoundedLoc: c.int,
+
+	buttonShaderDropshadowColorLoc: c.int,
+	buttonShaderDropshadowSmoothnessLoc: c.int,
 }
 
 init_ui_data :: proc() -> (data: UserInterfaceData) {
 	data.colors = get_default_ui_colors()
 
-	data.buttonShader = rl.LoadShader(nil, "ui/shaders/outline_rounded.glsl") // FIXME: Use filepath join
-	data.buttonShaderBoxLoc = rl.GetShaderLocation(data.buttonShader, "box")
+	//data.buttonShader = rl.LoadShader(nil, "ui/shaders/outline_rounded.glsl") // FIXME: Use filepath join
+	data.buttonShader = rl.LoadShader(nil, "ui/shaders/rectangle_rounded.glsl") // FIXME: Use filepath join
+	//data.buttonShaderBoxLoc = rl.GetShaderLocation(data.buttonShader, "box")
+	data.buttonShaderBoxLoc = rl.GetShaderLocation(data.buttonShader, "rect")
 	data.buttonShaderScreenHeightLoc = rl.GetShaderLocation(data.buttonShader, "screen_height")
 	data.buttonShaderColorLoc = rl.GetShaderLocation(data.buttonShader, "color")
 	data.buttonShaderPixelsRoundedLoc = rl.GetShaderLocation(data.buttonShader, "pixels_rounded_in")
+
+	data.buttonShaderDropshadowColorLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_color")
+	data.buttonShaderDropshadowSmoothnessLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_smoothness")
 	return
 }
 
@@ -504,15 +512,15 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 
 inner_box_from_box :: proc(box: Box) -> Box {
 	return Box{
-		x = box.x + 5,
+		/*x = box.x + 5,
 		y = box.y + 5,
 		w = box.w - 10,
-		h = box.h - 10,
+		h = box.h - 10,*/
 
-		/*x = box.x + 20,
+		x = box.x + 20,
 		y = box.y + 20,
 		w = box.w - 40,
-		h = box.h - 40,*/
+		h = box.h - 40,
 	}
 }
 

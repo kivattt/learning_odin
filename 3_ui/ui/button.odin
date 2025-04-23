@@ -24,6 +24,11 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	screenHeightThing := screenHeight
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
+	dropshadowColor: Color = {0, 0, 0, 0.2}
+	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
+	dropshadowSmoothness: f32 = 6
+	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
+
 	color := Color{
 		r = f32(button.color.r) / 255,
 		g = f32(button.color.g) / 255,
@@ -48,7 +53,9 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 	rl.BeginShaderMode(uiData.buttonShader)
-	rl.DrawRectangle(innerBox.x, innerBox.y, innerBox.w, innerBox.h, {0,0,0,0})
+	//rl.DrawRectangle(innerBox.x, innerBox.y, innerBox.w, innerBox.h, {0,0,0,0})
+	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // Size of the outer box
+	//rl.DrawRectangle(0, 0, 2000, screenHeight, {0,0,0,0})
 	rl.EndShaderMode()
 
 	// Out of bounds drawing test
