@@ -74,7 +74,7 @@ main :: proc() {
 	//rootNode := vert1
 	rootNode := horizSplit2
 	//(&rootNode.element.(ui.HorizontalSplit)).resizeBarHeight = 8
-	(&rootNode.element.(ui.HorizontalSplit)).children[0].minimumSize = 400
+	//(&rootNode.element.(ui.HorizontalSplit)).children[0].minimumSize = 400
 
 	/*for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 		button := ui.new_button(nil)
@@ -183,7 +183,12 @@ main :: proc() {
 		t = time.now()
 
 		if inputs.mouseLeftDown && inputs.mouseY != lastmousey {
-			fmt.println("test")
+			//fmt.println("test")
+			bruh := rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplit).children[4].h
+			fmt.println(bruh)
+			if bruh == 100 {
+				fmt.println("jackpot")
+			}
 		}
 		lastmousey = inputs.mouseY
 

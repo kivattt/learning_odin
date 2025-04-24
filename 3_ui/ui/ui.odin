@@ -54,6 +54,7 @@ Node :: struct {
 	parent: ^Node,
 	element: Element,
 	using box: Box,
+	oldBox: Box,
 	preferNotResize: bool, // Used when in a VerticalSplit/HorizontalSplit
 	minimumSize: i32, // Used when in a VerticalSplit/HorizontalSplit
 }
@@ -512,27 +513,32 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 
 inner_box_from_box :: proc(box: Box) -> Box {
 	return Box{
-		/*x = box.x + 5,
+		x = box.x + 5,
 		y = box.y + 5,
 		w = box.w - 10,
-		h = box.h - 10,*/
+		h = box.h - 10,
 
-		x = box.x + 20,
+		/*x = box.x + 20,
 		y = box.y + 20,
 		w = box.w - 40,
-		h = box.h - 40,
+		h = box.h - 40,*/
 	}
 }
 
 correct_boxes :: proc(node: ^Node, undo: bool) {
 	#partial switch &e in node.element {
 	case VerticalSplit:
+		if !undo {
+		for child in e.children {
+			child.oldBox = child.box
+		}
+
 		for child in e.children {
 			child.h = node.h
 		}
 
 		lastChild := e.children[len(e.children) - 1]
-		if lastChild.w > lastChild.minimumSize {
+		if lastChild.w >= lastChild.minimumSize {
 			diff := lastChild.x + lastChild.w - (node.x + node.w)
 			lastChild.w -= diff
 		}
@@ -544,11 +550,21 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 				e.children[i].w -= e.resizeBarWidth
 			}
 		}
+		} else {
+			for child in e.children {
+				child.box = child.oldBox
+			}
+		}
 
 		for child in e.children {
 			correct_boxes(child, undo)
 		}
 	case HorizontalSplit:
+		if !undo {
+		for child in e.children {
+			child.oldBox = child.box
+		}
+
 		for child in e.children {
 			child.w = node.w
 		}
@@ -563,9 +579,14 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 
 		lastChild := e.children[len(e.children) - 1]
 
-		if lastChild.h > lastChild.minimumSize {
+		if lastChild.h >= lastChild.minimumSize {
 			diff := lastChild.y + lastChild.h - (node.y + node.h)
 			lastChild.h -= diff
+		}
+		} else {
+			for child in e.children {
+				child.box = child.oldBox
+			}
 		}
 
 		for child in e.children {
@@ -619,6 +640,11 @@ recompute_children_boxes :: proc(node: ^Node) {
 				recompute_children_boxes(child)
 			}
 	}
+}
+
+NodePointerAndBox :: struct {
+	node: ^Node,
+	box: Box,
 }
 
 // Remember to delete() the return values?
@@ -1040,7 +1066,7 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	button := Button{
 		color = PASSIVE_OUTLINE_COLOR,
-		pixels_rounded = 7,
+		pixels_rounded = 4,
 		backgroundColor = BACKGROUND_COLOR,
 	}
 	node.element = button
