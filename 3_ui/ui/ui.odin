@@ -528,31 +528,24 @@ inner_box_from_box :: proc(box: Box) -> Box {
 correct_boxes :: proc(node: ^Node, undo: bool) {
 	#partial switch &e in node.element {
 	case VerticalSplit:
-		if !undo {
-		for child in e.children {
-			child.oldBox = child.box
-		}
-
-		for child in e.children {
-			child.h = node.h
-		}
-
-		lastChild := e.children[len(e.children) - 1]
-		if lastChild.w >= lastChild.minimumSize {
-			diff := lastChild.x + lastChild.w - (node.x + node.w)
-			lastChild.w -= diff
-		}
-
-		for i := 0; i < len(e.children) - 1; i += 1 {
-			if undo {
-				e.children[i].w += e.resizeBarWidth
-			} else {
-				e.children[i].w -= e.resizeBarWidth
-			}
-		}
-		} else {
+		if undo {
 			for child in e.children {
 				child.box = child.oldBox
+			}
+		} else {
+			for child in e.children {
+				child.oldBox = child.box
+				child.h = node.h
+			}
+
+			lastChild := e.children[len(e.children) - 1]
+			if lastChild.w >= lastChild.minimumSize {
+				diff := lastChild.x + lastChild.w - (node.x + node.w)
+				lastChild.w -= diff
+			}
+
+			for i := 0; i < len(e.children) - 1; i += 1 {
+				e.children[i].w -= e.resizeBarWidth
 			}
 		}
 
@@ -560,32 +553,25 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 			correct_boxes(child, undo)
 		}
 	case HorizontalSplit:
-		if !undo {
-		for child in e.children {
-			child.oldBox = child.box
-		}
-
-		for child in e.children {
-			child.w = node.w
-		}
-
-		for i := 0; i < len(e.children) - 1; i += 1 {
-			if undo {
-				e.children[i].h += e.resizeBarHeight
-			} else {
-				e.children[i].h -= e.resizeBarHeight
-			}
-		}
-
-		lastChild := e.children[len(e.children) - 1]
-
-		if lastChild.h >= lastChild.minimumSize {
-			diff := lastChild.y + lastChild.h - (node.y + node.h)
-			lastChild.h -= diff
-		}
-		} else {
+		if undo {
 			for child in e.children {
 				child.box = child.oldBox
+			}
+		} else {
+			for child in e.children {
+				child.oldBox = child.box
+				child.w = node.w
+			}
+
+			for i := 0; i < len(e.children) - 1; i += 1 {
+				e.children[i].h -= e.resizeBarHeight
+			}
+
+			lastChild := e.children[len(e.children) - 1]
+
+			if lastChild.h >= lastChild.minimumSize {
+				diff := lastChild.y + lastChild.h - (node.y + node.h)
+				lastChild.h -= diff
 			}
 		}
 

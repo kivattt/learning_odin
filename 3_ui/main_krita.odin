@@ -186,9 +186,9 @@ main :: proc() {
 			//fmt.println("test")
 			bruh := rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplit).children[4].h
 			fmt.println(bruh)
-			if bruh == 100 {
+			/*if bruh == 100 {
 				fmt.println("jackpot")
-			}
+			}*/
 		}
 		lastmousey = inputs.mouseY
 
