@@ -536,13 +536,14 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 			for child in e.children {
 				child.oldBox = child.box
 				child.h = node.h
+				//child.w -= e.resizeBarWidth //
 			}
 
-			lastChild := e.children[len(e.children) - 1]
+			/*lastChild := e.children[len(e.children) - 1]
 			if lastChild.w >= lastChild.minimumSize {
 				diff := lastChild.x + lastChild.w - (node.x + node.w)
 				lastChild.w -= diff
-			}
+			}*/
 
 			for i := 0; i < len(e.children) - 1; i += 1 {
 				e.children[i].w -= e.resizeBarWidth
@@ -561,18 +562,19 @@ correct_boxes :: proc(node: ^Node, undo: bool) {
 			for child in e.children {
 				child.oldBox = child.box
 				child.w = node.w
+				//child.h -= e.resizeBarHeight //
 			}
 
 			for i := 0; i < len(e.children) - 1; i += 1 {
 				e.children[i].h -= e.resizeBarHeight
 			}
 
-			lastChild := e.children[len(e.children) - 1]
+			/*lastChild := e.children[len(e.children) - 1]
 
 			if lastChild.h >= lastChild.minimumSize {
 				diff := lastChild.y + lastChild.h - (node.y + node.h)
 				lastChild.h -= diff
-			}
+			}*/
 		}
 
 		for child in e.children {
