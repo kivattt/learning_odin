@@ -876,6 +876,10 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 	switch n in node.element {
 		case VerticalSplit:
 			for child in n.children {
+				if child.w >= child.parent.x + child.parent.w {
+					break
+				}
+
 				draw(child, state, uiData, screenHeight, inputs)
 			}
 
@@ -883,6 +887,10 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x + child.w
 				y := child.y
+
+				if x >= child.parent.x + child.parent.w {
+					break
+				}
 
 				color := uiData.colors.passiveOutlineColor
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
@@ -900,6 +908,10 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			}
 		case HorizontalSplit:
 			for child in n.children {
+				if child.y >= child.parent.y + child.parent.h {
+					break
+				}
+
 				draw(child, state, uiData, screenHeight, inputs)
 			}
 
@@ -907,6 +919,10 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			for child in n.children[:max(0, len(n.children)-1)] {
 				x := child.x
 				y := child.y + child.h
+
+				if y >= child.parent.y + child.parent.h {
+					break
+				}
 
 				color := uiData.colors.passiveOutlineColor
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
