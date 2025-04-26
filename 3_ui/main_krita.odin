@@ -184,14 +184,14 @@ main :: proc() {
 
 		t = time.now()
 
-		if inputs.mouseLeftDown && inputs.mouseY != lastmousey {
+		/*if inputs.mouseLeftDown && inputs.mouseY != lastmousey {
 			//fmt.println("test")
 			bruh := rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplit).children[4].h
 			fmt.println(bruh)
 			/*if bruh == 100 {
 				fmt.println("jackpot")
 			}*/
-		}
+		}*/
 		lastmousey = inputs.mouseY
 
 		ui.correct_boxes(rootNode, false)
@@ -204,7 +204,6 @@ main :: proc() {
 		t = time.now()
 		ui.correct_boxes(rootNode, true)
 		if debug do fmt.println("correct_boxes(..., true)   time:", time.since(t))
-		//fmt.println("root parent:", rootNode.parent)
 
 		if debug do fmt.println("TOTAL                   time:", time.since(totalTime))
 		if debug do fmt.println()

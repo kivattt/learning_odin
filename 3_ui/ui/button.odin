@@ -69,13 +69,17 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
 
 		text := fmt.ctprintf("{}", button.text)
-		bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), 0)
+		spacing: f32 = 1
+		bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), spacing)
 		x := f32(innerBox.x + innerBox.w / 2) - bounds.x/2
 		y := f32(innerBox.y + innerBox.h / 2) - bounds.y/2
 		x = max(f32(innerBox.x), x)
 		y = max(f32(innerBox.y), y)
 
-		rl.DrawTextEx(uiData.fontVariable, fmt.ctprintf("{}", button.text), {f32(x), f32(y)}, f32(uiData.fontSize), 0, {255,255,255,255})
+		x = f32(i32(x))
+		y = f32(i32(y))
+
+		rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, {255,255,255,255})
 
 		rl.EndScissorMode()
 	}
