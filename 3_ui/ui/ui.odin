@@ -1014,11 +1014,12 @@ new_vertical_split_from_nodes :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
 	return node
 }
 
-new_horizontal_split :: proc(parent: ^Node) -> ^Node {
+new_vertical_split :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
-	horizSplit := HorizontalSplit{}
-	horizSplit.resizeBarHeight = 1
-	node.element = horizSplit
+	vertSplit := VerticalSplit{}
+	vertSplit.resizeBarWidth = 1
+
+	node.element = vertSplit
 	node.parent = parent
 	node.w = 1
 	node.h = 1
@@ -1026,12 +1027,11 @@ new_horizontal_split :: proc(parent: ^Node) -> ^Node {
 	return node
 }
 
-new_vertical_split :: proc(parent: ^Node) -> ^Node {
+new_horizontal_split :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
-	vertSplit := VerticalSplit{}
-	vertSplit.resizeBarWidth = 1
-
-	node.element = vertSplit
+	horizSplit := HorizontalSplit{}
+	horizSplit.resizeBarHeight = 1
+	node.element = horizSplit
 	node.parent = parent
 	node.w = 1
 	node.h = 1
