@@ -531,11 +531,11 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 }
 
 inner_box_from_box :: proc{
-	inner_box_from_box,
+	inner_box_from_box_simple,
 	inner_box_from_box_n,
 }
 
-inner_box_from_box :: proc(box: Box) -> Box {
+inner_box_from_box_simple :: proc(box: Box) -> Box {
 	return inner_box_from_box_n(box, 5)
 }
 
@@ -721,6 +721,14 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 
 		return nil
 	case HorizontalSplit:
+		for child in e.children {
+			if is_coord_in_box(child.box, x, y) {
+				return find_hovered_node(child, x, y)
+			}
+		}
+
+		return nil
+	case VerticalSplitUnresizeable:
 		for child in e.children {
 			if is_coord_in_box(child.box, x, y) {
 				return find_hovered_node(child, x, y)
@@ -1087,6 +1095,13 @@ delete_node_and_its_children :: proc(node: ^Node) {
 			delete(e.children)
 			free(node)
 		case HorizontalSplit:
+			for &child in e.children {
+				delete_node_and_its_children(child)
+			}
+
+			delete(e.children)
+			free(node)
+		case VerticalSplitUnresizeable:
 			for &child in e.children {
 				delete_node_and_its_children(child)
 			}

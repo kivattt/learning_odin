@@ -9,6 +9,36 @@ VerticalSplitUnresizeable :: struct {
 	children: [dynamic]^Node,
 }
 
+new_vertical_split_unresizeable :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
+	node := new(Node)
+	verticalSplitUnresizeable: VerticalSplitUnresizeable
+	node.element = verticalSplitUnresizeable
+	node.parent = parent
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
+}
+
+new_vertical_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
+	verticalSplitUnresizeable: VerticalSplitUnresizeable
+
+	node := new(Node)
+
+	for &inNode in nodes {
+		inNode.parent = node
+		inNode.minimumSize = 100
+		append(&verticalSplitUnresizeable.children, inNode)
+	}
+
+	node.element = verticalSplitUnresizeable
+	node.parent = parent
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
+}
+
 vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	verticalSplitUnresizeable := node.element.(VerticalSplitUnresizeable)
 
@@ -23,24 +53,29 @@ vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState
 		}
 	}
 
+	theX: i32 = node.x
+
 	// TODO: Rolling X position type thing
 	for i := 0; i < len(verticalSplitUnresizeable.children); i += 1 {
 		child := verticalSplitUnresizeable.children[i]
+		child.w = child.minimumSize
+
 		if child.preferResize {
 			widthSumOfNextChildren: i32 = 0
 			for j := i + 1; j < len(verticalSplitUnresizeable.children); j += 1 {
 				widthSumOfNextChildren += verticalSplitUnresizeable.children[j].minimumSize
 			}
 
-			child.w = max(child.minimumSize, node.w - 
+			child.w = max(child.minimumSize, node.w - theX - widthSumOfNextChildren)
 		}
 
-		child.w = child.minimumSize
-		child.h = node.h
-	}
+		child.x = theX
+		child.y = node.y
 
-	for child in verticalSplitUnresizeable.children {
-		child.w = child.minimumSize
 		child.h = node.h
+
+		theX += child.w
+
+		draw(child, state, uiData, screenHeight, inputs)
 	}
 }

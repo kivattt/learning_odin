@@ -25,7 +25,7 @@ main :: proc() {
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
 		if i == 1 { // A label
-			boxes[i] = ui.new_label(nil, "Hello world!!\nwith a newline...\nyeah...\nso many newlines\nand so many more\nto come", .Top, .Right)
+			boxes[i] = ui.new_label(nil, "Hello world!!\nwith a newline...\nyeah...\nso many newlines\nand so many more\nto come", .Top, .Left)
 		} else {
 			ds: ui.DebugSquare
 			c: u8 = u8(i) * 20
@@ -67,7 +67,17 @@ main :: proc() {
 	rootNode := horizSplit2
 
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
-		horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_button(horizSplit1)
+		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_button(horizSplit1)
+		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, []^Node{ui.new_label(nil, "Preview", .Middle, .Left), ui.new_button(nil)})
+
+		label := ui.new_label(nil, "Preview", .Middle, .Left)
+		button := ui.new_button(nil)
+		button.preferResize = true
+
+		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {ui.new_label(nil, "Preview", .Middle, .Left), ui.new_button(nil)})
+		horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		horizSplit1.element.(ui.HorizontalSplit).children[i].minimumSize = 30
+
 	}
 
 	append_elem(&(&bottomVertSplit.element.(ui.VerticalSplit)).children, nil)
