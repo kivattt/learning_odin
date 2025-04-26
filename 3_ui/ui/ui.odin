@@ -530,20 +530,23 @@ try_resize_children_to_fit :: proc(rootNode: ^Node, rootNodeChildren: []^Node, d
 	}
 }
 
-inner_box_from_box :: proc(box: Box) -> Box {
-	return Box{
-		x = box.x + 5,
-		y = box.y + 5,
-		w = box.w - 10,
-		h = box.h - 10,
-
-		/*x = box.x + 20,
-		y = box.y + 20,
-		w = box.w - 40,
-		h = box.h - 40,*/
-	}
+inner_box_from_box :: proc{
+	inner_box_from_box,
+	inner_box_from_box_n,
 }
 
+inner_box_from_box :: proc(box: Box) -> Box {
+	return inner_box_from_box_n(box, 5)
+}
+
+inner_box_from_box_n :: proc(box: Box, n: i32) -> Box {
+	return Box{
+		x = box.x + n,
+		y = box.y + n,
+		w = box.w - 2*n,
+		h = box.h - 2*n,
+	}
+}
 correct_boxes :: proc(node: ^Node, undo: bool) {
 	#partial switch &e in node.element {
 	case VerticalSplit:
