@@ -60,7 +60,9 @@ label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfa
 	scissorBox := box_clip_within(node.parent.box, node.box)
 	rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
 
-	rl.DrawRectangle(node.x, node.y, node.w, node.h, label.background)
+	if label.background.a != 0 {
+		rl.DrawRectangle(node.x, node.y, node.w, node.h, label.background)
+	}
 
 	text := fmt.ctprintf("{}", label.text)
 	spacing: f32 = 1
