@@ -88,7 +88,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
 
 		text := fmt.ctprintf("{}", button.text)
-		spacing: f32 = 1
+		spacing: f32 = 0
 		bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), spacing)
 		x := f32(innerBox.x + innerBox.w / 2) - bounds.x/2
 		y := f32(innerBox.y + innerBox.h / 2) - bounds.y/2

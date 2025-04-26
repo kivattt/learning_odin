@@ -65,7 +65,7 @@ label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfa
 	}
 
 	text := fmt.ctprintf("{}", label.text)
-	spacing: f32 = 1
+	spacing: f32 = 0
 
 	bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), spacing)
 

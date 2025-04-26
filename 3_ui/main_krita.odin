@@ -72,7 +72,8 @@ main :: proc() {
 
 		label := ui.new_label(nil, "Preview", .Middle, .Left)
 		button := ui.new_button(nil)
-		button.preferResize = true
+		button.minimumSize = 30
+		//button.preferResize = true
 
 		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {ui.new_label(nil, "Preview", .Middle, .Left), ui.new_button(nil)})
 		horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})

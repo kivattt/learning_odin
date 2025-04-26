@@ -117,7 +117,7 @@ FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
 init_ui_data :: proc() -> (data: UserInterfaceData) {
 	data.colors = get_default_ui_colors()
 
-	data.fontSize = 20
+	data.fontSize = 18
 	data.fontVariable = rl.LoadFontFromMemory(
 		".ttf",
 		raw_data(FONT_VARIABLE_DATA),

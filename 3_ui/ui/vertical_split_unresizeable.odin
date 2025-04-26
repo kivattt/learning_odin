@@ -27,7 +27,7 @@ new_vertical_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^Node
 
 	for &inNode in nodes {
 		inNode.parent = node
-		inNode.minimumSize = 100
+		//inNode.minimumSize = 100
 		append(&verticalSplitUnresizeable.children, inNode)
 	}
 
@@ -40,6 +40,8 @@ new_vertical_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^Node
 }
 
 vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+	rl.DrawRectangle(node.x, node.y, node.w, node.h, BACKGROUND_COLOR)
+
 	verticalSplitUnresizeable := node.element.(VerticalSplitUnresizeable)
 
 	// Panic when more than 1 child has preferResize = true
@@ -66,7 +68,7 @@ vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState
 				widthSumOfNextChildren += verticalSplitUnresizeable.children[j].minimumSize
 			}
 
-			child.w = max(child.minimumSize, node.w - theX - widthSumOfNextChildren)
+			child.w = max(child.minimumSize, node.w - (theX - node.x) - widthSumOfNextChildren)
 		}
 
 		child.x = theX
