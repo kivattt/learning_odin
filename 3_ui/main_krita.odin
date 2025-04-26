@@ -212,8 +212,8 @@ main :: proc() {
 		if debug do fmt.println("TOTAL                   time:", time.since(totalTime))
 		if debug do fmt.println()
 
-		text := fmt.ctprintf("x: {}, y: {}", inputs.mouseX, inputs.mouseY)
-		rl.DrawText(text, 5, 40, 24, {255,255,255,255})
+		//text := fmt.ctprintf("x: {}, y: {}", inputs.mouseX, inputs.mouseY)
+		//rl.DrawText(text, 5, 40, 24, {255,255,255,255})
 
 		rl.DrawFPS(5, 5)
 		rl.EndDrawing()
