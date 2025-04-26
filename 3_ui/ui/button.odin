@@ -12,7 +12,10 @@ Button :: struct {
 }
 
 button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
-	rl.BeginScissorMode(node.x, node.y, node.w, node.h)
+	assert(node.parent != nil)
+
+	scissorBox := box_clip_within(node.parent.box, node.box)
+	rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
 	defer rl.EndScissorMode()
 
 	button := node.element.(Button)

@@ -10,6 +10,7 @@ import "core:fmt"
 import "core:strings"
 import "core:math"
 import "core:c"
+import "core:testing"
 
 PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
@@ -770,6 +771,55 @@ find_hovered_resize_bar :: proc(node: ^Node, x, y: i32) -> ^Node {
 	}
 
 	return nil
+}
+
+@(test)
+box_clip_within_test :: proc(t: ^testing.T) {
+	a, b, result: Box
+
+	a = Box{0,0,50,50}
+	b = Box{0,0,50,50}
+	result = box_clip_within(a, b)
+	testing.expect(t, result == b)
+
+	a = Box{0,0,50,50}
+	b = Box{0,0,40,40}
+	result = box_clip_within(a, b)
+	testing.expect(t, result == b)
+
+	a = Box{50,50,50,50}
+	b = Box{60,60,20,20}
+	result = box_clip_within(a, b)
+	testing.expect(t, result == b)
+
+	a = Box{10,0,50,50}
+	b = Box{0, 0,50,50}
+	result = box_clip_within(a, b)
+	testing.expect(t, result == Box{10,0,40,50})
+
+	a = Box{50,50,50,50}
+	b = Box{0, 0,50,50}
+	result = box_clip_within(a, b)
+	testing.expect(t, (result.w == 0) && (result.h == 0))
+
+	a = Box{0, 0,50,50}
+	b = Box{50,50,50,50}
+	result = box_clip_within(a, b)
+	testing.expect(t, (result.w == 0) && (result.h == 0))
+}
+
+box_clip_within :: proc(outer, inner: Box) -> Box {
+	left  := clamp(inner.x, outer.x, outer.x + outer.w)
+	right := clamp(inner.x + inner.w, outer.x, outer.x + outer.w)
+	up    := clamp(inner.y, outer.y, outer.y + outer.h)
+	down  := clamp(inner.y + inner.h, outer.y, outer.y + outer.h)
+
+	return Box{
+		x = left,
+		y = up,
+		w = right - left,
+		h = down - up,
+	}
 }
 
 is_coord_in_box :: proc(box: Box, x, y: i32) -> bool {
