@@ -1,11 +1,13 @@
 package ui
 
 import rl "vendor:raylib"
+import "core:fmt"
 
 Button :: struct {
 	pixels_rounded: i32,
 	color: rl.Color,
 	backgroundColor: rl.Color,
+	text: string,
 
 	onClickData: rawptr,
 	onClickProc: proc(data: rawptr),
@@ -16,7 +18,6 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 
 	scissorBox := box_clip_within(node.parent.box, node.box)
 	rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
-	defer rl.EndScissorMode()
 
 	button := node.element.(Button)
 
@@ -60,6 +61,24 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // Size of the outer box
 	//rl.DrawRectangle(0, 0, 2000, screenHeight, {0,0,0,0})
 	rl.EndShaderMode()
+
+	rl.EndScissorMode()
+
+	if button.text != "" {
+		scissorBox = box_clip_within(node.parent.box, innerBox)
+		rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
+
+		text := fmt.ctprintf("{}", button.text)
+		bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), 0)
+		x := f32(innerBox.x + innerBox.w / 2) - bounds.x/2
+		y := f32(innerBox.y + innerBox.h / 2) - bounds.y/2
+		x = max(f32(innerBox.x), x)
+		y = max(f32(innerBox.y), y)
+
+		rl.DrawTextEx(uiData.fontVariable, fmt.ctprintf("{}", button.text), {f32(x), f32(y)}, f32(uiData.fontSize), 0, {255,255,255,255})
+
+		rl.EndScissorMode()
+	}
 
 	// Out of bounds drawing test
 	//rl.DrawRectangle(innerBox.x-50, innerBox.y, innerBox.w+90, innerBox.h, {0,255,0,80})

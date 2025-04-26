@@ -67,6 +67,7 @@ main :: proc() {
 
 	//horizSplit2 := ui.horizontal_split_from_nodes({vert1, boxes[2]})
 	horizSplit2 := ui.new_horizontal_split_from_nodes(nil, {vert1, bottomVertSplit})
+	bottomVertSplit.minimumSize = 20
 	//horizSplit2.element.(ui.HorizontalSplit).children[0].h = 2
 	horizSplit2.element.(ui.HorizontalSplit).children[0].h = 5
 	boxes[2].preferNotResize = true
@@ -103,6 +104,7 @@ main :: proc() {
 	for i := 0; i < len(vertSplitMoment.element.(ui.VerticalSplit).children); i += 1 {
 		button := ui.new_button(vertSplitMoment)
 		button.minimumSize = 15
+		(&button.element.(ui.Button)).text = string(fmt.ctprintf("hello {}", i))
 		//button.parent = vertSplitMoment
 
 		vertSplitMoment.element.(ui.VerticalSplit).children[i] = button

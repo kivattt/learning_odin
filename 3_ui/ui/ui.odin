@@ -96,6 +96,9 @@ get_default_ui_colors :: proc() -> UiColors {
 UserInterfaceData :: struct {
 	colors: UiColors,
 
+	fontSize: i32,
+	fontVariable: rl.Font,
+
 	buttonShader: rl.Shader,
 	buttonShaderBoxLoc: c.int,
 	buttonShaderScreenHeightLoc: c.int,
@@ -106,8 +109,20 @@ UserInterfaceData :: struct {
 	buttonShaderDropshadowSmoothnessLoc: c.int,
 }
 
+FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
+
 init_ui_data :: proc() -> (data: UserInterfaceData) {
 	data.colors = get_default_ui_colors()
+
+	data.fontSize = 24
+	data.fontVariable = rl.LoadFontFromMemory(
+		".ttf",
+		raw_data(FONT_VARIABLE_DATA),
+		i32(len(FONT_VARIABLE_DATA)),
+		data.fontSize,
+		nil,
+		0,
+	)
 
 	//data.buttonShader = rl.LoadShader(nil, "ui/shaders/outline_rounded.glsl") // FIXME: Use filepath join
 	data.buttonShader = rl.LoadShader(nil, "ui/shaders/rectangle_rounded.glsl") // FIXME: Use filepath join
