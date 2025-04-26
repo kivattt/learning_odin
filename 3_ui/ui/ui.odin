@@ -58,7 +58,7 @@ Node :: struct {
 	element: Element,
 	using box: Box,
 	oldBox: Box,
-	preferNotResize: bool, // Used when in a VerticalSplit/HorizontalSplit
+	preferResize: bool, // Used when in a VerticalSplit/HorizontalSplit
 	minimumSize: i32, // Used when in a VerticalSplit/HorizontalSplit
 }
 
@@ -263,11 +263,11 @@ find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> in
 					continue
 				}
 
-				if !child.preferNotResize {
+				if child.preferResize {
 					return index
 				}
 
-				if child.preferNotResize && secondChoice == -1 {
+				if !child.preferResize && secondChoice == -1 {
 					secondChoice = index
 				}
 			}
@@ -277,11 +277,11 @@ find_resizeable_child_index :: proc(node: ^Node, respectMinimumSize: bool) -> in
 					continue
 				}
 
-				if !child.preferNotResize {
+				if child.preferResize {
 					return index
 				}
 
-				if child.preferNotResize && secondChoice == -1 {
+				if !child.preferResize && secondChoice == -1 {
 					secondChoice = index
 				}
 			}

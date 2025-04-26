@@ -21,7 +21,6 @@ main :: proc() {
 	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 	rl.SetWindowMinSize(300,200)
 
-	//nBoxes := 7
 	nBoxes := 8
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
@@ -40,14 +39,6 @@ main :: proc() {
 		}
 	}
 
-//	horizSplit1 := ui.horizontal_split_from_nodes(boxes[2:])
-//	horizSplit1 := ui.horizontal_split_from_nodes(boxes[3:])
-
-	/*horizSplit1 := ui.horizontal_split_from_nodes(boxes[4:])
-	horizSplit1.element.(ui.HorizontalSplit).children[0].preferNotResize = true
-	horizSplit1.element.(ui.HorizontalSplit).children[2].preferNotResize = true
-	horizSplit1.element.(ui.HorizontalSplit).children[3].preferNotResize = true*/
-
 	horizSplit1 := ui.new_horizontal_split(nil)
 	//for i := 0; i < 100; i += 1 {
 	for i := 0; i < 5; i += 1 {
@@ -61,40 +52,19 @@ main :: proc() {
 
 	vert1 := ui.new_vertical_split_from_nodes(nil, {boxes[0], boxes[1], horizSplit1})
 	vert1.element.(ui.VerticalSplit).children[1].w = 2
-	vert1.element.(ui.VerticalSplit).children[0].preferNotResize = true
 	vert1.element.(ui.VerticalSplit).children[0].minimumSize = 74 // correct krita minsize
 
-	vert1.element.(ui.VerticalSplit).children[2].preferNotResize = true
+	vert1.element.(ui.VerticalSplit).children[1].preferResize = true
+
 	vert1.element.(ui.VerticalSplit).children[2].minimumSize = 264
 
 	bottomVertSplit := ui.new_vertical_split_from_nodes(nil, boxes[2:4])
 
-	//horizSplit2 := ui.horizontal_split_from_nodes({vert1, boxes[2]})
 	horizSplit2 := ui.new_horizontal_split_from_nodes(nil, {vert1, bottomVertSplit})
 	bottomVertSplit.minimumSize = 20
-	//horizSplit2.element.(ui.HorizontalSplit).children[0].h = 2
 	horizSplit2.element.(ui.HorizontalSplit).children[0].h = 5
-	boxes[2].preferNotResize = true
 
-	//rootNode := vert1
 	rootNode := horizSplit2
-	//(&rootNode.element.(ui.HorizontalSplit)).resizeBarHeight = 8
-	//(&rootNode.element.(ui.HorizontalSplit)).children[0].minimumSize = 400
-
-	/*for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
-		button := ui.new_button(nil)
-
-		button.minimumSize = 15
-		vert := ui.new_vertical_split_from_nodes(nil, {button, ui.new_debug_square(nil)})
-		vert.parent = rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2]
-		vert.minimumSize = 15 + i32(60 * rand.float32())
-		fmt.println(vert.minimumSize)
-		vert.element.(ui.VerticalSplit).children[0].preferNotResize = true
-		//rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplit).children[i] = vert
-		horizSplit1.element.(ui.HorizontalSplit).children[i] = vert
-
-		button.parent = vert
-	}*/
 
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 		horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_button(horizSplit1)
@@ -120,35 +90,10 @@ main :: proc() {
 			i := (transmute(^int)iPtr)^
 			fmt.println("hello from", i)
 		})
-
-		/*(&button.element.(ui.Button)).onClickData = iCopy*/
-
-		/*buttonCopy := new(^ui.Node)
-		buttonCopy^ = button
-
-		ui.button_set_on_click(button, buttonCopy, proc(nodeIn: rawptr) {
-			node := (transmute(^^ui.Node)nodeIn)^
-
-			x := ui.index_of_node_in_parent_split(node)
-			fmt.println("hello from", x)
-		})*/
-
-		/*(&button.element.(ui.Button)).onClickData = buttonCopy
-		(&button.element.(ui.Button)).onClickProc = proc(nodeIn: rawptr) {
-			node := (transmute(^^ui.Node)nodeIn)^
-			x := ui.index_of_node_in_parent_split(node)
-			fmt.println("hello from", x)
-
-			//fmt.println("hello from horiz button #", (transmute(^int)i)^)
-		}*/
 	}
 
 	rootNode.w = rl.GetScreenWidth()
 	rootNode.h = rl.GetScreenHeight()
-
-	/*rootNode.element.(ui.HorizontalSplit).children[1].element.(ui.VerticalSplit).children[0].preferNotResize = true
-	rootNode.element.(ui.HorizontalSplit).children[1].element.(ui.VerticalSplit).children[1].preferNotResize = true
-	rootNode.element.(ui.HorizontalSplit).children[1].element.(ui.VerticalSplit).children[2].preferNotResize = false*/
 
 	t := time.now()
 
