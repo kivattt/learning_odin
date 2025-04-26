@@ -15,6 +15,7 @@ import "core:testing"
 PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
+TEXT_COLOR :: rl.Color{255, 255, 255, 255}
 
 Box :: struct {
 	x: i32,
@@ -46,6 +47,7 @@ DebugSquare :: struct {
 
 Element :: union {
 	DebugSquare,
+	Label,
 	Button,
 	VerticalSplit,
 	HorizontalSplit,
@@ -722,13 +724,7 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 		}
 
 		return nil
-	case Button:
-		if is_coord_in_box(node.box, x, y) {
-			return node
-		} else {
-			return nil
-		}
-	case DebugSquare:
+	case Label, Button, DebugSquare:
 		if is_coord_in_box(node.box, x, y) {
 			return node
 		} else {
@@ -1007,6 +1003,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 		case Button:
 			button_draw(node, state, uiData, screenHeight, inputs)
+		case Label:
+			label_draw(node, state, uiData, screenHeight, inputs)
 	}
 }
 
@@ -1089,9 +1087,7 @@ delete_node_and_its_children :: proc(node: ^Node) {
 
 			delete(e.children)
 			free(node)
-		case DebugSquare:
-			free(node)
-		case Button:
+		case DebugSquare, Button, Label:
 			free(node)
 	}
 }
@@ -1123,20 +1119,4 @@ get_me_some_debug_squares :: proc(numBoxes: int) -> (boxes: []^Node) {
 	}
 
 	return
-}
-
-// Remember to free() the return value!
-new_button :: proc(parent: ^Node) -> ^Node {
-	node := new(Node)
-	button := Button{
-		color = PASSIVE_OUTLINE_COLOR,
-		pixels_rounded = 4,
-		backgroundColor = BACKGROUND_COLOR,
-	}
-	node.element = button
-	node.parent = parent
-	node.w = 1
-	node.h = 1
-	node.minimumSize = 100
-	return node
 }

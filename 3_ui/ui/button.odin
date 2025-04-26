@@ -13,6 +13,22 @@ Button :: struct {
 	onClickProc: proc(data: rawptr),
 }
 
+// Remember to free() the return value!
+new_button :: proc(parent: ^Node) -> ^Node {
+	node := new(Node)
+	button := Button{
+		color = PASSIVE_OUTLINE_COLOR,
+		pixels_rounded = 4,
+		backgroundColor = BACKGROUND_COLOR,
+	}
+	node.element = button
+	node.parent = parent
+	node.w = 1
+	node.h = 1
+	node.minimumSize = 100
+	return node
+}
+
 button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	assert(node.parent != nil)
 

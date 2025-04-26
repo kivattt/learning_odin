@@ -25,15 +25,19 @@ main :: proc() {
 	nBoxes := 8
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
-		ds: ui.DebugSquare
-		c: u8 = u8(i) * 20
-		ds.color = {c, c, c, 255}
+		if i == 1 { // A label
+			boxes[i] = ui.new_label(nil, "Hello world!!\nwith a newline...\nyeah...\nso many newlines\nand so many more\nto come", .Top, .Right)
+		} else {
+			ds: ui.DebugSquare
+			c: u8 = u8(i) * 20
+			ds.color = {c, c, c, 255}
 
-		node := new(ui.Node)
-		node.element = ds
-		node.w = 1
-		node.h = 1
-		boxes[i] = node
+			node := new(ui.Node)
+			node.element = ds
+			node.w = 1
+			node.h = 1
+			boxes[i] = node
+		}
 	}
 
 //	horizSplit1 := ui.horizontal_split_from_nodes(boxes[2:])
