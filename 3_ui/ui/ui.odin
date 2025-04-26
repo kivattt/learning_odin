@@ -15,7 +15,7 @@ import "core:testing"
 PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
-TEXT_COLOR :: rl.Color{255, 255, 255, 255}
+TEXT_COLOR :: rl.Color{230, 230, 230, 255}
 
 Box :: struct {
 	x: i32,

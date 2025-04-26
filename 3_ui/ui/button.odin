@@ -7,7 +7,9 @@ Button :: struct {
 	pixels_rounded: i32,
 	color: rl.Color,
 	backgroundColor: rl.Color,
+
 	text: string,
+	textColor: rl.Color,
 
 	onClickData: rawptr,
 	onClickProc: proc(data: rawptr),
@@ -20,6 +22,7 @@ new_button :: proc(parent: ^Node) -> ^Node {
 		color = PASSIVE_OUTLINE_COLOR,
 		pixels_rounded = 4,
 		backgroundColor = BACKGROUND_COLOR,
+		textColor = TEXT_COLOR,
 	}
 	node.element = button
 	node.parent = parent
@@ -95,7 +98,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		x = f32(i32(x))
 		y = f32(i32(y))
 
-		rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, {255,255,255,255})
+		rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, button.textColor)
 
 		rl.EndScissorMode()
 	}
