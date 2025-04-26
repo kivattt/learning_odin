@@ -1,5 +1,4 @@
 ## TODO
-- Fix un-correct boxes
 - Add vert/horiz splits unresizeable for basic (fixed-size-ish) layouts
 
 Debug menu ideas (bonus points: make it a separate window):
