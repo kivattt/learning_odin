@@ -51,6 +51,7 @@ Element :: union {
 	Button,
 	VerticalSplit,
 	HorizontalSplit,
+	VerticalSplitUnresizeable,
 }
 
 Node :: struct {
@@ -58,8 +59,8 @@ Node :: struct {
 	element: Element,
 	using box: Box,
 	oldBox: Box,
-	preferResize: bool, // Used when in a VerticalSplit/HorizontalSplit
-	minimumSize: i32, // Used when in a VerticalSplit/HorizontalSplit
+	preferResize: bool, // Used when in a VerticalSplit, HorizontalSplit, VerticalSplitUnresizeable
+	minimumSize: i32, // Used when in a VerticalSplit, HorizontalSplit
 }
 
 UserInterfaceState :: struct {
@@ -1005,6 +1006,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			button_draw(node, state, uiData, screenHeight, inputs)
 		case Label:
 			label_draw(node, state, uiData, screenHeight, inputs)
+		case VerticalSplitUnresizeable:
+			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
 	}
 }
 
