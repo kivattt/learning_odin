@@ -45,7 +45,7 @@ float sdRoundBox(in vec2 p, in vec2 b, in vec4 r) {
     return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
 }
 
-float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness = 1.0) {
+float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness) {
 	float maxSize = float(max(w, h));
 	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
 	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
@@ -57,6 +57,10 @@ float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness
 
 	float bruh = max(0, min(1, val * maxSize * smoothness));
 	return 1 - bruh * bruh; // Anti-aliasing at the outer edges
+}
+
+float round_box(int x, int y, int w, int h, int pixels_rounded) {
+	return round_box(x, y, w, h, pixels_rounded, 1.0);
 }
 
 void main() {
