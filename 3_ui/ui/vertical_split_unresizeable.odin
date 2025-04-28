@@ -9,7 +9,7 @@ VerticalSplitUnresizeable :: struct {
 	children: [dynamic]^Node,
 }
 
-new_vertical_split_unresizeable :: proc(parent: ^Node, nodes: []^Node) -> ^Node {
+new_vertical_split_unresizeable :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	verticalSplitUnresizeable: VerticalSplitUnresizeable
 	node.element = verticalSplitUnresizeable
@@ -27,7 +27,6 @@ new_vertical_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^Node
 
 	for &inNode in nodes {
 		inNode.parent = node
-		//inNode.minimumSize = 100
 		append(&verticalSplitUnresizeable.children, inNode)
 	}
 
@@ -57,7 +56,6 @@ vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState
 
 	theX: i32 = node.x
 
-	// TODO: Rolling X position type thing
 	for i := 0; i < len(verticalSplitUnresizeable.children); i += 1 {
 		child := verticalSplitUnresizeable.children[i]
 		child.w = child.minimumSize

@@ -16,6 +16,7 @@ PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
 TEXT_COLOR :: rl.Color{230, 230, 230, 255}
+DEFAULT_FONT_SIZE :: 18
 
 Box :: struct {
 	x: i32,
@@ -52,6 +53,7 @@ Element :: union {
 	VerticalSplit,
 	HorizontalSplit,
 	VerticalSplitUnresizeable,
+	HorizontalSplitUnresizeable,
 }
 
 Node :: struct {
@@ -117,7 +119,7 @@ FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
 init_ui_data :: proc() -> (data: UserInterfaceData) {
 	data.colors = get_default_ui_colors()
 
-	data.fontSize = 18
+	data.fontSize = DEFAULT_FONT_SIZE
 	data.fontVariable = rl.LoadFontFromMemory(
 		".ttf",
 		raw_data(FONT_VARIABLE_DATA),
@@ -736,6 +738,14 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 		}
 
 		return nil
+	case HorizontalSplitUnresizeable:
+		for child in e.children {
+			if is_coord_in_box(child.box, x, y) {
+				return find_hovered_node(child, x, y)
+			}
+		}
+
+		return nil
 	case Label, Button, DebugSquare:
 		if is_coord_in_box(node.box, x, y) {
 			return node
@@ -1019,6 +1029,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			label_draw(node, state, uiData, screenHeight, inputs)
 		case VerticalSplitUnresizeable:
 			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
+		case HorizontalSplitUnresizeable:
+			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
 	}
 }
 
@@ -1102,6 +1114,13 @@ delete_node_and_its_children :: proc(node: ^Node) {
 			delete(e.children)
 			free(node)
 		case VerticalSplitUnresizeable:
+			for &child in e.children {
+				delete_node_and_its_children(child)
+			}
+
+			delete(e.children)
+			free(node)
+		case HorizontalSplitUnresizeable:
 			for &child in e.children {
 				delete_node_and_its_children(child)
 			}

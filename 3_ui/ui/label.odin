@@ -17,6 +17,7 @@ HorizontalTextAlignment :: enum {
 
 Label :: struct {
 	text: string,
+	fontSize: i32,
 	foreground: rl.Color,
 	background: rl.Color,
 	verticalAlignment: VerticalTextAlignment,
@@ -33,6 +34,7 @@ new_label_extra :: proc(parent: ^Node, text: string, verticalAlignment: Vertical
 	node := new(Node)
 	label := Label{
 		text = text,
+		fontSize = DEFAULT_FONT_SIZE,
 		foreground = foreground,
 		background = background,
 		verticalAlignment = verticalAlignment,
@@ -67,7 +69,7 @@ label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfa
 	text := fmt.ctprintf("{}", label.text)
 	spacing: f32 = 0
 
-	bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), spacing)
+	bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(label.fontSize), spacing)
 
 	x, y: f32
 	switch label.verticalAlignment {
@@ -94,7 +96,7 @@ label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfa
 	x = f32(i32(x))
 	y = f32(i32(y))
 
-	rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, label.foreground)
+	rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(label.fontSize), spacing, label.foreground)
 
 	rl.EndScissorMode()
 }

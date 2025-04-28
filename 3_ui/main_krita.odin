@@ -39,10 +39,11 @@ main :: proc() {
 		}
 	}
 
-	horizSplit1 := ui.new_horizontal_split(nil)
-	//for i := 0; i < 100; i += 1 {
+	//horizSplit1 := ui.new_horizontal_split(nil)
+	horizSplit1 := ui.new_horizontal_split_unresizeable(nil)
 	for i := 0; i < 5; i += 1 {
-		append_elem(&(&horizSplit1.element.(ui.HorizontalSplit)).children, nil)
+		//append_elem(&(&horizSplit1.element.(ui.HorizontalSplit)).children, nil)
+		append_elem(&(&horizSplit1.element.(ui.HorizontalSplitUnresizeable)).children, nil)
 	}
 
 	vertSplitMoment := ui.new_vertical_split(nil)
@@ -66,18 +67,21 @@ main :: proc() {
 
 	rootNode := horizSplit2
 
-	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
-		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_button(horizSplit1)
-		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, []^Node{ui.new_label(nil, "Preview", .Middle, .Left), ui.new_button(nil)})
-
+	//for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
+	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
 		label := ui.new_label(nil, "Preview", .Middle, .Left)
 		button := ui.new_button(nil)
-		button.minimumSize = 30
-		//button.preferResize = true
 
-		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {ui.new_label(nil, "Preview", .Middle, .Left), ui.new_button(nil)})
-		horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
-		horizSplit1.element.(ui.HorizontalSplit).children[i].minimumSize = 30
+		//(&label.element.(ui.Label)).fontSize = 18
+
+		size: i32 = 30
+
+		button.minimumSize = size
+		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		//horizSplit1.element.(ui.HorizontalSplit).children[i].minimumSize = 30
+
+		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
 
 	}
 
