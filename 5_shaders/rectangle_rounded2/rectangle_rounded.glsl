@@ -89,24 +89,23 @@ void main() {
 
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
+
+	//float hhh = 1 - (float(y) / h);
+	float hhh = 1 - (float(y) / h);
+	hhh = (hhh * hhh) / 20;
+	theColor.x += hhh;
+	theColor.y += hhh;
+	theColor.z += hhh;
+
 	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
 
 	float outline = round_box2(x, y, w, h, pixels_rounded, 1.0);
-	outline = float(outline <= 0) * (1 - float(20 * outline) * float(20 * outline));
+
+	// Paste this into Desmos to see: (1 - 8x - 2)^2
+	outline = float(outline <= 0 && outline > -0.125) * (1 - 8*outline - 2) * (1 - 8*outline - 2);
 	outline = max(0, min(1, outline));
+
 	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
-
-	//gl_FragColor = vec4(theOutlineColor.a, theOutlineColor.a, theOutlineColor.a, 1.0);
-	//gl_FragColor = vec4(outline, outline, outline, 1.0);
-
-	//gl_FragColor = theColor;
-
-	//gl_FragColor = mix(theColor, theDropshadowColor, 1-val);
-	//gl_FragColor = mix(theColor, theDropshadowColor, 1-val * theColor.a);
-	//gl_FragColor = mix(theColor, theDropshadowColor, (1-val) * theColor.a);
-
-	//gl_FragColor = mix(theColor, theDropshadowColor, dropshadow * dropshadow_color.w);
-
 	vec4 colorAndDropshadow = mix(theDropshadowColor, theColor, theColor.a);
 	gl_FragColor = mix(colorAndDropshadow, theOutlineColor, theOutlineColor.a);
 }

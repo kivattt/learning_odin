@@ -37,7 +37,7 @@ main :: proc() {
 	bruh: f32 = f32(47) / f32(255)
 	color: Color = {bruh,bruh,bruh, 1}
 
-	outlineColor: Color = {1, 1, 1, 0.07}
+	outlineColor: Color = {1, 1, 1, 0.05}
 
 	//dropshadowColor: Color = {0, 0, 0, 1}
 	dropshadowColor: Color = {0, 0, 0, 0.5}
@@ -88,6 +88,7 @@ main :: proc() {
 		dropshadowSmoothness: f32 = 5
 
 		pixelsRounded := i32(3)
+		//pixelsRounded := i32(rl.GetMouseY() / 4)
 
 		fmt.println(pixelsRounded)
 
