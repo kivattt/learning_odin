@@ -84,6 +84,9 @@ main :: proc() {
 			h = h,
 		}
 
+		box.w = rl.GetMouseX()
+		//box.h = rl.GetMouseY()
+
 		dropshadowOffset := [2]i32{0, 0}
 		dropshadowSmoothness: f32 = 5
 

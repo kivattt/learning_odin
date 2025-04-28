@@ -59,7 +59,7 @@ float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness
 }
 
 float round_box2(int x, int y, int w, int h, int pixels_rounded, float smoothness) {
-	float maxSize = float(max(w, h));
+	float maxSize = float(min(w, h));
 	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
 	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
 	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
@@ -90,12 +90,12 @@ void main() {
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
-	//float hhh = 1 - (float(y) / h);
+	// Gradient overlay thing
 	float hhh = 1 - (float(y) / h);
 	hhh = (hhh * hhh) / 20;
-	theColor.x += hhh;
-	theColor.y += hhh;
-	theColor.z += hhh;
+	theColor.r += hhh;
+	theColor.g += hhh;
+	theColor.b += hhh;
 
 	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
 
