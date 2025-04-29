@@ -112,6 +112,8 @@ UserInterfaceData :: struct {
 
 	buttonShaderDropshadowColorLoc: c.int,
 	buttonShaderDropshadowSmoothnessLoc: c.int,
+
+	buttonShaderOutlineColorLoc: c.int,
 }
 
 FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
@@ -138,6 +140,7 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 	data.buttonShaderPixelsRoundedLoc = rl.GetShaderLocation(data.buttonShader, "pixels_rounded_in")
 
 	data.buttonShaderDropshadowColorLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_color")
+	data.buttonShaderOutlineColorLoc = rl.GetShaderLocation(data.buttonShader, "outline_color")
 	data.buttonShaderDropshadowSmoothnessLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_smoothness")
 	return
 }

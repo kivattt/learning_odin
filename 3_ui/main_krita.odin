@@ -69,6 +69,17 @@ main :: proc() {
 
 	//for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
+		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
+			label := ui.new_label(nil, "Long boi", .Middle, .Left)
+			button := ui.new_button(nil)
+			button.preferResize = true
+			size: i32 = 30
+			button.minimumSize = size
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
+			continue
+		}
+
 		label := ui.new_label(nil, "Preview", .Middle, .Left)
 		button := ui.new_button(nil)
 
