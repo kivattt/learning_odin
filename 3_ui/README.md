@@ -1,5 +1,5 @@
 ## TODO
-- Add vert/horiz splits unresizeable for basic (fixed-size-ish) layouts
+- Change button gradient to a dithered gradient?
 
 Debug menu ideas (bonus points: make it a separate window):
 - Disable scissor draw limit
