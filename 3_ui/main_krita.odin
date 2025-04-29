@@ -69,7 +69,11 @@ main :: proc() {
 
 	//for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
-		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
+		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 2 {
+			visualBreak := ui.new_visual_break(horizSplit1, .Horizontal, 12)
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = visualBreak
+			continue
+		} else if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
 			label := ui.new_label(nil, "Long boi", .Middle, .Left)
 			button := ui.new_button(nil)
 			button.preferResize = true

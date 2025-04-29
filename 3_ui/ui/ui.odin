@@ -14,6 +14,7 @@ import "core:testing"
 
 PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
+VISUAL_BREAK_COLOR :: rl.Color{80,80,80, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
 TEXT_COLOR :: rl.Color{230, 230, 230, 255}
 DEFAULT_FONT_SIZE :: 18
@@ -54,6 +55,7 @@ Element :: union {
 	HorizontalSplit,
 	VerticalSplitUnresizeable,
 	HorizontalSplitUnresizeable,
+	VisualBreak,
 }
 
 Node :: struct {
@@ -755,6 +757,8 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 		} else {
 			return nil
 		}
+	case VisualBreak:
+		return nil
 	}
 
 	assert(false)
@@ -1034,6 +1038,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
 		case HorizontalSplitUnresizeable:
 			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
+		case VisualBreak:
+			visual_break_draw(node, state, uiData, screenHeight, inputs)
 	}
 }
 
@@ -1130,7 +1136,7 @@ delete_node_and_its_children :: proc(node: ^Node) {
 
 			delete(e.children)
 			free(node)
-		case DebugSquare, Button, Label:
+		case DebugSquare, Button, Label, VisualBreak:
 			free(node)
 	}
 }
