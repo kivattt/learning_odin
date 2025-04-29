@@ -86,18 +86,16 @@ void main() {
 	//dropshadow = 2*dropshadow - 1;
 	dropshadow = max(0, min(1, dropshadow));
 	dropshadow = dropshadow * dropshadow * dropshadow * dropshadow;
-
+	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
 	// Gradient overlay thing
-	float hhh = 1 - (float(y) / h);
-	hhh = (hhh * hhh) / 20;
-	theColor.r += hhh;
-	theColor.g += hhh;
-	theColor.b += hhh;
-
-	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
+	float gradient = 1 - (float(y) / float(h));
+	gradient = (gradient * gradient) / 20;
+	theColor.r += gradient;
+	theColor.g += gradient;
+	theColor.b += gradient;
 
 	float outline = round_box2(x, y, w, h, pixels_rounded, 1.0);
 
@@ -107,5 +105,6 @@ void main() {
 
 	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
 	vec4 colorAndDropshadow = mix(theDropshadowColor, theColor, theColor.a);
+
 	gl_FragColor = mix(colorAndDropshadow, theOutlineColor, theOutlineColor.a);
 }
