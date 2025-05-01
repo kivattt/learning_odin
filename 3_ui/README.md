@@ -1,5 +1,54 @@
 ## TODO
-- Change button gradient to a dithered gradient?
+- Photoshop-style tool selection where only 1 button can be active at a time. Pseudocode below:
+```go
+// Since this struct is only a node pointer, maybe it shouldn't exist...
+SingleSelectedGroup :: struct {
+    selectedButton: ^Node,
+}
+
+Button :: struct {
+    toggleable: bool, // When true, it's a toggle button, when false its a simple onclick button (like a close window button)
+    toggled: bool, // Only used when toggleable = true ?
+    singleSelectedGroup: ^SingleSelectedGroup,
+}
+
+button_on_click :: proc(node: ^Node) {
+    button := node.element.(Button)
+
+    if button.singleSelectedGroup == nil {
+        if button.toggleable {
+            button.toggled = !button.toggled
+        }
+        // normal behaviour
+    } else {
+        button.singleSelectedGroup.selectedButton = node
+    }
+}
+
+button_draw :: proc(node: ^Node, ...) {
+    button := node.element.(Button)
+
+    isToggled := false
+
+    if button.singleSelectedGroup == nil {
+        if toggleable {
+            isSelected = button.toggled
+        }
+
+        // normal behaviour
+    } else {
+        isSelected = button.singleSelectedGroup.selectedButton == node
+    }
+
+    if isToggled {
+        color = colorSelectedHighlightedColorWhatever
+    }
+
+    // draw button with `color`
+}
+```
+
+- (stupid) Change button gradient to a dithered gradient?
 
 Debug menu ideas (bonus points: make it a separate window):
 - Disable scissor draw limit
