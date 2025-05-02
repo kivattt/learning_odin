@@ -22,6 +22,7 @@ new_button :: proc(parent: ^Node) -> ^Node {
 		color = PASSIVE_OUTLINE_COLOR,
 		pixels_rounded = 4,
 		backgroundColor = BACKGROUND_COLOR,
+		//backgroundColor = {0,0,0,0},
 		textColor = TEXT_COLOR,
 	}
 	node.element = button
@@ -35,12 +36,15 @@ new_button :: proc(parent: ^Node) -> ^Node {
 button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	assert(node.parent != nil)
 
-	scissorBox := box_clip_within(node.parent.box, node.box)
-	rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
+	//visible := box_clip_within(node.parent.box, node.box)
+	visible := visible_area_for_drawing(node)
+	rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
 
 	button := node.element.(Button)
 
-	rl.DrawRectangle(node.x, node.y, node.w, node.h, button.backgroundColor)
+	if button.backgroundColor.a != 0 {
+		rl.DrawRectangle(node.x, node.y, node.w, node.h, button.backgroundColor)
+	}
 
 	innerBox := inner_box_from_box(node.box)
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &innerBox, .IVEC4)
@@ -87,8 +91,8 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.EndScissorMode()
 
 	if button.text != "" {
-		scissorBox = box_clip_within(node.parent.box, innerBox)
-		rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
+		visible = box_clip_within(node.parent.box, innerBox)
+		rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
 
 		text := fmt.ctprintf("{}", button.text)
 		spacing: f32 = 0

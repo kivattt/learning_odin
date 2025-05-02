@@ -39,7 +39,10 @@ new_vertical_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^Node
 }
 
 vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+	scissorBox := box_clip_within(node.parent.box, node.box)
+	rl.BeginScissorMode(scissorBox.x, scissorBox.y, scissorBox.w, scissorBox.h)
 	rl.DrawRectangle(node.x, node.y, node.w, node.h, BACKGROUND_COLOR)
+	rl.EndScissorMode()
 
 	verticalSplitUnresizeable := node.element.(VerticalSplitUnresizeable)
 

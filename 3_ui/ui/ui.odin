@@ -848,6 +848,7 @@ box_clip_within_test :: proc(t: ^testing.T) {
 	testing.expect(t, (result.w == 0) && (result.h == 0))
 }
 
+// Returns `inner` such that it fits within `outer`
 box_clip_within :: proc(outer, inner: Box) -> Box {
 	left  := clamp(inner.x, outer.x, outer.x + outer.w)
 	right := clamp(inner.x + inner.w, outer.x, outer.x + outer.w)
@@ -860,6 +861,19 @@ box_clip_within :: proc(outer, inner: Box) -> Box {
 		w = right - left,
 		h = down - up,
 	}
+}
+
+// Traverses the parents to return the visible area for drawing
+visible_area_for_drawing :: proc(node: ^Node) -> Box {
+	nodeCopy := node
+	visibleArea := node.box
+
+	for nodeCopy.parent != nil {
+		visibleArea = box_clip_within(nodeCopy.parent.box, visibleArea)
+		nodeCopy = nodeCopy.parent
+	}
+
+	return visibleArea
 }
 
 is_coord_in_box :: proc(box: Box, x, y: i32) -> bool {
