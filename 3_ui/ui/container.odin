@@ -4,7 +4,7 @@ import rl "vendor:raylib"
 import "core:fmt"
 
 // A container is a rectangle with a background color and contains a child element.
-// The child element can be 
+// The child element can then have a border of size borderPixels
 
 Container :: struct {
 	child: ^Node,
