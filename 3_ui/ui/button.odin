@@ -36,6 +36,8 @@ new_button :: proc(parent: ^Node) -> ^Node {
 button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	assert(node.parent != nil)
 
+	firstParentContainer := first_parent_container(node)
+
 	//visible := box_clip_within(node.parent.box, node.box)
 	visible := visible_area_for_drawing(node)
 	rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
@@ -62,6 +64,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		a = f32(button.color.a) / 255,
 	}
 
+	// FIXME: Get rid of inner_box_from_box here
 	hovered := is_coord_in_box(inner_box_from_box(node.box), inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
 
@@ -82,7 +85,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 	rl.BeginShaderMode(uiData.buttonShader)
-	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0})
+	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
 
 	rl.EndScissorMode()

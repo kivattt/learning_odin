@@ -190,6 +190,20 @@ n_parents :: proc(node: ^Node) -> int {
 	return sum
 }
 
+first_parent_container :: proc(node: ^Node) -> ^Node {
+	p := node.parent
+	for p != nil {
+		#partial switch &e in p.element {
+			case Container:
+				return p
+		}
+
+		p = p.parent
+	}
+
+	return nil
+}
+
 // Scales up all children to the node's size.
 // It respects their minimum sizes.
 scale_up_children :: proc(node: ^Node) {
