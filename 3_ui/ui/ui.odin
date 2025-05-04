@@ -56,6 +56,7 @@ Element :: union {
 	VerticalSplitUnresizeable,
 	HorizontalSplitUnresizeable,
 	VisualBreak,
+	Container,
 }
 
 Node :: struct {
@@ -250,6 +251,10 @@ scale_up_children :: proc(node: ^Node) {
 			for &child in e.children {
 				scale_up_children(child)
 			}
+		case Container:
+			container := node.element.(Container)
+			e.child.box = inner_box_from_box(node.box, container.borderPixels)
+			scale_up_children(e.child)
 	}
 }
 
@@ -651,6 +656,8 @@ recompute_children_boxes :: proc(node: ^Node) {
 			for &child in e.children {
 				recompute_children_boxes(child)
 			}
+		case Container:
+			recompute_children_boxes(e.child)
 	}
 }
 
@@ -688,6 +695,13 @@ get_resizeable_children :: proc(node: ^Node) -> (vertBars: [dynamic]^Node, horiz
 				delete(horizBarsToAdd)
 				delete(vertBarsToAdd)
 			}
+		case Container:
+			vertBarsToAdd, horizBarsToAdd := get_resizeable_children(e.child)
+			append(&vertBars, ..vertBarsToAdd[:])
+			append(&horizBars, ..horizBarsToAdd[:])
+
+			delete(horizBarsToAdd)
+			delete(vertBarsToAdd)
 	}
 
 	return
@@ -750,6 +764,11 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 			}
 		}
 
+		return nil
+	case Container:
+		if is_coord_in_box(e.child.box, x, y) {
+			return find_hovered_node(e.child, x, y)
+		}
 		return nil
 	case Label, Button, DebugSquare:
 		if is_coord_in_box(node.box, x, y) {
@@ -1042,16 +1061,18 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 					rl.DrawText(cString, child.x + child.w/2, child.y + child.h/2, 30, rl.WHITE)
 				}
 			}
+		case VerticalSplitUnresizeable:
+			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
+		case HorizontalSplitUnresizeable:
+			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
+		case Container:
+			container_draw(node, state, uiData, screenHeight, inputs)
 		case DebugSquare:
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 		case Button:
 			button_draw(node, state, uiData, screenHeight, inputs)
 		case Label:
 			label_draw(node, state, uiData, screenHeight, inputs)
-		case VerticalSplitUnresizeable:
-			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
-		case HorizontalSplitUnresizeable:
-			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
 		case VisualBreak:
 			visual_break_draw(node, state, uiData, screenHeight, inputs)
 	}
@@ -1149,6 +1170,9 @@ delete_node_and_its_children :: proc(node: ^Node) {
 			}
 
 			delete(e.children)
+			free(node)
+		case Container:
+			delete_node_and_its_children(e.child)
 			free(node)
 		case DebugSquare, Button, Label, VisualBreak:
 			free(node)

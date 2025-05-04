@@ -66,6 +66,7 @@ main :: proc() {
 	horizSplit2.element.(ui.HorizontalSplit).children[0].h = 5
 
 	rootNode := horizSplit2
+	//rootNode := ui.new_container(nil, horizSplit2, ui.BACKGROUND_COLOR)
 
 	//for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
@@ -79,7 +80,11 @@ main :: proc() {
 			button.preferResize = true
 			size: i32 = 30
 			button.minimumSize = size
-			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+
+			thing := ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+			container := ui.new_container(horizSplit1, thing, {0,0,0,0})
+
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
 			continue
 		}
@@ -91,13 +96,17 @@ main :: proc() {
 
 		size: i32 = 30
 
-		button.minimumSize = size
-		//horizSplit1.element.(ui.HorizontalSplit).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
-		//horizSplit1.element.(ui.HorizontalSplit).children[i].minimumSize = 30
+		//button.minimumSize = size
+		button.minimumSize = 30 - 10
 
-		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		//horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		//horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
+
+		thing := ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		container := ui.new_container(horizSplit1, thing, {0,0,0,0})
+
+		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
 		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
-
 	}
 
 	append_elem(&(&bottomVertSplit.element.(ui.VerticalSplit)).children, nil)
@@ -111,7 +120,8 @@ main :: proc() {
 		(&button.element.(ui.Button)).text = string(fmt.ctprintf("hello {}", i))
 		//button.parent = vertSplitMoment
 
-		vertSplitMoment.element.(ui.VerticalSplit).children[i] = button
+		//vertSplitMoment.element.(ui.VerticalSplit).children[i] = button
+		vertSplitMoment.element.(ui.VerticalSplit).children[i] = ui.new_container(vertSplitMoment, button, ui.BACKGROUND_COLOR)
 
 		iCopy := new(int)
 		iCopy^ = i

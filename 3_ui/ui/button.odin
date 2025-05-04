@@ -6,7 +6,7 @@ import "core:fmt"
 Button :: struct {
 	pixels_rounded: i32,
 	color: rl.Color,
-	backgroundColor: rl.Color,
+	background: rl.Color,
 
 	text: string,
 	textColor: rl.Color,
@@ -21,8 +21,8 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	button := Button{
 		color = PASSIVE_OUTLINE_COLOR,
 		pixels_rounded = 4,
-		backgroundColor = BACKGROUND_COLOR,
-		//backgroundColor = {0,0,0,0},
+		background = BACKGROUND_COLOR,
+		//background = {0,0,0,0},
 		textColor = TEXT_COLOR,
 	}
 	node.element = button
@@ -42,12 +42,11 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 
 	button := node.element.(Button)
 
-	if button.backgroundColor.a != 0 {
-		rl.DrawRectangle(node.x, node.y, node.w, node.h, button.backgroundColor)
+	if button.background.a != 0 {
+		rl.DrawRectangle(node.x, node.y, node.w, node.h, button.background)
 	}
 
-	innerBox := inner_box_from_box(node.box)
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &innerBox, .IVEC4)
+	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &node.box, .IVEC4)
 	screenHeightThing := screenHeight
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
@@ -83,24 +82,22 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 	rl.BeginShaderMode(uiData.buttonShader)
-	//rl.DrawRectangle(innerBox.x, innerBox.y, innerBox.w, innerBox.h, {0,0,0,0})
-	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // Size of the outer box
-	//rl.DrawRectangle(0, 0, 2000, screenHeight, {0,0,0,0})
+	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0})
 	rl.EndShaderMode()
 
 	rl.EndScissorMode()
 
 	if button.text != "" {
-		visible = box_clip_within(node.parent.box, innerBox)
+		visible = box_clip_within(node.parent.box, node.box)
 		rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
 
 		text := fmt.ctprintf("{}", button.text)
 		spacing: f32 = 0
 		bounds := rl.MeasureTextEx(uiData.fontVariable, text, f32(uiData.fontSize), spacing)
-		x := f32(innerBox.x + innerBox.w / 2) - bounds.x/2
-		y := f32(innerBox.y + innerBox.h / 2) - bounds.y/2
-		x = max(f32(innerBox.x), x)
-		y = max(f32(innerBox.y), y)
+		x := f32(node.x + node.w / 2) - bounds.x/2
+		y := f32(node.y + node.h / 2) - bounds.y/2
+		x = max(f32(node.x), x)
+		y = max(f32(node.y), y)
 
 		x = f32(i32(x))
 		y = f32(i32(y))
