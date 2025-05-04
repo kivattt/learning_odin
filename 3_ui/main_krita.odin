@@ -25,7 +25,7 @@ main :: proc() {
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
 		if i == 1 { // A label
-			boxes[i] = ui.new_label(nil, "Hello world!!\nwith a newline...\nyeah...\nso many newlines\nand so many more\nto come", .Top, .Left)
+			boxes[i] = ui.new_label(nil, "Hello world!!\nwith a newline...\nyeah...\nso many newlines\nand so many more\nto come", .Middle, .Middle)
 		} else {
 			ds: ui.DebugSquare
 			c: u8 = u8(i) * 20
