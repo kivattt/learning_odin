@@ -65,7 +65,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	}
 
 	// FIXME: Get rid of inner_box_from_box here
-	hovered := is_coord_in_box(inner_box_from_box(node.box), inputs.mouseX, inputs.mouseY)
+	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
 
 	if hovered {
@@ -119,7 +119,7 @@ button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inp
 		return
 	}
 
-	hovered := is_coord_in_box(inner_box_from_box(node.box), inputs.mouseX, inputs.mouseY)
+	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
 
 	if hovered && inputs.mouseLeftDown {
