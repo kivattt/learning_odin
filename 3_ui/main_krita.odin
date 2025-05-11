@@ -41,7 +41,7 @@ main :: proc() {
 
 	//horizSplit1 := ui.new_horizontal_split(nil)
 	horizSplit1 := ui.new_horizontal_split_unresizeable(nil)
-	for i := 0; i < 5; i += 1 {
+	for i := 0; i < 6; i += 1 {
 		//append_elem(&(&horizSplit1.element.(ui.HorizontalSplit)).children, nil)
 		append_elem(&(&horizSplit1.element.(ui.HorizontalSplitUnresizeable)).children, nil)
 	}
