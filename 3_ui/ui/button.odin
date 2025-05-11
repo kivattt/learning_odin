@@ -1,5 +1,7 @@
 package ui
 
+// A button should always be inside a Container
+
 import rl "vendor:raylib"
 import "core:fmt"
 
