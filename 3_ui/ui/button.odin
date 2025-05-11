@@ -41,8 +41,6 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 
 	firstParentContainer := first_parent_container(node)
 
-	//visible := box_clip_within(node.parent.box, node.box)
-	//visible := visible_area_for_drawing(node)
 	visible := visible_area_for_drawing(firstParentContainer)
 	rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
 

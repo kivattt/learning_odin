@@ -45,8 +45,9 @@ new_container_extra :: proc(parent, child: ^Node, background: rl.Color, borderPi
 container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	container := node.element.(Container)
 
+	visible := visible_area_for_drawing(node)
 	if container.background.a != 0 {
-		rl.DrawRectangle(node.x, node.y, node.w, node.h, container.background)
+		rl.DrawRectangle(visible.x, visible.y, visible.w, visible.h, container.background)
 	}
 
 	container.child.box = inner_box_from_box(node.box, container.borderPixels)

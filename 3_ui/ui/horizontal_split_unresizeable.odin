@@ -39,7 +39,8 @@ new_horizontal_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^No
 }
 
 horizontal_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
-	rl.DrawRectangle(node.x, node.y, node.w, node.h, BACKGROUND_COLOR)
+	visible := visible_area_for_drawing(node)
+	rl.DrawRectangle(visible.x, visible.y, visible.w, visible.h, BACKGROUND_COLOR)
 
 	horizontalSplitUnresizeable := node.element.(HorizontalSplitUnresizeable)
 
