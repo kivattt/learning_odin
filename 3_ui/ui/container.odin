@@ -33,6 +33,7 @@ new_container_extra :: proc(parent, child: ^Node, background: rl.Color, borderPi
 	}
 	node.element = container
 	node.parent = parent
+	child.parent = node
 	//node.w = 1
 	//node.h = 1
 	//node.minimumSize = 100

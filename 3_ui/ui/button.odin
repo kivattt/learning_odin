@@ -22,7 +22,8 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	button := Button{
 		color = PASSIVE_OUTLINE_COLOR,
-		pixels_rounded = 4,
+		//pixels_rounded = 4,
+		pixels_rounded = 3,
 		background = BACKGROUND_COLOR,
 		//background = {0,0,0,0},
 		textColor = TEXT_COLOR,
@@ -41,7 +42,8 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	firstParentContainer := first_parent_container(node)
 
 	//visible := box_clip_within(node.parent.box, node.box)
-	visible := visible_area_for_drawing(node)
+	//visible := visible_area_for_drawing(node)
+	visible := visible_area_for_drawing(firstParentContainer)
 	rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
 
 	button := node.element.(Button)
@@ -55,7 +57,8 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
 	dropshadowColor: Color = {0, 0, 0, 0.2}
-	outlineColor: Color = {1, 1, 1, 0.05}
+	//outlineColor: Color = {1, 1, 1, 0.05}
+	outlineColor: Color = {1, 1, 1, 0.07}
 	dropshadowSmoothness: f32 = 6
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
 
@@ -66,7 +69,6 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		a = f32(button.color.a) / 255,
 	}
 
-	// FIXME: Get rid of inner_box_from_box here
 	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
 
@@ -87,7 +89,8 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 	rl.BeginShaderMode(uiData.buttonShader)
-	rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // outer box
+	//rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // outer box
+	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
 
 	rl.EndScissorMode()

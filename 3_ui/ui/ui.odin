@@ -13,6 +13,7 @@ import "core:c"
 import "core:testing"
 
 PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
+//PASSIVE_OUTLINE_COLOR :: rl.Color{110, 110, 110, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
 VISUAL_BREAK_COLOR :: rl.Color{80,80,80, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
@@ -784,8 +785,6 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 
 		return nil
 	case Container:
-		fmt.println(e)
-		//if is_coord_in_box(e.child.box, x, y) {
 		if is_coord_in_box(node.box, x, y) {
 			return find_hovered_node(e.child, x, y)
 		}
