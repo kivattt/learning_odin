@@ -156,6 +156,7 @@ MouseCursor :: enum {
 	DEFAULT,
 	RESIZE_EW,
 	RESIZE_NS,
+	POINTING_HAND,
 }
 
 PlatformProcs :: struct {
@@ -175,8 +176,11 @@ get_raylib_platform_procs :: proc() -> (procs: PlatformProcs) {
 				rl.SetMouseCursor(.RESIZE_EW)
 			case .RESIZE_NS:
 				rl.SetMouseCursor(.RESIZE_NS)
+			case .POINTING_HAND:
+				rl.SetMouseCursor(.POINTING_HAND)
 		}
 	}
+
 	return
 }
 
@@ -993,6 +997,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 			#partial switch &e in state.hoveredNode.element {
 				case Button:
 					button_handle_input(state.hoveredNode, state, inputs)
+					cursorWanted = MouseCursor.POINTING_HAND
 			}
 		}
 	}
