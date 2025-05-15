@@ -19,8 +19,8 @@ new_padding_rect_extra :: proc(parent: ^Node, color: rl.Color) -> ^Node {
 	}
 	node.element = paddingRect
 	node.parent = parent
-	node.w = 25
-	node.h = 25
+	node.w = 1
+	node.h = 1
 	node.minimumSize = 100
 	return node
 }
