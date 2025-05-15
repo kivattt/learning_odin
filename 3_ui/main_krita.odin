@@ -90,7 +90,7 @@ main :: proc() {
 		}
 
 		label := ui.new_label(nil, "Preview", .Middle, .Left)
-		button := ui.new_button(nil)
+		button := ui.new_checkbox(nil)
 
 		//(&label.element.(ui.Label)).fontSize = 18
 

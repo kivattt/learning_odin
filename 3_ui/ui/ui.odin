@@ -52,6 +52,7 @@ Element :: union {
 	DebugSquare,
 	Label,
 	Button,
+	Checkbox,
 	VerticalSplit,
 	HorizontalSplit,
 	VerticalSplitUnresizeable,
@@ -789,7 +790,7 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 			return find_hovered_node(e.child, x, y)
 		}
 		return nil
-	case Label, Button, DebugSquare:
+	case Label, Button, Checkbox, DebugSquare:
 		if is_coord_in_box(node.box, x, y) {
 			return node
 		} else {
@@ -997,6 +998,9 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 				case Button:
 					button_handle_input(state.hoveredNode, state, inputs)
 					cursorWanted = MouseCursor.POINTING_HAND
+				case Checkbox:
+					checkbox_handle_input(state.hoveredNode, state, inputs)
+					cursorWanted = MouseCursor.POINTING_HAND
 			}
 		}
 	}
@@ -1091,6 +1095,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
 		case Button:
 			button_draw(node, state, uiData, screenHeight, inputs)
+		case Checkbox:
+			checkbox_draw(node, state, uiData, screenHeight, inputs)
 		case Label:
 			label_draw(node, state, uiData, screenHeight, inputs)
 		case VisualBreak:
@@ -1194,7 +1200,7 @@ delete_node_and_its_children :: proc(node: ^Node) {
 		case Container:
 			delete_node_and_its_children(e.child)
 			free(node)
-		case DebugSquare, Button, Label, VisualBreak:
+		case DebugSquare, Button, Checkbox, Label, VisualBreak:
 			free(node)
 	}
 }
