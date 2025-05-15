@@ -5,9 +5,22 @@ import "core:log"
 
 // TODO: Add a test for resize bar hover being like -8, +8
 
+// Remember to delete() the return value!
+get_me_some_padding_rects :: proc(numBoxes: int) -> (boxes: []^Node) {
+	boxes = make([]^Node, numBoxes)
+
+	for i := 0; i < numBoxes; i += 1 {
+		debugSquare := new_padding_rect(nil) // FIXME?
+		c: u8 = u8(i) * 20
+		boxes[i] = debugSquare
+	}
+
+	return
+}
+
 @(test)
 scale_up_children_test :: proc(t: ^testing.T) {
-	debugSquares := get_me_some_debug_squares(2)
+	debugSquares := get_me_some_padding_rects(2)
 	defer delete(debugSquares)
 
 	rootNode := new_vertical_split_from_nodes(nil, debugSquares)
@@ -29,7 +42,7 @@ scale_up_children_test :: proc(t: ^testing.T) {
 
 @(test)
 children_have_correct_parents_test :: proc(t: ^testing.T) {
-	debugSquares := get_me_some_debug_squares(8)
+	debugSquares := get_me_some_padding_rects(8)
 	defer delete(debugSquares)
 
 	horizSplit1 := new_horizontal_split_from_nodes(nil, debugSquares[0:3])
@@ -53,7 +66,7 @@ children_have_correct_parents_test :: proc(t: ^testing.T) {
 
 @(test)
 vertical_resize_bar_hover_position_test :: proc(t: ^testing.T) {
-	debugSquares := get_me_some_debug_squares(4)
+	debugSquares := get_me_some_padding_rects(4)
 	defer delete(debugSquares)
 
 	rootNode := new_vertical_split_from_nodes(nil, debugSquares)
@@ -99,7 +112,7 @@ vertical_resize_bar_hover_position_test :: proc(t: ^testing.T) {
 
 @(test)
 horizontal_resize_bar_hover_position_test :: proc(t: ^testing.T) {
-	debugSquares := get_me_some_debug_squares(4)
+	debugSquares := get_me_some_padding_rects(4)
 	defer delete(debugSquares)
 
 	rootNode := new_horizontal_split_from_nodes(nil, debugSquares)

@@ -24,7 +24,7 @@ Label :: struct {
 	horizontalAlignment: HorizontalTextAlignment,
 }
 
-new_label :: proc{
+new_label :: proc {
 	new_label_simple,
 	new_label_extra,
 }

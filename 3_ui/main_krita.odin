@@ -27,22 +27,13 @@ main :: proc() {
 		if i == 1 { // A label
 			boxes[i] = ui.new_label(nil, "Hello world!!\nwith a newline...\nyeah...\nso many newlines\nand so many more\nto come", .Middle, .Middle)
 		} else {
-			ds: ui.DebugSquare
 			c: u8 = u8(i) * 20
-			ds.color = {c, c, c, 255}
-
-			node := new(ui.Node)
-			node.element = ds
-			node.w = 1
-			node.h = 1
-			boxes[i] = node
+			boxes[i] = ui.new_padding_rect(nil, rl.Color{c, c, c, 255})
 		}
 	}
 
-	//horizSplit1 := ui.new_horizontal_split(nil)
 	horizSplit1 := ui.new_horizontal_split_unresizeable(nil)
 	for i := 0; i < 6; i += 1 {
-		//append_elem(&(&horizSplit1.element.(ui.HorizontalSplit)).children, nil)
 		append_elem(&(&horizSplit1.element.(ui.HorizontalSplitUnresizeable)).children, nil)
 	}
 
@@ -66,9 +57,7 @@ main :: proc() {
 	horizSplit2.element.(ui.HorizontalSplit).children[0].h = 5
 
 	rootNode := horizSplit2
-	//rootNode := ui.new_container(nil, horizSplit2, ui.BACKGROUND_COLOR)
 
-	//for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplit).children); i += 1 {
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
 		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 2 {
 			visualBreak := ui.new_visual_break(horizSplit1, .Horizontal, 12)
@@ -89,20 +78,26 @@ main :: proc() {
 			continue
 		}
 
-		label := ui.new_label(nil, "Preview", .Middle, .Left)
-		button := ui.new_checkbox(nil)
+		s := "Combined"
+		if i == 1 {
+			s = "Z"
+		} else if i == 2 {
+			s = "Mist"
+		} else if i == 3 {
+			s = "Normal"
+		}
 
-		//(&label.element.(ui.Label)).fontSize = 18
+		label := ui.new_label(nil, s, .Middle, .Left)
+		button := ui.new_checkbox(nil)
 
 		size: i32 = 30
 
-		//button.minimumSize = size
 		button.minimumSize = 30 - 10
 
-		//horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
-		//horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
+		filler := ui.new_padding_rect(nil)
+		filler.minimumSize = 5
 
-		thing := ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
+		thing := ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {button, filler, label})
 		container := ui.new_container(horizSplit1, thing, {0,0,0,0})
 
 		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
@@ -118,9 +113,7 @@ main :: proc() {
 		button := ui.new_button(vertSplitMoment)
 		button.minimumSize = 15
 		(&button.element.(ui.Button)).text = string(fmt.ctprintf("hello {}", i))
-		//button.parent = vertSplitMoment
 
-		//vertSplitMoment.element.(ui.VerticalSplit).children[i] = button
 		vertSplitMoment.element.(ui.VerticalSplit).children[i] = ui.new_container(vertSplitMoment, button, ui.BACKGROUND_COLOR)
 
 		iCopy := new(int)
@@ -173,14 +166,6 @@ main :: proc() {
 
 		t = time.now()
 
-		/*if inputs.mouseLeftDown && inputs.mouseY != lastmousey {
-			//fmt.println("test")
-			bruh := rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplit).children[4].h
-			fmt.println(bruh)
-			/*if bruh == 100 {
-				fmt.println("jackpot")
-			}*/
-		}*/
 		lastmousey = inputs.mouseY
 
 		ui.correct_boxes(rootNode, false)

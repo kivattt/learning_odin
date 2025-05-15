@@ -44,12 +44,8 @@ HorizontalSplit :: struct {
 	resizeBarHeight: i32,
 }
 
-DebugSquare :: struct {
-	color: rl.Color,
-}
-
 Element :: union {
-	DebugSquare,
+	PaddingRect,
 	Label,
 	Button,
 	Checkbox,
@@ -790,7 +786,7 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 			return find_hovered_node(e.child, x, y)
 		}
 		return nil
-	case Label, Button, Checkbox, DebugSquare:
+	case Label, Button, Checkbox, PaddingRect:
 		if is_coord_in_box(node.box, x, y) {
 			return node
 		} else {
@@ -1091,8 +1087,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
 		case Container:
 			container_draw(node, state, uiData, screenHeight, inputs)
-		case DebugSquare:
-			rl.DrawRectangle(node.x, node.y, node.w, node.h, n.color)
+		case PaddingRect:
+			padding_rect_draw(node, state, uiData, screenHeight, inputs)
 		case Button:
 			button_draw(node, state, uiData, screenHeight, inputs)
 		case Checkbox:
@@ -1200,36 +1196,7 @@ delete_node_and_its_children :: proc(node: ^Node) {
 		case Container:
 			delete_node_and_its_children(e.child)
 			free(node)
-		case DebugSquare, Button, Checkbox, Label, VisualBreak:
+		case PaddingRect, Button, Checkbox, Label, VisualBreak:
 			free(node)
 	}
-}
-
-// Remember to free() the return value!
-new_debug_square :: proc(parent: ^Node) -> ^Node {
-	node := new(Node)
-	debugSquare := DebugSquare{
-		color = BACKGROUND_COLOR,
-	}
-	node.element = debugSquare
-	node.parent = parent
-	node.w = 1
-	node.h = 1
-	node.minimumSize = 100
-	return node
-}
-
-// Remember to delete() the return value!
-get_me_some_debug_squares :: proc(numBoxes: int) -> (boxes: []^Node) {
-	boxes = make([]^Node, numBoxes)
-
-	for i := 0; i < numBoxes; i += 1 {
-		debugSquare := new_debug_square(nil) // FIXME?
-		c: u8 = u8(i) * 20
-		//ds := &debugSquare.element.(DebugSquare)
-		//ds.color = {c, c, c, 255}
-		boxes[i] = debugSquare
-	}
-
-	return
 }
