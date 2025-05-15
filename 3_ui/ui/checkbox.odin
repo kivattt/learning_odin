@@ -31,8 +31,9 @@ new_checkbox :: proc(parent: ^Node) -> ^Node {
 
 checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	assert(node.parent != nil)
-	if node.w != node.h {
-		fmt.println("WARNING: Checkbox failure")
+	notSquare := node.w != node.h
+	if notSquare {
+		fmt.println("WARNING: Non-square checkbox, shown in green")
 	}
 
 	firstParentContainer := first_parent_container(node)
@@ -52,7 +53,6 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
 	dropshadowColor: Color = {0, 0, 0, 0.2}
-	//outlineColor: Color = {1, 1, 1, 0.05}
 	outlineColor: Color = {1, 1, 1, 0.07}
 	dropshadowSmoothness: f32 = 6
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
@@ -64,18 +64,12 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 		a = f32(checkbox.color.a) / 255,
 	}
 
+	if notSquare {
+		color = Color{0,1,0,1}
+	}
+
 	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
-
-	if hovered {
-		//dropshadowColor = Color{
-		outlineColor = Color{
-			r = f32(uiData.colors.hoveredOutlineColor.r) / 255,
-			g = f32(uiData.colors.hoveredOutlineColor.g) / 255,
-			b = f32(uiData.colors.hoveredOutlineColor.b) / 255,
-			a = f32(uiData.colors.hoveredOutlineColor.a) / 255,
-		}
-	}
 
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderColorLoc, &color, .VEC4)
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
@@ -84,13 +78,12 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 	rl.BeginShaderMode(uiData.buttonShader)
-	//rl.DrawRectangle(node.x, node.y, node.w, node.h, {0,0,0,0}) // outer box
 	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
 
 	if checkbox.checked {
 		b := inner_box_from_box(node)
-		rl.DrawRectangle(b.x, b.y, b.w, b.h, {255,255,255,255})
+		rl.DrawRectangle(b.x, b.y, b.w, b.h, {255,255,255,215})
 	}
 }
 
