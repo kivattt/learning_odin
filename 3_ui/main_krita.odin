@@ -90,9 +90,10 @@ main :: proc() {
 		label := ui.new_label(nil, s, .Middle, .Left)
 		button := ui.new_checkbox(nil)
 
-		size: i32 = 30
+		//size: i32 = 30
+		size: i32 = 27
 
-		button.minimumSize = 30 - 10
+		button.minimumSize = size - 10
 
 		filler := ui.new_padding_rect(nil)
 		filler.minimumSize = 5
@@ -108,10 +109,11 @@ main :: proc() {
 	bottomVertSplit.element.(ui.VerticalSplit).children[2] = bottomVertSplit.element.(ui.VerticalSplit).children[1]
 	bottomVertSplit.element.(ui.VerticalSplit).children[1] = bottomVertSplit.element.(ui.VerticalSplit).children[0]
 	vertSplitMoment.parent = bottomVertSplit
+	vertSplitMoment.minimumSize = 320
 	bottomVertSplit.element.(ui.VerticalSplit).children[0] = vertSplitMoment
 	for i := 0; i < len(vertSplitMoment.element.(ui.VerticalSplit).children); i += 1 {
 		button := ui.new_button(vertSplitMoment)
-		button.minimumSize = 15
+		button.minimumSize = 80
 		(&button.element.(ui.Button)).text = string(fmt.ctprintf("hello {}", i))
 
 		vertSplitMoment.element.(ui.VerticalSplit).children[i] = ui.new_container(vertSplitMoment, button, ui.BACKGROUND_COLOR)
@@ -156,6 +158,7 @@ main :: proc() {
 		inputs := ui.inputs_from_raylib()
 		t = time.now()
 		ui.handle_input(rootNode, &state, platformProcs, inputs)
+		debug = rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplitUnresizeable).children[0].element.(ui.Container).child.element.(ui.VerticalSplitUnresizeable).children[0].element.(ui.Checkbox).checked
 		if debug do fmt.println("handle_input()             time:", time.since(t))
 
 		t = time.now()

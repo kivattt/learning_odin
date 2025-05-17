@@ -48,14 +48,13 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 		rl.DrawRectangle(node.x, node.y, node.w, node.h, checkbox.background)
 	}
 
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderBoxLoc, &node.box, .IVEC4)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderRectLoc, &node.box, .IVEC4)
 	screenHeightThing := screenHeight
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderScreenHeightLoc, &screenHeightThing, .INT)
 
-	dropshadowColor: Color = {0, 0, 0, 0.2}
-	outlineColor: Color = {1, 1, 1, 0.07}
-	dropshadowSmoothness: f32 = 6
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
+	c := f32(14) / f32(255)
+	dropshadowColor: Color = {c, c, c, 1}
+	dropshadowOffset := [2]i32{0, 2}
 
 	color := Color{
 		r = f32(checkbox.color.r) / 255,
@@ -71,18 +70,18 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
 
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderColorLoc, &color, .VEC4)
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderOutlineColorLoc, &outlineColor, .VEC4)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderColorLoc, &color, .VEC4)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
 	pixelsRounded := checkbox.pixels_rounded
-	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderPixelsRoundedLoc, &pixelsRounded, .INT)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
-	rl.BeginShaderMode(uiData.buttonShader)
+	rl.BeginShaderMode(uiData.checkboxShader)
 	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
 
 	if checkbox.checked {
-		b := inner_box_from_box(node)
+		b := inner_box_from_box(node, 4)
 		rl.DrawRectangle(b.x, b.y, b.w, b.h, {255,255,255,215})
 	}
 }

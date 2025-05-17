@@ -105,16 +105,24 @@ UserInterfaceData :: struct {
 	fontSize: i32,
 	fontVariable: rl.Font,
 
+	// Button shader
 	buttonShader: rl.Shader,
-	buttonShaderBoxLoc: c.int,
+	buttonShaderRectLoc: c.int,
 	buttonShaderScreenHeightLoc: c.int,
 	buttonShaderColorLoc: c.int,
 	buttonShaderPixelsRoundedLoc: c.int,
-
 	buttonShaderDropshadowColorLoc: c.int,
 	buttonShaderDropshadowSmoothnessLoc: c.int,
-
 	buttonShaderOutlineColorLoc: c.int,
+
+	// Checkbox shader
+	checkboxShader: rl.Shader,
+	checkboxShaderRectLoc: c.int,
+	checkboxShaderScreenHeightLoc: c.int,
+	checkboxShaderColorLoc: c.int,
+	checkboxShaderPixelsRoundedLoc: c.int,
+	checkboxShaderDropshadowColorLoc: c.int,
+	checkboxShaderDropshadowOffsetLoc: c.int,
 }
 
 FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
@@ -132,17 +140,24 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 		0,
 	)
 
-	//data.buttonShader = rl.LoadShader(nil, "ui/shaders/outline_rounded.glsl") // FIXME: Use filepath join
+	// Button shader
 	data.buttonShader = rl.LoadShader(nil, "ui/shaders/rectangle_rounded.glsl") // FIXME: Use filepath join
-	//data.buttonShaderBoxLoc = rl.GetShaderLocation(data.buttonShader, "box")
-	data.buttonShaderBoxLoc = rl.GetShaderLocation(data.buttonShader, "rect")
+	data.buttonShaderRectLoc = rl.GetShaderLocation(data.buttonShader, "rect")
 	data.buttonShaderScreenHeightLoc = rl.GetShaderLocation(data.buttonShader, "screen_height")
 	data.buttonShaderColorLoc = rl.GetShaderLocation(data.buttonShader, "color")
 	data.buttonShaderPixelsRoundedLoc = rl.GetShaderLocation(data.buttonShader, "pixels_rounded_in")
-
 	data.buttonShaderDropshadowColorLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_color")
 	data.buttonShaderOutlineColorLoc = rl.GetShaderLocation(data.buttonShader, "outline_color")
 	data.buttonShaderDropshadowSmoothnessLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_smoothness")
+
+	// Checkbox shader
+	data.checkboxShader = rl.LoadShader(nil, "ui/shaders/checkbox.glsl")
+	data.checkboxShaderRectLoc = rl.GetShaderLocation(data.checkboxShader, "rect")
+	data.checkboxShaderScreenHeightLoc = rl.GetShaderLocation(data.checkboxShader, "screen_height")
+	data.checkboxShaderColorLoc = rl.GetShaderLocation(data.checkboxShader, "color")
+	data.checkboxShaderPixelsRoundedLoc = rl.GetShaderLocation(data.checkboxShader, "pixels_rounded_in")
+	data.checkboxShaderDropshadowColorLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_color")
+	data.checkboxShaderDropshadowOffsetLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_offset")
 	return
 }
 

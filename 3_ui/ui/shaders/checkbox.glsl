@@ -5,13 +5,8 @@ uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
 uniform int pixels_rounded_in = 10;
 
-//uniform ivec4 dropshadow_rect; // x y w h
 uniform ivec2 dropshadow_offset; // x y
 uniform vec4 dropshadow_color = vec4(0, 0, 0, 1);
-uniform float dropshadow_smoothness = 1.0;
-
-//uniform vec4 outline_color = vec4(1, 1, 1, 1);
-uniform vec4 outline_color = vec4(1, 1, 1, 0.2);
 
 // The MIT License
 // Copyright © 2015 Inigo Quilez
@@ -81,7 +76,7 @@ void main() {
 	int pixels_rounded = int(min(min(w, h) / 2, pixels_rounded_in));
 
 	float val = round_box(x, y, w, h, pixels_rounded);
-	float dropshadow = round_box(x - dropshadow_offset.x, y - dropshadow_offset.y, w, h, pixels_rounded+1, 1.0 / dropshadow_smoothness);
+	float dropshadow = round_box(x - dropshadow_offset.x, y - dropshadow_offset.y, w, h, pixels_rounded);
 	val = max(0, min(1, val));
 	//dropshadow = 2*dropshadow - 1;
 	dropshadow = max(0, min(1, dropshadow));
@@ -90,21 +85,5 @@ void main() {
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
-	// Gradient overlay thing
-	float gradient = 1 - (float(y) / float(h));
-	gradient = (gradient * gradient) / 30;
-	theColor.r += gradient;
-	theColor.g += gradient;
-	theColor.b += gradient;
-
-	float outline = round_box2(x, y, w, h, pixels_rounded, 1.0);
-
-	// Paste this into Desmos to see: (1 - 8x - 2)^2
-	outline = float(outline <= 0 && outline > -0.125) * (1 - 8*outline - 2) * (1 - 8*outline - 2);
-	outline = max(0, min(1, outline));
-
-	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
-	vec4 colorAndDropshadow = mix(theDropshadowColor, theColor, theColor.a);
-
-	gl_FragColor = mix(colorAndDropshadow, theOutlineColor, theOutlineColor.a);
+	gl_FragColor = mix(theDropshadowColor, theColor, theColor.a);
 }
