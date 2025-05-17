@@ -49,13 +49,6 @@ float sdRoundBox(in vec2 p, in vec2 b, in vec4 r) {
     return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
 }
 
-float sdSegment(in vec2 p, in vec2 a, in vec2 b) {
-    vec2 pa = p-a;
-	vec2 ba = b-a;
-    float h = clamp(dot(pa,ba) / dot(ba,ba), 0.0, 1.0);
-    return length(pa - ba*h);
-}
-
 float sdOrientedBox(in vec2 p, in vec2 a, in vec2 b, float th) {
     float l = length(b-a);
     vec2  d = (b-a)/l;
