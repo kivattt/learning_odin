@@ -59,9 +59,7 @@ float sdOrientedBox(in vec2 p, in vec2 a, in vec2 b, float th) {
 }
 
 float straight_line(in ivec4 box, in vec2 a, in vec2 b) {
-	//float maxSize = float(max(box.z, box.w));
 	float maxSize = float(min(box.z, box.w));
-	//vec2 p = ((box.xy - box.zw) / 2) / maxSize;
 	vec2 p = (vec2(box.xy) - vec2(box.zw) / 2) / maxSize;
 
 	float val = max(0, min(1, sdOrientedBox(p, a / 2, b / 2, checkmark_thickness / maxSize) * maxSize));
@@ -78,25 +76,8 @@ float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness
 	return 1 - bruh * bruh; // Anti-aliasing at the outer edges
 }
 
-float round_box2(int x, int y, int w, int h, int pixels_rounded, float smoothness) {
-	float maxSize = float(min(w, h));
-	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
-	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
-	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
-
-	return val;
-}
-
 float round_box(int x, int y, int w, int h, int pixels_rounded) {
 	return round_box(x, y, w, h, pixels_rounded, 1.0);
-}
-
-vec4 myMix(vec4 a, vec4 b, float n) {
-	float aMix = 1 - n*n;
-
-	float bb = 1 - n;
-	float bMix = 1 - bb*bb;
-	return a*aMix + b*bMix;
 }
 
 vec4 alphaMultiply(vec4 src, vec4 dst) {
