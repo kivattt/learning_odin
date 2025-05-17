@@ -19,7 +19,7 @@ main :: proc() {
 	rl.InitWindow(WIDTH, HEIGHT, "ui test")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
-	rl.SetWindowMinSize(300,200)
+	rl.SetWindowMinSize(550,200)
 
 	nBoxes := 8
 	boxes := make([]^ui.Node, nBoxes)

@@ -8,6 +8,12 @@ uniform int pixels_rounded_in = 10;
 uniform ivec2 dropshadow_offset; // x y
 uniform vec4 dropshadow_color = vec4(0, 0, 0, 1);
 
+uniform float checkmark_thickness = 0.8;
+
+uniform int draw_checkmark = 0;
+
+#define M_PI 3.1415926535897932384626433832795
+
 // The MIT License
 // Copyright © 2015 Inigo Quilez
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -43,6 +49,32 @@ float sdRoundBox(in vec2 p, in vec2 b, in vec4 r) {
     return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
 }
 
+float sdSegment(in vec2 p, in vec2 a, in vec2 b) {
+    vec2 pa = p-a;
+	vec2 ba = b-a;
+    float h = clamp(dot(pa,ba) / dot(ba,ba), 0.0, 1.0);
+    return length(pa - ba*h);
+}
+
+float sdOrientedBox(in vec2 p, in vec2 a, in vec2 b, float th) {
+    float l = length(b-a);
+    vec2  d = (b-a)/l;
+    vec2  q = (p-(a+b)*0.5);
+          q = mat2(d.x,-d.y,d.y,d.x)*q;
+          q = abs(q)-vec2(l,th)*0.5;
+    return length(max(q,0.0)) + min(max(q.x,q.y),0.0);    
+}
+
+float straight_line(in ivec4 box, in vec2 a, in vec2 b) {
+	//float maxSize = float(max(box.z, box.w));
+	float maxSize = float(min(box.z, box.w));
+	//vec2 p = ((box.xy - box.zw) / 2) / maxSize;
+	vec2 p = (vec2(box.xy) - vec2(box.zw) / 2) / maxSize;
+
+	float val = max(0, min(1, sdOrientedBox(p, a / 2, b / 2, checkmark_thickness / maxSize) * maxSize));
+	return 1 - val * val;
+}
+
 float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness) {
 	float maxSize = float(max(w, h));
 	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
@@ -66,6 +98,25 @@ float round_box(int x, int y, int w, int h, int pixels_rounded) {
 	return round_box(x, y, w, h, pixels_rounded, 1.0);
 }
 
+vec4 myMix(vec4 a, vec4 b, float n) {
+	float aMix = 1 - n*n;
+
+	float bb = 1 - n;
+	float bMix = 1 - bb*bb;
+	return a*aMix + b*bMix;
+}
+
+vec4 alphaMultiply(vec4 src, vec4 dst) {
+	vec4 res;
+
+	res.r = dst.r * (1 - src.a) + src.r * src.a;
+	res.g = dst.g * (1 - src.a) + src.g * src.a;
+	res.b = dst.b * (1 - src.a) + src.b * src.a;
+	res.a = dst.a * (1 - src.a) + src.a;
+
+	return res;
+}
+
 void main() {
 	int x = int(gl_FragCoord.x) - rect.x;
 	int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
@@ -78,12 +129,41 @@ void main() {
 	float val = round_box(x, y, w, h, pixels_rounded);
 	float dropshadow = round_box(x - dropshadow_offset.x, y - dropshadow_offset.y, w, h, pixels_rounded);
 	val = max(0, min(1, val));
-	//dropshadow = 2*dropshadow - 1;
 	dropshadow = max(0, min(1, dropshadow));
 	dropshadow = dropshadow * dropshadow * dropshadow * dropshadow;
 	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
-	gl_FragColor = mix(theDropshadowColor, theColor, theColor.a);
+	vec4 colorWithoutCheckmark = mix(theDropshadowColor, theColor, theColor.a);
+
+	// Checkmark
+	float scale = 1.1;
+	vec2 pointA = scale * vec2(-0.6, 0.1);
+	vec2 pointB = scale * vec2(-0.15, 0.5);
+	vec2 pointC = scale * vec2(0.6, -0.5);
+
+	vec2 diff = pointB - pointA;
+	float angleBetweenAB = atan(diff.y / diff.x) / (M_PI/2);
+
+	float checkmarkL = straight_line(ivec4(x, y, w, h), pointB, pointA);
+	checkmarkL = max(0, min(1, checkmarkL));
+
+	float maxSize = float(min(rect.z, rect.w));
+	pointB = pointB - vec2(
+		checkmark_thickness * cos(angleBetweenAB) / maxSize,
+		checkmark_thickness * sin(angleBetweenAB) / maxSize
+	);
+
+	float checkmarkR = straight_line(ivec4(x, y, w, h), pointB, pointC);
+	checkmarkR = max(0, min(1, checkmarkR));
+
+	vec4 checkmarkLColor = vec4(1,1,1, checkmarkL);
+	vec4 checkmarkRColor = vec4(1,1,1, checkmarkR);
+	vec4 checkmarkColor = alphaMultiply(checkmarkLColor, checkmarkRColor);
+
+	checkmarkColor.a = draw_checkmark * checkmarkColor.a;
+
+	//gl_FragColor = colorWithoutCheckmark;
+	gl_FragColor = mix(colorWithoutCheckmark, checkmarkColor, checkmarkColor.a);
 }

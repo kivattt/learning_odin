@@ -42,10 +42,10 @@ uniform vec4 outline_color = vec4(1, 1, 1, 0.2);
 // r.z = roundness top-left
 // r.w = roundness bottom-left
 float sdRoundBox(in vec2 p, in vec2 b, in vec4 r) {
-    r.xy = (p.x>0.0)?r.xy : r.zw;
-    r.x  = (p.y>0.0)?r.x  : r.y;
-    vec2 q = abs(p)-b+r.x;
-    return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
+	r.xy = (p.x>0.0)?r.xy : r.zw;
+	r.x  = (p.y>0.0)?r.x  : r.y;
+	vec2 q = abs(p)-b+r.x;
+	return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
 }
 
 float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness) {
@@ -69,6 +69,17 @@ float round_box2(int x, int y, int w, int h, int pixels_rounded, float smoothnes
 
 float round_box(int x, int y, int w, int h, int pixels_rounded) {
 	return round_box(x, y, w, h, pixels_rounded, 1.0);
+}
+
+vec4 mixAlphaMultiply(vec4 src, vec4 dst) {
+	vec4 res;
+
+	res.r = dst.r * (1 - src.a) + src.r * src.a;
+	res.g = dst.g * (1 - src.a) + src.g * src.a;
+	res.b = dst.b * (1 - src.a) + src.b * src.a;
+	res.a = dst.a * (1 - src.a) + src.a;
+
+	return res;
 }
 
 void main() {
@@ -104,7 +115,7 @@ void main() {
 	outline = max(0, min(1, outline));
 
 	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
-	vec4 colorAndDropshadow = mix(theDropshadowColor, theColor, theColor.a);
+	vec4 colorAndDropshadow = mixAlphaMultiply(theColor, theDropshadowColor);
 
-	gl_FragColor = mix(colorAndDropshadow, theOutlineColor, theOutlineColor.a);
+	gl_FragColor = mixAlphaMultiply(theOutlineColor, colorAndDropshadow);
 }

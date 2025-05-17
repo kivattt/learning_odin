@@ -18,6 +18,8 @@ HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
 VISUAL_BREAK_COLOR :: rl.Color{80,80,80, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
 TEXT_COLOR :: rl.Color{230, 230, 230, 255}
+//HIGHLIGHT_COLOR :: rl.Color{80, 120, 185, 255}
+HIGHLIGHT_COLOR :: rl.Color{75, 110, 177, 255}
 DEFAULT_FONT_SIZE :: 18
 
 Box :: struct {
@@ -89,6 +91,7 @@ UiColors :: struct {
 	passiveOutlineColor: rl.Color,
 	hoveredOutlineColor: rl.Color,
 	backgroundColor: rl.Color,
+	highlightColor: rl.Color,
 }
 
 get_default_ui_colors :: proc() -> UiColors {
@@ -96,6 +99,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		passiveOutlineColor = PASSIVE_OUTLINE_COLOR,
 		hoveredOutlineColor = HOVERED_OUTLINE_COLOR,
 		backgroundColor = BACKGROUND_COLOR,
+		highlightColor = HIGHLIGHT_COLOR,
 	}
 }
 
@@ -123,6 +127,7 @@ UserInterfaceData :: struct {
 	checkboxShaderPixelsRoundedLoc: c.int,
 	checkboxShaderDropshadowColorLoc: c.int,
 	checkboxShaderDropshadowOffsetLoc: c.int,
+	checkboxShaderDrawCheckmark: c.int,
 }
 
 FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
@@ -158,6 +163,7 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 	data.checkboxShaderPixelsRoundedLoc = rl.GetShaderLocation(data.checkboxShader, "pixels_rounded_in")
 	data.checkboxShaderDropshadowColorLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_color")
 	data.checkboxShaderDropshadowOffsetLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_offset")
+	data.checkboxShaderDrawCheckmark = rl.GetShaderLocation(data.checkboxShader, "draw_checkmark")
 	return
 }
 

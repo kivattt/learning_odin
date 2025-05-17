@@ -18,7 +18,7 @@ new_checkbox :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	checkbox := Checkbox{
 		color = PASSIVE_OUTLINE_COLOR,
-		pixels_rounded = 3,
+		pixels_rounded = 1,
 		background = BACKGROUND_COLOR,
 	}
 	node.element = checkbox
@@ -63,6 +63,13 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 		a = f32(checkbox.color.a) / 255,
 	}
 
+	if checkbox.checked {
+		color.r = f32(HIGHLIGHT_COLOR.r) / 255
+		color.g = f32(HIGHLIGHT_COLOR.g) / 255
+		color.b = f32(HIGHLIGHT_COLOR.b) / 255
+		color.a = f32(HIGHLIGHT_COLOR.a) / 255
+	}
+
 	if notSquare {
 		color = Color{0,1,0,1}
 	}
@@ -70,6 +77,8 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
 	hovered &= state.hoveredNode == node
 
+	checked: i32 = checkbox.checked ? 1 : 0
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDrawCheckmark, &checked, .INT)
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderColorLoc, &color, .VEC4)
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
@@ -79,11 +88,6 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	rl.BeginShaderMode(uiData.checkboxShader)
 	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
-
-	if checkbox.checked {
-		b := inner_box_from_box(node, 4)
-		rl.DrawRectangle(b.x, b.y, b.w, b.h, {255,255,255,215})
-	}
 }
 
 checkbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
