@@ -164,6 +164,5 @@ void main() {
 
 	checkmarkColor.a = draw_checkmark * checkmarkColor.a;
 
-	//gl_FragColor = colorWithoutCheckmark;
 	gl_FragColor = mix(colorWithoutCheckmark, checkmarkColor, checkmarkColor.a);
 }
