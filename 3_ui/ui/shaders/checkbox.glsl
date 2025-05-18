@@ -93,7 +93,8 @@ vec4 alphaMultiply(vec4 src, vec4 dst) {
 
 void main() {
 	int x = int(gl_FragCoord.x) - rect.x;
-	int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
+	int y = int(gl_FragCoord.y) - rect.y;
+	//int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
 	int w = rect.z - 1;
 	int h = rect.w - 1;
 
