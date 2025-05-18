@@ -145,7 +145,7 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 	)
 
 	// Button shader
-	data.buttonShader = rl.LoadShader(nil, "ui/shaders/rectangle_rounded.glsl") // FIXME: Use filepath join
+	data.buttonShader = rl.LoadShader(nil, "ui/shaders/button.glsl") // FIXME: Use filepath join
 	data.buttonShaderRectLoc = rl.GetShaderLocation(data.buttonShader, "rect")
 	data.buttonShaderScreenHeightLoc = rl.GetShaderLocation(data.buttonShader, "screen_height")
 	data.buttonShaderColorLoc = rl.GetShaderLocation(data.buttonShader, "color")

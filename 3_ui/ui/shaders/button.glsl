@@ -71,21 +71,16 @@ float round_box(int x, int y, int w, int h, int pixels_rounded) {
 	return round_box(x, y, w, h, pixels_rounded, 1.0);
 }
 
-vec4 mixAlphaMultiply(vec4 src, vec4 dst) {
-	vec4 res;
-
-	res.r = dst.r * (1 - src.a) + src.r * src.a;
-	res.g = dst.g * (1 - src.a) + src.g * src.a;
-	res.b = dst.b * (1 - src.a) + src.b * src.a;
-	res.a = dst.a * (1 - src.a) + src.a;
-
-	return res;
+// Disclaimer: this function was written by Github Copilot
+vec4 blend(vec4 src, vec4 dst) {
+	float outAlpha = src.a + dst.a * (1.0 - src.a);
+	vec3 outColor = (src.rgb * src.a + dst.rgb * dst.a * (1.0 - src.a)) / max(outAlpha, 1e-6);
+	return vec4(outColor, outAlpha);
 }
 
 void main() {
 	int x = int(gl_FragCoord.x) - rect.x;
-	int y = int(gl_FragCoord.y) - rect.y;
-	//int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
+	int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
 	int w = rect.z - 1;
 	int h = rect.w - 1;
 
@@ -116,7 +111,7 @@ void main() {
 	outline = max(0, min(1, outline));
 
 	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
-	vec4 colorAndDropshadow = mixAlphaMultiply(theColor, theDropshadowColor);
+	vec4 colorAndDropshadow = blend(theColor, theDropshadowColor);
 
-	gl_FragColor = mixAlphaMultiply(theOutlineColor, colorAndDropshadow);
+	gl_FragColor = blend(theOutlineColor, colorAndDropshadow);
 }

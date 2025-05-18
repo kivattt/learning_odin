@@ -18,7 +18,7 @@ new_checkbox :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	checkbox := Checkbox{
 		color = PASSIVE_OUTLINE_COLOR,
-		pixels_rounded = 1,
+		pixels_rounded = 2,
 		background = BACKGROUND_COLOR,
 	}
 	node.element = checkbox

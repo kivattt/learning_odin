@@ -43,19 +43,19 @@ uniform int draw_checkmark = 0;
 // r.z = roundness top-left
 // r.w = roundness bottom-left
 float sdRoundBox(in vec2 p, in vec2 b, in vec4 r) {
-    r.xy = (p.x>0.0)?r.xy : r.zw;
-    r.x  = (p.y>0.0)?r.x  : r.y;
-    vec2 q = abs(p)-b+r.x;
-    return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
+	r.xy = (p.x>0.0)?r.xy : r.zw;
+	r.x  = (p.y>0.0)?r.x  : r.y;
+	vec2 q = abs(p)-b+r.x;
+	return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
 }
 
 float sdOrientedBox(in vec2 p, in vec2 a, in vec2 b, float th) {
-    float l = length(b-a);
-    vec2  d = (b-a)/l;
-    vec2  q = (p-(a+b)*0.5);
-          q = mat2(d.x,-d.y,d.y,d.x)*q;
-          q = abs(q)-vec2(l,th)*0.5;
-    return length(max(q,0.0)) + min(max(q.x,q.y),0.0);    
+	float l = length(b-a);
+	vec2  d = (b-a)/l;
+	vec2  q = (p-(a+b)*0.5);
+		  q = mat2(d.x,-d.y,d.y,d.x)*q;
+		  q = abs(q)-vec2(l,th)*0.5;
+	return length(max(q,0.0)) + min(max(q.x,q.y),0.0);    
 }
 
 float straight_line(in ivec4 box, in vec2 a, in vec2 b) {
@@ -80,21 +80,16 @@ float round_box(int x, int y, int w, int h, int pixels_rounded) {
 	return round_box(x, y, w, h, pixels_rounded, 1.0);
 }
 
-vec4 alphaMultiply(vec4 src, vec4 dst) {
-	vec4 res;
-
-	res.r = dst.r * (1 - src.a) + src.r * src.a;
-	res.g = dst.g * (1 - src.a) + src.g * src.a;
-	res.b = dst.b * (1 - src.a) + src.b * src.a;
-	res.a = dst.a * (1 - src.a) + src.a;
-
-	return res;
+// Disclaimer: this function was written by Github Copilot
+vec4 blend(vec4 src, vec4 dst) {
+	float outAlpha = src.a + dst.a * (1.0 - src.a);
+	vec3 outColor = (src.rgb * src.a + dst.rgb * dst.a * (1.0 - src.a)) / max(outAlpha, 1e-6);
+	return vec4(outColor, outAlpha);
 }
 
 void main() {
 	int x = int(gl_FragCoord.x) - rect.x;
-	int y = int(gl_FragCoord.y) - rect.y;
-	//int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
+	int y = ((screen_height-1) - int(gl_FragCoord.y)) - rect.y;
 	int w = rect.z - 1;
 	int h = rect.w - 1;
 
@@ -110,7 +105,7 @@ void main() {
 
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
-	vec4 colorWithoutCheckmark = mix(theDropshadowColor, theColor, theColor.a);
+	vec4 colorWithoutCheckmark = blend(theColor, theDropshadowColor);
 
 	// Checkmark
 	float scale = 1.1;
@@ -135,9 +130,9 @@ void main() {
 
 	vec4 checkmarkLColor = vec4(1,1,1, checkmarkL);
 	vec4 checkmarkRColor = vec4(1,1,1, checkmarkR);
-	vec4 checkmarkColor = alphaMultiply(checkmarkLColor, checkmarkRColor);
+	vec4 checkmarkColor = blend(checkmarkLColor, checkmarkRColor);
 
 	checkmarkColor.a = draw_checkmark * checkmarkColor.a;
 
-	gl_FragColor = mix(colorWithoutCheckmark, checkmarkColor, checkmarkColor.a);
+	gl_FragColor = blend(checkmarkColor, colorWithoutCheckmark);
 }
