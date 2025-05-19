@@ -8,13 +8,13 @@ uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
 uniform int pixels_rounded_in = 10;
 
-//uniform ivec4 dropshadow_rect; // x y w h
 uniform ivec2 dropshadow_offset; // x y
 uniform vec4 dropshadow_color = vec4(0, 0, 0, 1);
 uniform float dropshadow_smoothness = 1.0;
 
-//uniform vec4 outline_color = vec4(1, 1, 1, 1);
 uniform vec4 outline_color = vec4(1, 1, 1, 0.2);
+
+uniform bool draw_upper_highlight = true;
 
 // The MIT License
 // Copyright © 2015 Inigo Quilez
@@ -67,7 +67,7 @@ float round_box2(int x, int y, int w, int h, int pixels_rounded, float smoothnes
 	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
 	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
 
-	return val;
+	return val * maxSize;
 }
 
 float round_box(int x, int y, int w, int h, int pixels_rounded) {
@@ -108,12 +108,18 @@ void main() {
 	theColor.b += gradient;
 
 	float outline = round_box2(x, y, w, h, pixels_rounded, 1.0);
-
-	// Paste this into Desmos to see: (1 - 8x - 2)^2
-	outline = float(outline <= 0 && outline > -0.125) * (1 - 8*outline - 2) * (1 - 8*outline - 2);
+	// Paste this into Desmos to see: 1 - (1.5x)^2
+	// Keep in mind round_box2() probably has totally different output ranges compared to round_box()
+	float strength = 1.5;
+	outline = 1 - ((strength*outline) * (strength*outline));
 	outline = max(0, min(1, outline));
 
 	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
+
+	bool top = draw_upper_highlight && y == 0;
+	float v = float(top) * 1.37;
+	theOutlineColor.rgb += v;
+
 	vec4 colorAndDropshadow = blend(theColor, theDropshadowColor);
 
 	fragColor = blend(theOutlineColor, colorAndDropshadow);

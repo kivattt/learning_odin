@@ -58,4 +58,8 @@ Debug menu ideas (bonus points: make it a separate window):
 
 <img src="screenshot.png" width="80%"></img>
 
+Design inspirations
+- Checkboxes: Blender
+- Buttons: Krita & macOS
+
 The included [AdwaitaSans-Regular](ui/fonts/Adwaita/AdwaitaSans-Regular.ttf) font is licensed under the OFL-1.1. A copy of this license is included [here](ui/fonts/Adwaita/LICENSE).

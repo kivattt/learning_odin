@@ -75,8 +75,13 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 		color = Color{0,1,0,1}
 	}
 
-	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
-	hovered &= state.hoveredNode == node
+	hovered := is_hovered(node, firstParentContainer, state, inputs)
+	if hovered {
+		amount: f32 = 0.07
+		color.r += amount
+		color.g += amount
+		color.b += amount
+	}
 
 	checked: i32 = checkbox.checked ? 1 : 0
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDrawCheckmark, &checked, .INT)

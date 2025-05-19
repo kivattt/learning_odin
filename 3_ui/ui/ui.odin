@@ -17,6 +17,7 @@ PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
 HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
 VISUAL_BREAK_COLOR :: rl.Color{80,80,80, 255}
 BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
+//BACKGROUND_COLOR :: rl.Color{200, 200, 200, 255}
 TEXT_COLOR :: rl.Color{230, 230, 230, 255}
 HIGHLIGHT_COLOR :: rl.Color{75, 110, 177, 255}
 DEFAULT_FONT_SIZE :: 18
@@ -120,6 +121,7 @@ UserInterfaceData :: struct {
 	buttonShaderDropshadowColorLoc: c.int,
 	buttonShaderDropshadowSmoothnessLoc: c.int,
 	buttonShaderOutlineColorLoc: c.int,
+	buttonShaderDrawUpperHighlightLoc: c.int,
 
 	// Checkbox shader
 	checkboxShader: rl.Shader,
@@ -160,6 +162,7 @@ init_ui_data :: proc(procs: PlatformProcs) -> (data: UserInterfaceData) {
 	data.buttonShaderDropshadowColorLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_color")
 	data.buttonShaderOutlineColorLoc = rl.GetShaderLocation(data.buttonShader, "outline_color")
 	data.buttonShaderDropshadowSmoothnessLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_smoothness")
+	data.buttonShaderDrawUpperHighlightLoc = rl.GetShaderLocation(data.buttonShader, "draw_upper_highlight");
 
 	// Checkbox shader
 	data.checkboxShader = rl.LoadShader(nil, "ui/shaders/checkbox.glsl")

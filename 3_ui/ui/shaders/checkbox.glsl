@@ -79,6 +79,19 @@ float round_box(int x, int y, int w, int h, int pixels_rounded, float smoothness
 	return 1 - bruh * bruh; // Anti-aliasing at the outer edges
 }
 
+// Y offset by -0.5 so that it looks smooth for the dropshadow
+float round_box_half_downward(int xx, int yy, int w, int h, int pixels_rounded, float smoothness) {
+	float x = xx;
+	float y = float(yy) - 0.5;
+	float maxSize = float(max(w, h));
+	vec2 p = (vec2(x, y) - vec2(w, h) / 2) / maxSize;
+	vec2 b = vec2(float(w), float(h)) / maxSize / 2;
+	float val = sdRoundBox(p, b, vec4(float(pixels_rounded) / maxSize));
+
+	float bruh = max(0, min(1, val * maxSize * smoothness));
+	return 1 - bruh * bruh; // Anti-aliasing at the outer edges
+}
+
 float round_box(int x, int y, int w, int h, int pixels_rounded) {
 	return round_box(x, y, w, h, pixels_rounded, 1.0);
 }
@@ -100,7 +113,7 @@ void main() {
 	int pixels_rounded = int(min(min(w, h) / 2, pixels_rounded_in));
 
 	float val = round_box(x, y, w, h, pixels_rounded);
-	float dropshadow = round_box(x - dropshadow_offset.x, y - dropshadow_offset.y, w, h, pixels_rounded);
+	float dropshadow = round_box_half_downward(x - dropshadow_offset.x, y - dropshadow_offset.y, w, h, pixels_rounded, 1.0);
 	val = max(0, min(1, val));
 	dropshadow = max(0, min(1, dropshadow));
 	dropshadow = dropshadow * dropshadow * dropshadow * dropshadow;

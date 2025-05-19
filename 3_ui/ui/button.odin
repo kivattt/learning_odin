@@ -22,8 +22,8 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	button := Button{
 		color = PASSIVE_OUTLINE_COLOR,
-		//pixels_rounded = 4,
 		pixels_rounded = 3,
+		//pixels_rounded = 150,
 		background = BACKGROUND_COLOR,
 		//background = {0,0,0,0},
 		textColor = TEXT_COLOR,
@@ -56,7 +56,6 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
 	dropshadowColor: Color = {0, 0, 0, 0.2}
-	//outlineColor: Color = {1, 1, 1, 0.05}
 	outlineColor: Color = {1, 1, 1, 0.07}
 	dropshadowSmoothness: f32 = 6
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
@@ -79,6 +78,9 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 			a = f32(uiData.colors.hoveredOutlineColor.a) / 255,
 		}
 	}
+
+	drawUpperHighlight: i32 = hovered ? 0 : 1
+	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDrawUpperHighlightLoc, &drawUpperHighlight, .INT)
 
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderColorLoc, &color, .VEC4)
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
