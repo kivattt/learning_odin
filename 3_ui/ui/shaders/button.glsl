@@ -81,6 +81,15 @@ vec4 blend(vec4 src, vec4 dst) {
 	return vec4(outColor, outAlpha);
 }
 
+// Hash function copied from: https://www.shadertoy.com/view/MdcfDj
+#define M1 1597334677U     //1719413*929
+#define M2 3812015801U     //140473*2467*11
+float hash(uvec2 q) {
+	q *= uvec2(M1, M2); 
+	uint n = (q.x ^ q.y) * M1;
+	return float(n) * (1.0/float(0xffffffffU));
+}
+
 void main() {
 	int x = int(gl_FragCoord.x / dpi_scale.x) - rect.x;
 	int y = ((screen_height-1) - int(gl_FragCoord.y / dpi_scale.y)) - rect.y;
@@ -101,8 +110,9 @@ void main() {
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
 	// Gradient overlay thing
-	float gradient = 1 - (float(y) / float(h));
-	gradient = (gradient * gradient) / 30;
+	float gradient = (float(y) / float(h));
+	gradient = (gradient * gradient) / 45;
+	gradient += (hash(uvec2(gl_FragCoord)) / 255.0 - (0.5/255.0)); // Dither to prevent banding in the gradient: https://www.shadertoy.com/view/WXBXzm
 	theColor.r += gradient;
 	theColor.g += gradient;
 	theColor.b += gradient;
