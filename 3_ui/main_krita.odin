@@ -33,7 +33,7 @@ main :: proc() {
 	}
 
 	horizSplit1 := ui.new_horizontal_split_unresizeable(nil)
-	for i := 0; i < 6; i += 1 {
+	for i := 0; i < 7; i += 1 {
 		append_elem(&(&horizSplit1.element.(ui.HorizontalSplitUnresizeable)).children, nil)
 	}
 
@@ -59,16 +59,21 @@ main :: proc() {
 	rootNode := horizSplit2
 
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
-		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 2 {
+		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 3 {
 			visualBreak := ui.new_visual_break(horizSplit1, .Horizontal, 12)
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = visualBreak
 			continue
-		} else if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
-			label := ui.new_label(nil, "Long boi", .Middle, .Left)
+		} else if i >= len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 3 {
+			s := i & 1 == 1 ? "Long boi" : "Short boi"
+
+			label := ui.new_label(nil, s, .Middle, .Left)
 			button := ui.new_button(nil)
-			(&button.element.(ui.Button)).text = "the long"
-			ui.button_set_on_click(button, nil, proc(iPtr: rawptr) {
-				fmt.println("long boi click")
+			(&button.element.(ui.Button)).text = s
+			sCopy := new(string)
+			sCopy^ = s
+			ui.button_set_on_click(button, sCopy, proc(sCopy: rawptr) {
+				s := (transmute(^string)sCopy)^
+				fmt.println(s, "click")
 			})
 			button.preferResize = true
 			size: i32 = 30
