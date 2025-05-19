@@ -66,6 +66,10 @@ main :: proc() {
 		} else if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
 			label := ui.new_label(nil, "Long boi", .Middle, .Left)
 			button := ui.new_button(nil)
+			(&button.element.(ui.Button)).text = "the long"
+			ui.button_set_on_click(button, nil, proc(iPtr: rawptr) {
+				fmt.println("long boi click")
+			})
 			button.preferResize = true
 			size: i32 = 30
 			button.minimumSize = size
@@ -98,7 +102,18 @@ main :: proc() {
 		filler := ui.new_padding_rect(nil)
 		filler.minimumSize = 5
 
-		thing := ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {button, filler, label})
+		thing: ^ui.Node
+		if i == 3 {
+			filler2 := ui.new_padding_rect(nil)
+			filler2.minimumSize = 5
+
+			button2 := ui.new_checkbox(nil)
+			button2.minimumSize = size - 10
+
+			thing = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {button, filler, button2, filler2, label})
+		} else {
+			thing = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {button, filler, label})
+		}
 		container := ui.new_container(horizSplit1, thing, {0,0,0,0})
 
 		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container

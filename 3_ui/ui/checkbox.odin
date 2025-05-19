@@ -95,8 +95,8 @@ checkbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: I
 		return
 	}
 
-	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
-	hovered &= state.hoveredNode == node
+	firstParentContainer := first_parent_container(node)
+	hovered := is_hovered(node, firstParentContainer, state, inputs)
 
 	if hovered && inputs.mouseLeftDown {
 		checkbox := &node.element.(Checkbox)

@@ -288,8 +288,7 @@ scale_up_children :: proc(node: ^Node) {
 				scale_up_children(child)
 			}
 		case Container:
-			container := node.element.(Container)
-			e.child.box = inner_box_from_box(node.box, container.borderPixels)
+			e.child.box = container_inner_box(node)
 			scale_up_children(e.child)
 	}
 }
@@ -767,6 +766,20 @@ index_of_node_in_parent_split :: proc(node: ^Node) -> int {
 	return -1
 }
 
+// Only used in interactable elements except for Container
+// That is, Button and Checkbox
+is_hovered :: proc(node: ^Node, firstParentContainer: ^Node, state: ^UserInterfaceState, inputs: Inputs) -> bool {
+	hovered := false
+	if firstParentContainer == nil {
+		hovered = is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
+	} else {
+		hovered = is_coord_in_box(container_inner_box(firstParentContainer), inputs.mouseX, inputs.mouseY)
+	}
+
+	hovered &= state.hoveredNode == node
+	return hovered
+}
+
 find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 	switch &e in node.element {
 	case VerticalSplit:
@@ -802,8 +815,17 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 
 		return nil
 	case Container:
-		if is_coord_in_box(node.box, x, y) {
-			return find_hovered_node(e.child, x, y)
+		if is_coord_in_box(container_inner_box(node), x, y) {
+			container := node.element.(Container)
+			n, onlyChild := num_interactable(container.child)
+
+			// If there is only 1 interactable element in the Container,
+			// we handle input for it even when the mouse isn't directly over it.
+			if n == 1 {
+				return onlyChild
+			} else {
+				return find_hovered_node(e.child, x, y)
+			}
 		}
 		return nil
 	case Label, Button, Checkbox, PaddingRect:

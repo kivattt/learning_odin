@@ -67,8 +67,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		a = f32(button.color.a) / 255,
 	}
 
-	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
-	hovered &= state.hoveredNode == node
+	hovered := is_hovered(node, firstParentContainer, state, inputs)
 
 	if hovered {
 		//dropshadowColor = Color{
@@ -112,9 +111,6 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 
 		rl.EndScissorMode()
 	}
-
-	// Out of bounds drawing test
-	//rl.DrawRectangle(innerBox.x-50, innerBox.y, innerBox.w+90, innerBox.h, {0,255,0,80})
 }
 
 button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
@@ -122,8 +118,8 @@ button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inp
 		return
 	}
 
-	hovered := is_coord_in_box(node.box, inputs.mouseX, inputs.mouseY)
-	hovered &= state.hoveredNode == node
+	firstParentContainer := first_parent_container(node)
+	hovered := is_hovered(node, firstParentContainer, state, inputs)
 
 	if hovered && inputs.mouseLeftDown {
 		button := node.element.(Button)

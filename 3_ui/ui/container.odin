@@ -42,6 +42,10 @@ new_container_extra :: proc(parent, child: ^Node, background: rl.Color, borderPi
 	return node
 }
 
+container_inner_box :: proc(node: ^Node) -> Box {
+	return inner_box_from_box_n(node.box, node.element.(Container).borderPixels)
+}
+
 container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	container := node.element.(Container)
 
@@ -52,4 +56,57 @@ container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInt
 
 	container.child.box = inner_box_from_box(node.box, container.borderPixels)
 	draw(container.child, state, uiData, screenHeight, inputs)
+}
+
+num_interactable :: proc(node: ^Node) -> (num: int, onlyChild: ^Node) {
+	if is_interactable(node) {
+		num = 1
+		onlyChild = node
+	} else {
+		#partial switch &e in node.element {
+			case VerticalSplit:
+				for &child in e.children {
+					n, c := num_interactable(child)
+					num += n
+					if c != nil {
+						onlyChild = c
+					}
+				}
+			case HorizontalSplit:
+				for &child in e.children {
+					n, c := num_interactable(child)
+					num += n
+					if c != nil {
+						onlyChild = c
+					}
+				}
+			case VerticalSplitUnresizeable:
+				for &child in e.children {
+					n, c := num_interactable(child)
+					num += n
+					if c != nil {
+						onlyChild = c
+					}
+				}
+			case HorizontalSplitUnresizeable:
+				for &child in e.children {
+					n, c := num_interactable(child)
+					num += n
+					if c != nil {
+						onlyChild = c
+					}
+				}
+		}
+	}
+
+	return
+}
+
+is_interactable :: proc(node: ^Node) -> bool {
+	#partial switch &e in node.element {
+		case Container, Button, Checkbox:
+			return true
+	}
+
+	return false
 }
