@@ -50,6 +50,8 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		rl.DrawRectangle(node.x, node.y, node.w, node.h, button.background)
 	}
 
+	dpiScale := rl.GetWindowScaleDPI()
+	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDPIScaleLoc, &dpiScale, .VEC2)
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderRectLoc, &node.box, .IVEC4)
 	screenHeightThing := screenHeight
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)

@@ -2,6 +2,7 @@
 
 out vec4 fragColor;
 
+uniform vec2 dpi_scale;
 uniform ivec4 rect; // x y w h
 uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
@@ -90,8 +91,8 @@ vec4 blend(vec4 src, vec4 dst) {
 }
 
 void main() {
-	int x = int(gl_FragCoord.x / 2) - rect.x;
-	int y = ((screen_height-1) - int(gl_FragCoord.y / 2)) - rect.y;
+	int x = int(gl_FragCoord.x / dpi_scale.x) - rect.x;
+	int y = ((screen_height-1) - int(gl_FragCoord.y / dpi_scale.y)) - rect.y;
 	int w = rect.z - 1;
 	int h = rect.w - 1;
 

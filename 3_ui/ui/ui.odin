@@ -110,6 +110,7 @@ UserInterfaceData :: struct {
 
 	// Button shader
 	buttonShader: rl.Shader,
+	buttonShaderDPIScaleLoc: c.int,
 	buttonShaderRectLoc: c.int,
 	buttonShaderScreenHeightLoc: c.int,
 	buttonShaderColorLoc: c.int,
@@ -120,6 +121,7 @@ UserInterfaceData :: struct {
 
 	// Checkbox shader
 	checkboxShader: rl.Shader,
+	checkboxShaderDPIScaleLoc: c.int,
 	checkboxShaderRectLoc: c.int,
 	checkboxShaderScreenHeightLoc: c.int,
 	checkboxShaderColorLoc: c.int,
@@ -146,6 +148,7 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 
 	// Button shader
 	data.buttonShader = rl.LoadShader(nil, "ui/shaders/button.glsl") // FIXME: Use filepath join
+	data.buttonShaderDPIScaleLoc = rl.GetShaderLocation(data.buttonShader, "dpi_scale")
 	data.buttonShaderRectLoc = rl.GetShaderLocation(data.buttonShader, "rect")
 	data.buttonShaderScreenHeightLoc = rl.GetShaderLocation(data.buttonShader, "screen_height")
 	data.buttonShaderColorLoc = rl.GetShaderLocation(data.buttonShader, "color")
@@ -156,6 +159,7 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 
 	// Checkbox shader
 	data.checkboxShader = rl.LoadShader(nil, "ui/shaders/checkbox.glsl")
+	data.checkboxShaderDPIScaleLoc = rl.GetShaderLocation(data.checkboxShader, "dpi_scale")
 	data.checkboxShaderRectLoc = rl.GetShaderLocation(data.checkboxShader, "rect")
 	data.checkboxShaderScreenHeightLoc = rl.GetShaderLocation(data.checkboxShader, "screen_height")
 	data.checkboxShaderColorLoc = rl.GetShaderLocation(data.checkboxShader, "color")
