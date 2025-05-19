@@ -153,14 +153,17 @@ main :: proc() {
 	if debug do fmt.println("scale_up_children()         time:", time.since(t))
 
 	state := ui.ui_state_default_values()
-	uiData := ui.init_ui_data()
 	platformProcs := ui.get_raylib_platform_procs()
+	uiData := ui.init_ui_data(platformProcs)
 
 	lastmousey: i32 = 0
 
 	i: f64 = 0
 	for !rl.WindowShouldClose() {
 		i += 0.05
+
+		//fmt.println(rl.GetWindowScaleDPI())
+		fmt.println(uiData.dpiScale)
 
 		rl.BeginDrawing()
 		rl.ClearBackground({255, 0, 0, 255})

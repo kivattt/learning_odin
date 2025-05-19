@@ -48,8 +48,7 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 		rl.DrawRectangle(node.x, node.y, node.w, node.h, checkbox.background)
 	}
 
-	dpiScale := rl.GetWindowScaleDPI()
-	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDPIScaleLoc, &dpiScale, .VEC2)
+	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderRectLoc, &node.box, .IVEC4)
 	screenHeightThing := screenHeight
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderScreenHeightLoc, &screenHeightThing, .INT)

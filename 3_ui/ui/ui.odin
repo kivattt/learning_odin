@@ -108,6 +108,8 @@ UserInterfaceData :: struct {
 	fontSize: i32,
 	fontVariable: rl.Font,
 
+	dpiScale: [2]f32, // Width scale, height scale
+
 	// Button shader
 	buttonShader: rl.Shader,
 	buttonShaderDPIScaleLoc: c.int,
@@ -133,7 +135,7 @@ UserInterfaceData :: struct {
 
 FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
 
-init_ui_data :: proc() -> (data: UserInterfaceData) {
+init_ui_data :: proc(procs: PlatformProcs) -> (data: UserInterfaceData) {
 	data.colors = get_default_ui_colors()
 
 	data.fontSize = DEFAULT_FONT_SIZE
@@ -145,6 +147,8 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 		nil,
 		0,
 	)
+
+	data.dpiScale = procs.getWindowScaleDPI()
 
 	// Button shader
 	data.buttonShader = rl.LoadShader(nil, "ui/shaders/button.glsl") // FIXME: Use filepath join
@@ -172,6 +176,7 @@ init_ui_data :: proc() -> (data: UserInterfaceData) {
 
 deinit_ui_data :: proc(uiData: ^UserInterfaceData) {
 	rl.UnloadShader(uiData.buttonShader)
+	rl.UnloadShader(uiData.checkboxShader)
 }
 
 MouseCursor :: enum {
@@ -183,6 +188,7 @@ MouseCursor :: enum {
 
 PlatformProcs :: struct {
 	setMouseCursorIconProc: proc(cursor: MouseCursor),
+	getWindowScaleDPI: proc() -> [2]f32,
 }
 
 get_dummy_platform_procs :: proc() -> (procs: PlatformProcs) {
@@ -200,6 +206,14 @@ get_raylib_platform_procs :: proc() -> (procs: PlatformProcs) {
 				rl.SetMouseCursor(.RESIZE_NS)
 			case .POINTING_HAND:
 				rl.SetMouseCursor(.POINTING_HAND)
+		}
+	}
+
+	procs.getWindowScaleDPI = proc() -> [2]f32 {
+		when ODIN_OS == .Linux {
+			return [2]f32{1,1}
+		} else {
+			return rl.GetWindowScaleDPI()
 		}
 	}
 
