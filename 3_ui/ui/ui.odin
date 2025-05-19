@@ -817,11 +817,11 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 	case Container:
 		if is_coord_in_box(container_inner_box(node), x, y) {
 			container := node.element.(Container)
-			n, onlyChild := num_interactable(container.child)
 
 			// If there is only 1 interactable element in the Container,
 			// we handle input for it even when the mouse isn't directly over it.
-			if n == 1 {
+			onlyChild := container_interactable_only_child(container.child)
+			if onlyChild != nil {
 				return onlyChild
 			} else {
 				return find_hovered_node(e.child, x, y)

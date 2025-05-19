@@ -58,41 +58,50 @@ container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInt
 	draw(container.child, state, uiData, screenHeight, inputs)
 }
 
-num_interactable :: proc(node: ^Node) -> (num: int, onlyChild: ^Node) {
+// If the container only has 1 interactable (Button, Checkbox) child, this returns it.
+// Otherwise it returns nil
+container_interactable_only_child :: proc(node: ^Node) -> (onlyChild: ^Node = nil) {
 	if is_interactable(node) {
-		num = 1
 		onlyChild = node
 	} else {
 		#partial switch &e in node.element {
 			case VerticalSplit:
 				for &child in e.children {
-					n, c := num_interactable(child)
-					num += n
+					c := container_interactable_only_child(child)
 					if c != nil {
+						if onlyChild != nil {
+							return nil // Multiple interactable children found
+						}
 						onlyChild = c
 					}
 				}
 			case HorizontalSplit:
 				for &child in e.children {
-					n, c := num_interactable(child)
-					num += n
+					c := container_interactable_only_child(child)
 					if c != nil {
+						if onlyChild != nil {
+							return nil // Multiple interactable children found
+						}
 						onlyChild = c
 					}
 				}
 			case VerticalSplitUnresizeable:
 				for &child in e.children {
-					n, c := num_interactable(child)
-					num += n
+					c := container_interactable_only_child(child)
 					if c != nil {
+						if onlyChild != nil {
+							return nil // Multiple interactable children found
+						}
 						onlyChild = c
 					}
 				}
 			case HorizontalSplitUnresizeable:
 				for &child in e.children {
-					n, c := num_interactable(child)
-					num += n
+					c := container_interactable_only_child(child)
 					if c != nil {
+						if onlyChild != nil {
+							return nil // Multiple interactable children found
+						}
 						onlyChild = c
 					}
 				}
