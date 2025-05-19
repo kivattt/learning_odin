@@ -51,8 +51,8 @@ new_label_extra :: proc(parent: ^Node, text: string, verticalAlignment: Vertical
 
 // Remember to free() the return value!
 new_label_simple :: proc(parent: ^Node, text: string, verticalAlignment: VerticalTextAlignment, horizontalAlignment: HorizontalTextAlignment) -> ^Node {
-	return new_label_extra(parent, text, verticalAlignment, horizontalAlignment, TEXT_COLOR, BACKGROUND_COLOR)
-	//return new_label_extra(parent, text, verticalAlignment, horizontalAlignment, TEXT_COLOR, {0,0,0,0})
+	//return new_label_extra(parent, text, verticalAlignment, horizontalAlignment, TEXT_COLOR, BACKGROUND_COLOR)
+	return new_label_extra(parent, text, verticalAlignment, horizontalAlignment, TEXT_COLOR, {0,0,0,0})
 }
 
 label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {

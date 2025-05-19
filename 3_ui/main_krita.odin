@@ -25,7 +25,7 @@ main :: proc() {
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
 		if i == 1 { // A label
-			boxes[i] = ui.new_label(nil, "Fuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS", .Middle, .Middle)
+			boxes[i] = ui.new_label(nil, "Fuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS\nFuck macOS Fuck macOS Fuck macOS", .Middle, .Middle, ui.TEXT_COLOR, ui.BACKGROUND_COLOR)
 		} else {
 			c: u8 = u8(i) * 20
 			boxes[i] = ui.new_padding_rect(nil, rl.Color{c, c, c, 255})

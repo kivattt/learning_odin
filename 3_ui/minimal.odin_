@@ -1,0 +1,39 @@
+package main
+
+import rl "vendor:raylib"
+import "ui"
+
+START_WIDTH :: 1280
+START_HEIGHT :: 720
+
+main :: proc() {
+	rl.SetConfigFlags({.WINDOW_RESIZABLE})
+	rl.InitWindow(START_WIDTH, START_HEIGHT, "Minimal UI example")
+	defer rl.CloseWindow()
+	rl.SetTargetFPS(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
+
+	backgroundColor := rl.Color{30, 30, 30, 255}
+	label := ui.new_label(nil, "hello world!", .Middle, .Middle)
+	rootNode := ui.new_container(nil, label, backgroundColor)
+
+	ui.scale_up_children(rootNode)
+	state := ui.ui_state_default_values()
+	platformProcs := ui.get_raylib_platform_procs()
+	uiData := ui.init_ui_data(platformProcs)
+
+	for !rl.WindowShouldClose() {
+		rl.BeginDrawing()
+		rl.ClearBackground({255, 0, 0, 255})
+
+		rootNode.w = rl.GetScreenWidth()
+		rootNode.h = rl.GetScreenHeight()
+
+		inputs := ui.inputs_from_raylib()
+		ui.handle_input(rootNode, &state, platformProcs, inputs)
+		ui.correct_boxes(rootNode, false)
+		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight(), inputs)
+		ui.correct_boxes(rootNode, true)
+
+		rl.EndDrawing()
+	}
+}
