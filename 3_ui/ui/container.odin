@@ -8,7 +8,7 @@ import "core:fmt"
 
 Container :: struct {
 	child: ^Node,
-	background: rl.Color,
+	background: Color,
 	borderPixels: i32,
 }
 
@@ -18,12 +18,12 @@ new_container :: proc{
 }
 
 // Remember to free() the return value!
-new_container_simple :: proc(parent, child: ^Node, background: rl.Color) -> ^Node {
+new_container_simple :: proc(parent, child: ^Node, background: Color) -> ^Node {
 	return new_container_extra(parent, child, background, 5)
 }
 
 // Remember to free() the return value!
-new_container_extra :: proc(parent, child: ^Node, background: rl.Color, borderPixels: i32) -> ^Node {
+new_container_extra :: proc(parent, child: ^Node, background: Color, borderPixels: i32) -> ^Node {
 	node := new(Node)
 
 	container := Container{
@@ -51,7 +51,7 @@ container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInt
 
 	visible := visible_area_for_drawing(node)
 	if container.background.a != 0 {
-		rl.DrawRectangle(visible.x, visible.y, visible.w, visible.h, container.background)
+		rl.DrawRectangle(visible.x, visible.y, visible.w, visible.h, color_to_rl_color(container.background))
 	}
 
 	container.child.box = inner_box_from_box(node.box, container.borderPixels)

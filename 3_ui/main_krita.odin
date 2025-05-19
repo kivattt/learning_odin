@@ -28,7 +28,7 @@ main :: proc() {
 			boxes[i] = ui.new_label(nil, "Text goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\n", .Middle, .Middle, ui.TEXT_COLOR, ui.BACKGROUND_COLOR)
 		} else {
 			c: u8 = u8(i) * 20
-			boxes[i] = ui.new_padding_rect(nil, rl.Color{c, c, c, 255})
+			boxes[i] = ui.new_padding_rect(nil, ui.Color{c, c, c, 255})
 		}
 	}
 

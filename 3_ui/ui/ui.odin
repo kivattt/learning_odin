@@ -12,14 +12,14 @@ import "core:math"
 import "core:c"
 import "core:testing"
 
-PASSIVE_OUTLINE_COLOR :: rl.Color{70, 70, 70, 255}
-//PASSIVE_OUTLINE_COLOR :: rl.Color{110, 110, 110, 255}
-HOVERED_OUTLINE_COLOR :: rl.Color{150, 150, 150, 255}
-VISUAL_BREAK_COLOR :: rl.Color{80,80,80, 255}
-BACKGROUND_COLOR :: rl.Color{25, 25, 25, 255}
-//BACKGROUND_COLOR :: rl.Color{200, 200, 200, 255}
-TEXT_COLOR :: rl.Color{230, 230, 230, 255}
-HIGHLIGHT_COLOR :: rl.Color{75, 110, 177, 255}
+PASSIVE_OUTLINE_COLOR :: Color{70, 70, 70, 255}
+//PASSIVE_OUTLINE_COLOR :: Color{110, 110, 110, 255}
+HOVERED_OUTLINE_COLOR :: Color{150, 150, 150, 255}
+VISUAL_BREAK_COLOR :: Color{80,80,80, 255}
+BACKGROUND_COLOR :: Color{25, 25, 25, 255}
+//BACKGROUND_COLOR :: Color{200, 200, 200, 255}
+TEXT_COLOR :: Color{230, 230, 230, 255}
+HIGHLIGHT_COLOR :: Color{75, 110, 177, 255}
 DEFAULT_FONT_SIZE :: 18
 
 Box :: struct {
@@ -29,11 +29,53 @@ Box :: struct {
 	h: i32,
 }
 
+UNSET_DEFAULT_COLOR :: Color{0, 0, 0, -1}
+Color :: struct {
+	r: u8,
+	g: u8,
+	b: u8,
+	a: i16,
+}
+
 ColorVec4 :: struct {
 	r: f32,
 	g: f32,
 	b: f32,
 	a: f32,
+}
+
+color_to_colorvec4 :: proc(color: Color) -> ColorVec4 {
+	return ColorVec4{
+		r = f32(color.r) / 255,
+		g = f32(color.g) / 255,
+		b = f32(color.b) / 255,
+		a = f32(color.a) / 255,
+	}
+}
+
+colorvec4_to_color :: proc(color: ColorVec4) -> Color {
+	return Color{
+		r = u8(color.r / 255),
+		g = u8(color.g / 255),
+		b = u8(color.b / 255),
+		a = i16(color.a / 255),
+	}
+}
+
+color_to_rl_color :: proc(color: Color) -> rl.Color {
+	return rl.Color{
+		color.r,
+		color.g,
+		color.b,
+		u8(color.a),
+	}
+}
+
+color_or :: proc(color, alternateColor: Color) -> Color {
+	if color == UNSET_DEFAULT_COLOR {
+		return alternateColor
+	}
+	return color
 }
 
 VerticalSplit :: struct {
@@ -90,10 +132,11 @@ ui_state_default_values :: proc() -> UserInterfaceState {
 
 
 UiColors :: struct {
-	passiveOutlineColor: rl.Color,
-	hoveredOutlineColor: rl.Color,
-	backgroundColor: rl.Color,
-	highlightColor: rl.Color,
+	passiveOutlineColor: Color,
+	hoveredOutlineColor: Color,
+	backgroundColor: Color,
+	highlightColor: Color,
+	textColor: Color,
 }
 
 get_default_ui_colors :: proc() -> UiColors {
@@ -102,6 +145,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		hoveredOutlineColor = HOVERED_OUTLINE_COLOR,
 		backgroundColor = BACKGROUND_COLOR,
 		highlightColor = HIGHLIGHT_COLOR,
+		textColor = TEXT_COLOR,
 	}
 }
 
@@ -1105,7 +1149,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
 					color = uiData.colors.hoveredOutlineColor
 				}
-				rl.DrawRectangle(x, y, n.resizeBarWidth, child.h, color)
+				rl.DrawRectangle(x, y, n.resizeBarWidth, child.h, color_to_rl_color(color))
 			}
 
 			for child in n.children {
@@ -1137,7 +1181,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
 					color = uiData.colors.hoveredOutlineColor
 				}
-				rl.DrawRectangle(x, y, child.w, n.resizeBarHeight, color)
+				rl.DrawRectangle(x, y, child.w, n.resizeBarHeight, color_to_rl_color(color))
 			}
 
 			for child in n.children {

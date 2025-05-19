@@ -18,8 +18,8 @@ HorizontalTextAlignment :: enum {
 Label :: struct {
 	text: string,
 	fontSize: i32,
-	foreground: rl.Color,
-	background: rl.Color,
+	foreground: Color,
+	background: Color,
 	verticalAlignment: VerticalTextAlignment,
 	horizontalAlignment: HorizontalTextAlignment,
 }
@@ -30,7 +30,7 @@ new_label :: proc {
 }
 
 // Remember to free() the return value!
-new_label_extra :: proc(parent: ^Node, text: string, verticalAlignment: VerticalTextAlignment, horizontalAlignment: HorizontalTextAlignment, foreground, background: rl.Color) -> ^Node {
+new_label_extra :: proc(parent: ^Node, text: string, verticalAlignment: VerticalTextAlignment, horizontalAlignment: HorizontalTextAlignment, foreground, background: Color) -> ^Node {
 	node := new(Node)
 	label := Label{
 		text = text,
@@ -65,7 +65,7 @@ label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfa
 	defer rl.EndScissorMode()
 
 	if label.background.a != 0 {
-		rl.DrawRectangle(node.x, node.y, node.w, node.h, label.background)
+		rl.DrawRectangle(node.x, node.y, node.w, node.h, color_to_rl_color(label.background))
 	}
 
 	text := fmt.ctprintf("{}", label.text)
@@ -98,5 +98,5 @@ label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfa
 	x = f32(i32(x))
 	y = f32(i32(y))
 
-	rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(label.fontSize), spacing, label.foreground)
+	rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(label.fontSize), spacing, color_to_rl_color(label.foreground))
 }

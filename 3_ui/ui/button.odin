@@ -7,11 +7,11 @@ import "core:fmt"
 
 Button :: struct {
 	pixels_rounded: i32,
-	color: rl.Color,
-	background: rl.Color,
+	color: Color,
+	background: Color,
 
 	text: string,
-	textColor: rl.Color,
+	textColor: Color,
 
 	onClickData: rawptr,
 	onClickProc: proc(data: rawptr),
@@ -21,10 +21,10 @@ Button :: struct {
 new_button :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	button := Button{
-		color = PASSIVE_OUTLINE_COLOR,
+		color = UNSET_DEFAULT_COLOR,
 		pixels_rounded = 3,
 		background = {0,0,0,0},
-		textColor = TEXT_COLOR,
+		textColor = UNSET_DEFAULT_COLOR,
 	}
 	node.element = button
 	node.parent = parent
@@ -45,7 +45,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	button := node.element.(Button)
 
 	if button.background.a != 0 {
-		rl.DrawRectangle(node.x, node.y, node.w, node.h, button.background)
+		rl.DrawRectangle(node.x, node.y, node.w, node.h, color_to_rl_color(button.background))
 	}
 
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
@@ -58,23 +58,12 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	dropshadowSmoothness: f32 = 6
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
 
-	color := ColorVec4{
-		r = f32(button.color.r) / 255,
-		g = f32(button.color.g) / 255,
-		b = f32(button.color.b) / 255,
-		a = f32(button.color.a) / 255,
-	}
+	color := color_to_colorvec4(color_or(button.color, uiData.colors.passiveOutlineColor))
 
 	hovered := is_hovered(node, firstParentContainer, state, inputs)
 
 	if hovered {
-		//dropshadowColor = Color{
-		outlineColor = ColorVec4{
-			r = f32(uiData.colors.hoveredOutlineColor.r) / 255,
-			g = f32(uiData.colors.hoveredOutlineColor.g) / 255,
-			b = f32(uiData.colors.hoveredOutlineColor.b) / 255,
-			a = f32(uiData.colors.hoveredOutlineColor.a) / 255,
-		}
+		outlineColor = color_to_colorvec4(uiData.colors.hoveredOutlineColor)
 	}
 
 	drawUpperHighlight: i32 = hovered ? 0 : 1
@@ -108,7 +97,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		x = f32(i32(x))
 		y = f32(i32(y))
 
-		rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, button.textColor)
+		rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, color_to_rl_color(color_or(button.textColor, uiData.colors.textColor)))
 
 		rl.EndScissorMode()
 	}

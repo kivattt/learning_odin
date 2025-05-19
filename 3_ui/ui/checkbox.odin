@@ -9,15 +9,15 @@ Checkbox :: struct {
 	checked: bool,
 
 	pixels_rounded: i32,
-	color: rl.Color,
-	background: rl.Color,
+	color: Color,
+	background: Color,
 }
 
 // Remember to free() the return value!
 new_checkbox :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	checkbox := Checkbox{
-		color = PASSIVE_OUTLINE_COLOR,
+		color = UNSET_DEFAULT_COLOR,
 		pixels_rounded = 2,
 		background = {0,0,0,0},
 	}
@@ -45,7 +45,7 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	checkbox := node.element.(Checkbox)
 
 	if checkbox.background.a != 0 {
-		rl.DrawRectangle(node.x, node.y, node.w, node.h, checkbox.background)
+		rl.DrawRectangle(node.x, node.y, node.w, node.h, color_to_rl_color(checkbox.background))
 	}
 
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
@@ -57,18 +57,10 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	dropshadowColor: ColorVec4 = {c, c, c, 1}
 	dropshadowOffset := [2]i32{0, 2}
 
-	color := ColorVec4{
-		r = f32(checkbox.color.r) / 255,
-		g = f32(checkbox.color.g) / 255,
-		b = f32(checkbox.color.b) / 255,
-		a = f32(checkbox.color.a) / 255,
-	}
+	color := color_to_colorvec4(color_or(checkbox.color, uiData.colors.passiveOutlineColor))
 
 	if checkbox.checked {
-		color.r = f32(HIGHLIGHT_COLOR.r) / 255
-		color.g = f32(HIGHLIGHT_COLOR.g) / 255
-		color.b = f32(HIGHLIGHT_COLOR.b) / 255
-		color.a = f32(HIGHLIGHT_COLOR.a) / 255
+		color = color_to_colorvec4(HIGHLIGHT_COLOR)
 	}
 
 	if notSquare {

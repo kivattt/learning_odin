@@ -40,7 +40,7 @@ new_vertical_split_unresizeable_from_nodes :: proc(parent: ^Node, nodes: []^Node
 
 vertical_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
 	visible := visible_area_for_drawing(node)
-	rl.DrawRectangle(visible.x, visible.y, visible.w, visible.h, BACKGROUND_COLOR)
+	rl.DrawRectangle(visible.x, visible.y, visible.w, visible.h, color_to_rl_color(BACKGROUND_COLOR))
 
 	verticalSplitUnresizeable := node.element.(VerticalSplitUnresizeable)
 
