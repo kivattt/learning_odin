@@ -29,7 +29,7 @@ Box :: struct {
 	h: i32,
 }
 
-Color :: struct {
+ColorVec4 :: struct {
 	r: f32,
 	g: f32,
 	b: f32,
@@ -86,6 +86,8 @@ ui_state_default_values :: proc() -> UserInterfaceState {
 		selectedResizeBarIndexInParent = -1
 	}
 }
+
+
 
 UiColors :: struct {
 	passiveOutlineColor: rl.Color,

@@ -53,12 +53,12 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	screenHeightThing := screenHeight
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
-	dropshadowColor: Color = {0, 0, 0, 0.2}
-	outlineColor: Color = {1, 1, 1, 0.07}
+	dropshadowColor: ColorVec4 = {0, 0, 0, 0.2}
+	outlineColor: ColorVec4 = {1, 1, 1, 0.07}
 	dropshadowSmoothness: f32 = 6
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
 
-	color := Color{
+	color := ColorVec4{
 		r = f32(button.color.r) / 255,
 		g = f32(button.color.g) / 255,
 		b = f32(button.color.b) / 255,
@@ -69,7 +69,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 
 	if hovered {
 		//dropshadowColor = Color{
-		outlineColor = Color{
+		outlineColor = ColorVec4{
 			r = f32(uiData.colors.hoveredOutlineColor.r) / 255,
 			g = f32(uiData.colors.hoveredOutlineColor.g) / 255,
 			b = f32(uiData.colors.hoveredOutlineColor.b) / 255,

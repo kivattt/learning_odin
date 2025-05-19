@@ -54,10 +54,10 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	rl.SetShaderValue(uiData.checkboxShader, uiData.checkboxShaderScreenHeightLoc, &screenHeightThing, .INT)
 
 	c := f32(14) / f32(255)
-	dropshadowColor: Color = {c, c, c, 1}
+	dropshadowColor: ColorVec4 = {c, c, c, 1}
 	dropshadowOffset := [2]i32{0, 2}
 
-	color := Color{
+	color := ColorVec4{
 		r = f32(checkbox.color.r) / 255,
 		g = f32(checkbox.color.g) / 255,
 		b = f32(checkbox.color.b) / 255,
@@ -72,7 +72,7 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	}
 
 	if notSquare {
-		color = Color{0,1,0,1}
+		color = ColorVec4{0,1,0,1}
 	}
 
 	hovered := is_hovered(node, firstParentContainer, state, inputs)
