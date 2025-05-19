@@ -1,5 +1,7 @@
 #version 330
 
+out vec4 fragColor;
+
 uniform ivec4 rect; // x y w h
 uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
@@ -113,5 +115,5 @@ void main() {
 	vec4 theOutlineColor = vec4(outline_color.x, outline_color.y, outline_color.z, outline * outline_color.w);
 	vec4 colorAndDropshadow = blend(theColor, theDropshadowColor);
 
-	gl_FragColor = blend(theOutlineColor, colorAndDropshadow);
+	fragColor = blend(theOutlineColor, colorAndDropshadow);
 }

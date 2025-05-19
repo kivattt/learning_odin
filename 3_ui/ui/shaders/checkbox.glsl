@@ -1,5 +1,7 @@
 #version 330
 
+out vec4 fragColor;
+
 uniform ivec4 rect; // x y w h
 uniform vec4 color = vec4(1, 1, 1, 1);
 uniform int screen_height;
@@ -134,5 +136,5 @@ void main() {
 
 	checkmarkColor.a = draw_checkmark * checkmarkColor.a;
 
-	gl_FragColor = blend(checkmarkColor, colorWithoutCheckmark);
+	fragColor = blend(checkmarkColor, colorWithoutCheckmark);
 }
