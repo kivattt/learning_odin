@@ -120,7 +120,7 @@ void main() {
 	float outline = round_box2(x, y, w, h, pixels_rounded, 1.0);
 	// Paste this into Desmos to see: 1 - (1.5x)^2
 	// Keep in mind round_box2() probably has totally different output ranges compared to round_box()
-	float strength = 1.5;
+	float strength = 1.4;
 	outline = 1 - ((strength*outline) * (strength*outline));
 	outline = max(0, min(1, outline));
 
