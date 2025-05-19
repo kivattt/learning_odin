@@ -171,6 +171,7 @@ init_ui_data :: proc(procs: PlatformProcs) -> (data: UserInterfaceData) {
 	data.checkboxShaderDropshadowColorLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_color")
 	data.checkboxShaderDropshadowOffsetLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_offset")
 	data.checkboxShaderDrawCheckmark = rl.GetShaderLocation(data.checkboxShader, "draw_checkmark")
+
 	return
 }
 

@@ -171,6 +171,11 @@ main :: proc() {
 
 		totalTime := time.now()
 
+		if rl.IsKeyPressed(.F5) {
+			uiData.buttonShader = rl.LoadShader(nil, "ui/shaders/button.glsl") // FIXME: Use filepath join
+			uiData.checkboxShader = rl.LoadShader(nil, "ui/shaders/checkbox.glsl")
+		}
+
 		inputs := ui.inputs_from_raylib()
 		t = time.now()
 		ui.handle_input(rootNode, &state, platformProcs, inputs)
@@ -178,9 +183,7 @@ main :: proc() {
 		if debug do fmt.println("handle_input()             time:", time.since(t))
 
 		t = time.now()
-		if true || rl.IsKeyPressed(.F5) {
-			ui.recompute_children_boxes(rootNode)
-		}
+		ui.recompute_children_boxes(rootNode)
 		if debug do fmt.println("recompute_children_boxes() time:", time.since(t))
 
 		t = time.now()
