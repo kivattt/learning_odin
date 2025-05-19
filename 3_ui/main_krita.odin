@@ -158,12 +158,16 @@ main :: proc() {
 
 	lastmousey: i32 = 0
 
+	/*image := rl.LoadImage("image.jpg")
+	texture := rl.LoadTextureFromImage(image)*/
+
 	i: f64 = 0
 	for !rl.WindowShouldClose() {
 		i += 0.05
 
 		rl.BeginDrawing()
 		rl.ClearBackground({255, 0, 0, 255})
+		//rl.DrawTexture(texture, 0, 0, {255,255,255,255})
 		//rl.ClearBackground({50, 50, 50, 255})
 
 		rootNode.w = rl.GetScreenWidth()
