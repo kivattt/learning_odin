@@ -162,9 +162,6 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		i += 0.05
 
-		//fmt.println(rl.GetWindowScaleDPI())
-		fmt.println(uiData.dpiScale)
-
 		rl.BeginDrawing()
 		rl.ClearBackground({255, 0, 0, 255})
 		//rl.ClearBackground({50, 50, 50, 255})
