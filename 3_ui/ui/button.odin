@@ -23,8 +23,7 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	button := Button{
 		color = PASSIVE_OUTLINE_COLOR,
 		pixels_rounded = 3,
-		background = BACKGROUND_COLOR,
-		//background = {0,0,0,0},
+		background = {0,0,0,0},
 		textColor = TEXT_COLOR,
 	}
 	node.element = button
