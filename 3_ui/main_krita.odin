@@ -120,6 +120,9 @@ main :: proc() {
 			thing = ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {button, filler, label})
 		}
 		container := ui.new_container(horizSplit1, thing, {0,0,0,0})
+		if i >= 0 && i <= 3 {
+			(&container.element.(ui.Container)).allowOuterBoxInput = true
+		}
 
 		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
 		horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size

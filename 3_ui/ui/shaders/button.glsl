@@ -110,7 +110,8 @@ void main() {
 	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
 
 	// Gradient overlay thing
-	float gradient = (float(y) / float(h));
+	//float gradient = (float(y) / float(h));
+	float gradient = 1 - (float(y) / float(h));
 	gradient = (gradient * gradient) / 50;
 	gradient += 0.5 * (hash(uvec2(gl_FragCoord)) / 255.0 - (0.5/255.0)); // Dither to prevent banding in the gradient: https://www.shadertoy.com/view/WXBXzm
 	theColor.r += gradient;

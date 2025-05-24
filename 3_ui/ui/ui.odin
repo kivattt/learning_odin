@@ -15,7 +15,9 @@ import "core:testing"
 PASSIVE_OUTLINE_COLOR :: Color{70, 70, 70, 255}
 //PASSIVE_OUTLINE_COLOR :: Color{110, 110, 110, 255}
 HOVERED_OUTLINE_COLOR :: Color{150, 150, 150, 255}
-VISUAL_BREAK_COLOR :: Color{80,80,80, 255}
+//VISUAL_BREAK_COLOR :: Color{80,80,80, 255}
+//VISUAL_BREAK_COLOR :: Color{255,255,255,130}
+VISUAL_BREAK_COLOR :: Color{50,50,50, 255}
 BACKGROUND_COLOR :: Color{25, 25, 25, 255}
 //BACKGROUND_COLOR :: Color{200, 200, 200, 255}
 TEXT_COLOR :: Color{230, 230, 230, 255}
@@ -356,7 +358,8 @@ scale_up_children :: proc(node: ^Node) {
 				scale_up_children(child)
 			}
 		case Container:
-			e.child.box = container_inner_box(node)
+			// We don't want to use container_inner_box() here, since container.allowOuterBoxInput shouldn't affect the scale up.
+			e.child.box = inner_box_from_box_n(node.box, node.element.(Container).borderPixels)
 			scale_up_children(e.child)
 	}
 }

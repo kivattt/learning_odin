@@ -51,13 +51,13 @@ visual_break_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^User
 	switch visualBreak.direction {
 	case .Vertical:
 		x := node.x + i32(0.75 * f32(node.w))
-		node.y += 5
-		node.h -= 10
+		//node.y += 5
+		//node.h -= 10
 		rl.DrawRectangle(x, node.y, node.w, 1, color_to_rl_color(VISUAL_BREAK_COLOR))
 	case .Horizontal:
 		y := node.y + i32(0.75 * f32(node.h))
-		node.x += 5
-		node.w -= 10
+		//node.x += 5
+		//node.w -= 10
 		rl.DrawRectangle(node.x, y, node.w, 1, color_to_rl_color(VISUAL_BREAK_COLOR))
 	}
 }

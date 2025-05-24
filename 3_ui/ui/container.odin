@@ -10,6 +10,7 @@ Container :: struct {
 	child: ^Node,
 	background: Color,
 	borderPixels: i32,
+	allowOuterBoxInput: bool, // Allow inputs for only-child interactable children when mouse is in the outer box
 }
 
 new_container :: proc{
@@ -43,6 +44,10 @@ new_container_extra :: proc(parent, child: ^Node, background: Color, borderPixel
 }
 
 container_inner_box :: proc(node: ^Node) -> Box {
+	container := node.element.(Container)
+	if container.allowOuterBoxInput {
+		return node.box
+	}
 	return inner_box_from_box_n(node.box, node.element.(Container).borderPixels)
 }
 
