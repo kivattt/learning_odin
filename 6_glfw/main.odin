@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:time"
 import "core:c"
 import gl "vendor:OpenGL"
 import "vendor:glfw"
@@ -33,18 +34,22 @@ main :: proc() {
 	}
 
 	glfw.MakeContextCurrent(window)
-	glfw.SwapInterval(1) // Enable VSYNC
+	glfw.SwapInterval(0) // Enable VSYNC
 	glfw.SetKeyCallback(window, key_callback)
 	glfw.SetFramebufferSizeCallback(window, size_callback)
 
 	gl.load_up_to(int(GL_MAJOR_VERSION), GL_MINOR_VERSION, glfw.gl_set_proc_address)
 	init()
 
+	t := time.now()
 	for !glfw.WindowShouldClose(window) && running {
 		glfw.PollEvents()
 		update()
 		draw()
 		glfw.SwapBuffers(window)
+
+		fmt.println(time.since(t))
+		t = time.now()
 	}
 
 	exit()
