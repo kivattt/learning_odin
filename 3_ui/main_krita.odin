@@ -64,7 +64,7 @@ main :: proc() {
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = visualBreak
 			continue
 		} else if i >= len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 3 {
-			s := i & 1 == 1 ? "Long boi" : "Short boi"
+			s := i & 1 == 1 ? "Long" : "Long2"
 
 			label := ui.new_label(nil, s, .Middle, .Left)
 			button := ui.new_button(nil)
@@ -81,6 +81,7 @@ main :: proc() {
 
 			thing := ui.new_vertical_split_unresizeable_from_nodes(horizSplit1, {label, button})
 			container := ui.new_container(horizSplit1, thing, {0,0,0,0})
+			(&container.element.(ui.Container)).allowOuterBoxInput = true
 
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
