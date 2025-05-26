@@ -2,7 +2,19 @@
 sudo apt install libglfw3-dev
 ```
 
-TODO: Manual delay for FPS
+```
+Done:
+- Manual delay for FPS (not needed..)
+
+Todo:
+- Draw a colored rectangle
+- Draw a shader within a rectangle
+- Scissor test
+- Draw text (try freetype, or find something for subpixel)
+- Draw a texture
+
+- Multiple windows
+```
 
 need:
 - multiple windows

@@ -41,25 +41,43 @@ main :: proc() {
 	glfw.SetFramebufferSizeCallback(window, size_callback)
 
 	gl.load_up_to(int(GL_MAJOR_VERSION), GL_MINOR_VERSION, glfw.gl_set_proc_address)
+	init()
+
+	targetTimeNanos := time.Duration(i64(math.ceil_f64(f64(1.0) / f64(75.0) * f64(1000000000.0))))
 
 	t := time.now()
 	for !glfw.WindowShouldClose(window) && running {
 		glfw.PollEvents()
+		
+		update()
 		draw()
 		glfw.SwapBuffers(window)
 
-		//fmt.println(time.since(t))
+		elapsed := time.since(t)
+		if elapsed < targetTimeNanos {
+			//time.accurate_sleep(targetTimeNanos - elapsed)
+		}
+
+		fmt.println(time.since(t))
 		t = time.now()
+
+		//glfw.PollEvents()
 	}
+
+	exit()
 }
 
+init :: proc(){}
+update :: proc(){}
 draw :: proc() {
 	gl.ClearColor(0, 0.3, 0, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 }
 
+exit :: proc() {}
+
 key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i32) {
-	if key == glfw.KEY_ESCAPE || key == glfw.KEY_CAPS_LOCK {
+	if key == glfw.KEY_ESCAPE {
 		running = false
 	}
 }
