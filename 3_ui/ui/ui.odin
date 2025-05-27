@@ -15,7 +15,8 @@ import "core:testing"
 PASSIVE_OUTLINE_COLOR :: Color{70, 70, 70, 255}
 HOVERED_RESIZE_BAR_COLOR :: Color{110, 110, 110, 255}
 HOVERED_OUTLINE_COLOR :: Color{150, 150, 150, 255}
-
+//CONTROLLER_OUTLINE_COLOR :: Color{85, 150, 255, 255}
+CONTROLLER_OUTLINE_COLOR :: Color{136, 181, 255, 255}
 
 VISUAL_BREAK_COLOR :: Color{50,50,50, 255}
 BACKGROUND_COLOR :: Color{25, 25, 25, 255}
@@ -117,6 +118,7 @@ UserInterfaceState :: struct {
 	lastMouse1Pressed: bool,
 
 	hoveredNode: ^Node,
+	controllerHoveredNode: ^Node,
 
 	hoveredResizeBar: ^Node,
 	selectedResizeBar: ^Node,
@@ -137,6 +139,7 @@ UiColors :: struct {
 	passiveOutlineColor: Color,
 	hoveredResizeBarColor: Color,
 	hoveredOutlineColor: Color,
+	controllerOutlineColor: Color,
 	backgroundColor: Color,
 	highlightColor: Color,
 	textColor: Color,
@@ -147,6 +150,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		passiveOutlineColor = PASSIVE_OUTLINE_COLOR,
 		hoveredResizeBarColor = HOVERED_RESIZE_BAR_COLOR,
 		hoveredOutlineColor = HOVERED_OUTLINE_COLOR,
+		controllerOutlineColor = CONTROLLER_OUTLINE_COLOR,
 		backgroundColor = BACKGROUND_COLOR,
 		highlightColor = HIGHLIGHT_COLOR,
 		textColor = TEXT_COLOR,
@@ -169,6 +173,7 @@ UserInterfaceData :: struct {
 	buttonShaderColorLoc: c.int,
 	buttonShaderPixelsRoundedLoc: c.int,
 	buttonShaderDropshadowColorLoc: c.int,
+	buttonShaderDropshadowOffsetLoc: c.int,
 	buttonShaderDropshadowSmoothnessLoc: c.int,
 	buttonShaderOutlineColorLoc: c.int,
 	buttonShaderDrawUpperHighlightLoc: c.int,
@@ -183,6 +188,14 @@ UserInterfaceData :: struct {
 	checkboxShaderDropshadowColorLoc: c.int,
 	checkboxShaderDropshadowOffsetLoc: c.int,
 	checkboxShaderDrawCheckmark: c.int,
+
+	// Controller outline shader
+	controllerOutlineShader: rl.Shader,
+	controllerOutlineShaderDPIScaleLoc: c.int,
+	controllerOutlineShaderRectLoc: c.int,
+	controllerOutlineShaderScreenHeightLoc: c.int,
+	controllerOutlineShaderColorLoc: c.int,
+	controllerOutlineShaderPixelsRoundedLoc: c.int,
 }
 
 FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
@@ -210,8 +223,9 @@ init_ui_data :: proc(procs: PlatformProcs) -> (data: UserInterfaceData) {
 	data.buttonShaderColorLoc = rl.GetShaderLocation(data.buttonShader, "color")
 	data.buttonShaderPixelsRoundedLoc = rl.GetShaderLocation(data.buttonShader, "pixels_rounded_in")
 	data.buttonShaderDropshadowColorLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_color")
-	data.buttonShaderOutlineColorLoc = rl.GetShaderLocation(data.buttonShader, "outline_color")
+	data.buttonShaderDropshadowOffsetLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_offset")
 	data.buttonShaderDropshadowSmoothnessLoc = rl.GetShaderLocation(data.buttonShader, "dropshadow_smoothness")
+	data.buttonShaderOutlineColorLoc = rl.GetShaderLocation(data.buttonShader, "outline_color")
 	data.buttonShaderDrawUpperHighlightLoc = rl.GetShaderLocation(data.buttonShader, "draw_upper_highlight");
 
 	// Checkbox shader
@@ -225,12 +239,21 @@ init_ui_data :: proc(procs: PlatformProcs) -> (data: UserInterfaceData) {
 	data.checkboxShaderDropshadowOffsetLoc = rl.GetShaderLocation(data.checkboxShader, "dropshadow_offset")
 	data.checkboxShaderDrawCheckmark = rl.GetShaderLocation(data.checkboxShader, "draw_checkmark")
 
+	// Controller outline shader
+	data.controllerOutlineShader = rl.LoadShader(nil, "ui/shaders/controller_outline.glsl")
+	data.controllerOutlineShaderDPIScaleLoc = rl.GetShaderLocation(data.controllerOutlineShader, "dpi_scale")
+	data.controllerOutlineShaderRectLoc = rl.GetShaderLocation(data.controllerOutlineShader, "rect")
+	data.controllerOutlineShaderScreenHeightLoc = rl.GetShaderLocation(data.controllerOutlineShader, "screen_height")
+	data.controllerOutlineShaderColorLoc = rl.GetShaderLocation(data.controllerOutlineShader, "color")
+	data.controllerOutlineShaderPixelsRoundedLoc = rl.GetShaderLocation(data.controllerOutlineShader, "pixels_rounded_in")
+
 	return
 }
 
 deinit_ui_data :: proc(uiData: ^UserInterfaceData) {
 	rl.UnloadShader(uiData.buttonShader)
 	rl.UnloadShader(uiData.checkboxShader)
+	rl.UnloadShader(uiData.controllerOutlineShader)
 }
 
 MouseCursor :: enum {
@@ -1034,19 +1057,81 @@ is_coord_in_box :: proc(box: Box, x, y: i32) -> bool {
 	return x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h
 }
 
+ControllerDirection :: enum {
+	Up,
+	Down,
+	Left,
+	Right,
+}
+
 Inputs :: struct {
 	mouseLeftDown: bool,
 	mouseX: i32,
 	mouseY: i32,
-	/*mouseMiddleDown: bool,
-	mouseRightDown: bool,*/
+
+	controllerPress: bool,
+	controllerDirection: ControllerDirection,
 }
 
 inputs_from_raylib :: proc() -> (inputs: Inputs) {
 	inputs.mouseX = rl.GetMouseX()
 	inputs.mouseY = rl.GetMouseY()
 	inputs.mouseLeftDown = rl.IsMouseButtonDown(.LEFT)
+
+	inputs.controllerDirection = nil
+	if rl.IsGamepadAvailable(0) {
+		inputs.controllerPress = rl.IsGamepadButtonDown(0, .RIGHT_FACE_DOWN)
+		
+		if rl.IsGamepadButtonPressed(0, .LEFT_FACE_UP) do inputs.controllerDirection = .Up
+		if rl.IsGamepadButtonPressed(0, .LEFT_FACE_DOWN) do inputs.controllerDirection = .Down
+		if rl.IsGamepadButtonPressed(0, .LEFT_FACE_LEFT) do inputs.controllerDirection = .Left
+		if rl.IsGamepadButtonPressed(0, .LEFT_FACE_RIGHT) do inputs.controllerDirection = .Right
+	}
+
+	//fmt.println(inputs)
 	return
+}
+
+// Just the default controller selection when the hoveredNode is nil
+// TODO: Let this be configurable by the user?
+// Like returning a node that the user told us to, instead of doing all this recursion
+find_first_interactable_node :: proc(node: ^Node) -> ^Node {
+	switch &e in node.element {
+	case VerticalSplit:
+		for child in e.children {
+			found := find_first_interactable_node(child)
+			if found != nil do return found
+		}
+		return nil
+	case HorizontalSplit:
+		for child in e.children {
+			found := find_first_interactable_node(child)
+			if found != nil do return found
+		}
+		return nil
+	case VerticalSplitUnresizeable:
+		for child in e.children {
+			found := find_first_interactable_node(child)
+			if found != nil do return found
+		}
+		return nil
+	case HorizontalSplitUnresizeable:
+		for child in e.children {
+			found := find_first_interactable_node(child)
+			if found != nil do return found
+		}
+		return nil
+	case Container:
+		found := find_first_interactable_node(e.child)
+		if found != nil do return found
+	case Label, PaddingRect, VisualBreak:
+		return nil
+	case Button, Checkbox:
+		return node
+	}
+
+	assert(false)
+	return nil
 }
 
 // Call this on your root node
@@ -1056,6 +1141,20 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 		state.selectedResizeBar = nil
 		state.hoveredNode = nil
 		return
+	}
+
+	if inputs.controllerDirection != nil {
+		if state.controllerHoveredNode == nil {
+			if is_interactable(state.hoveredNode) {
+				state.controllerHoveredNode = state.hoveredNode
+			} else {
+				state.controllerHoveredNode = find_first_interactable_node(node)
+				//fmt.println(state.controllerHoveredNode)
+			}
+		} else {
+			state.controllerHoveredNode = nil
+			fmt.println("move")
+		}
 	}
 
 	x := inputs.mouseX
@@ -1314,4 +1413,22 @@ delete_node_and_its_children :: proc(node: ^Node) {
 		case PaddingRect, Button, Checkbox, Label, VisualBreak:
 			free(node)
 	}
+}
+
+draw_controller_outline :: proc(rect: Box, visibleArea: Box, screenHeight: i32, pixelsRounded: i32, uiData: ^UserInterfaceData) {
+	rectCopy := rect
+	screenHeightCopy := screenHeight
+	pixelsRoundedCopy := pixelsRounded
+
+	controllerOutlineColor := color_to_colorvec4(uiData.colors.controllerOutlineColor)
+
+	rl.SetShaderValue(uiData.controllerOutlineShader, uiData.controllerOutlineShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
+	rl.SetShaderValue(uiData.controllerOutlineShader, uiData.controllerOutlineShaderRectLoc, &rectCopy, .IVEC4)
+	rl.SetShaderValue(uiData.controllerOutlineShader, uiData.controllerOutlineShaderScreenHeightLoc, &screenHeightCopy, .INT)
+	rl.SetShaderValue(uiData.controllerOutlineShader, uiData.controllerOutlineShaderColorLoc, &controllerOutlineColor, .VEC4)
+	rl.SetShaderValue(uiData.controllerOutlineShader, uiData.controllerOutlineShaderPixelsRoundedLoc, &pixelsRoundedCopy, .INT)
+
+	rl.BeginShaderMode(uiData.controllerOutlineShader)
+	rl.DrawRectangle(visibleArea.x, visibleArea.y, visibleArea.w, visibleArea.h, {0,0,0,0}) // outer box
+	rl.EndShaderMode()
 }

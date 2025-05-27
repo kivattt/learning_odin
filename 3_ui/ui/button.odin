@@ -53,9 +53,11 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	screenHeightThing := screenHeight
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
-	dropshadowColor: ColorVec4 = {0, 0, 0, 0.2}
+	dropshadowColor: ColorVec4 = {0, 0, 0, 0.3}
 	outlineColor: ColorVec4 = {1, 1, 1, 0.07}
-	dropshadowSmoothness: f32 = 6
+	dropshadowSmoothness: f32 = 5
+	dropshadowOffset := [2]i32{0,1}
+	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
 
 	color := color_to_colorvec4(color_or(button.color, uiData.colors.passiveOutlineColor))
@@ -64,6 +66,10 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 
 	if hovered {
 		outlineColor = color_to_colorvec4(uiData.colors.hoveredOutlineColor)
+		amount: f32 = 0.07
+		color.r += amount
+		color.g += amount
+		color.b += amount
 	}
 
 	drawUpperHighlight: i32 = hovered ? 0 : 1
@@ -99,6 +105,10 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 		rl.DrawTextEx(uiData.fontVariable, text, {x, y}, f32(uiData.fontSize), spacing, color_to_rl_color(color_or(button.textColor, uiData.colors.textColor)))
 
 		rl.EndScissorMode()
+	}
+
+	if node == state.controllerHoveredNode {
+		draw_controller_outline(node.box, firstParentContainer.box, screenHeightThing, pixelsRounded, uiData)
 	}
 }
 

@@ -117,9 +117,9 @@ void main() {
 	val = max(0, min(1, val));
 	dropshadow = max(0, min(1, dropshadow));
 	dropshadow = dropshadow * dropshadow * dropshadow * dropshadow;
-	vec4 theDropshadowColor = vec4(dropshadow_color.x, dropshadow_color.y, dropshadow_color.z, dropshadow * dropshadow_color.w);
+	vec4 theDropshadowColor = vec4(dropshadow_color.r, dropshadow_color.g, dropshadow_color.b, dropshadow * dropshadow_color.a);
 
-	vec4 theColor = vec4(color.x, color.y, color.z, val * color.w);
+	vec4 theColor = vec4(color.r, color.g, color.b, val * color.a);
 
 	vec4 colorWithoutCheckmark = blend(theColor, theDropshadowColor);
 

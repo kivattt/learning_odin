@@ -86,6 +86,10 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	rl.BeginShaderMode(uiData.checkboxShader)
 	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
+
+	if node == state.controllerHoveredNode {
+		draw_controller_outline(node.box, firstParentContainer.box, screenHeightThing, pixelsRounded, uiData)
+	}
 }
 
 checkbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {

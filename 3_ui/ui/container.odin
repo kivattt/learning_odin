@@ -61,6 +61,8 @@ container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInt
 
 	container.child.box = inner_box_from_box(node.box, container.borderPixels)
 	draw(container.child, state, uiData, screenHeight, inputs)
+
+	//rl.DrawRectangleLines(node.x+1, node.y+1, node.w-1, node.h-1, {0,255,0,80})
 }
 
 // If the container only has 1 interactable (Button, Checkbox) child, this returns it.
@@ -117,6 +119,8 @@ container_interactable_only_child :: proc(node: ^Node) -> (onlyChild: ^Node = ni
 }
 
 is_interactable :: proc(node: ^Node) -> bool {
+	if node == nil do return false
+
 	#partial switch &e in node.element {
 		case Container, Button, Checkbox:
 			return true

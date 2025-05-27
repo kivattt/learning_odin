@@ -187,6 +187,11 @@ main :: proc() {
 		if rl.IsKeyPressed(.F5) {
 			uiData.buttonShader = rl.LoadShader(nil, "ui/shaders/button.glsl") // FIXME: Use filepath join
 			uiData.checkboxShader = rl.LoadShader(nil, "ui/shaders/checkbox.glsl")
+			uiData.controllerOutlineShader = rl.LoadShader(nil, "ui/shaders/controller_outline.glsl")
+		}
+
+		if rl.IsKeyPressed(.Q) || rl.IsKeyPressed(.CAPS_LOCK) {
+			break
 		}
 
 		inputs := ui.inputs_from_raylib()
