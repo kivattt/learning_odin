@@ -9,6 +9,7 @@ Button :: struct {
 	pixels_rounded: i32,
 	color: Color,
 	background: Color,
+	outlineColor: Color,
 
 	text: string,
 	textColor: Color,
@@ -22,8 +23,10 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	button := Button{
 		color = UNSET_DEFAULT_COLOR,
-		pixels_rounded = 3,
 		background = {0,0,0,0},
+		outlineColor = UNSET_DEFAULT_COLOR,
+
+		pixels_rounded = 3,
 		textColor = UNSET_DEFAULT_COLOR,
 	}
 	node.element = button
@@ -54,13 +57,13 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderScreenHeightLoc, &screenHeightThing, .INT)
 
 	dropshadowColor: ColorVec4 = {0, 0, 0, 0.2}
-	outlineColor: ColorVec4 = {1, 1, 1, 0.1}
+	outlineColor := color_to_colorvec4(color_or(button.outlineColor, uiData.colors.buttonOutlineColor))
 	dropshadowSmoothness: f32 = 5
 	dropshadowOffset := [2]i32{0,1}
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
 	rl.SetShaderValue(uiData.buttonShader, uiData.buttonShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
 
-	color := color_to_colorvec4(color_or(button.color, uiData.colors.passiveOutlineColor))
+	color := color_to_colorvec4(color_or(button.color, uiData.colors.interactableColor))
 
 	hovered := is_hovered(node, firstParentContainer, state, inputs)
 

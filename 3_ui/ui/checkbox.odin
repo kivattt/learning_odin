@@ -57,7 +57,7 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	dropshadowColor: ColorVec4 = {c, c, c, 1}
 	dropshadowOffset := [2]i32{0, 2}
 
-	color := color_to_colorvec4(color_or(checkbox.color, uiData.colors.passiveOutlineColor))
+	color := color_to_colorvec4(color_or(checkbox.color, uiData.colors.interactableColor))
 
 	if checkbox.checked {
 		color = color_to_colorvec4(HIGHLIGHT_COLOR)
