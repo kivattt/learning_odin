@@ -13,7 +13,10 @@ import "core:c"
 import "core:testing"
 
 PASSIVE_OUTLINE_COLOR :: Color{70, 70, 70, 255}
-HOVERED_OUTLINE_COLOR :: Color{110, 110, 110, 255}
+HOVERED_RESIZE_BAR_COLOR :: Color{110, 110, 110, 255}
+HOVERED_OUTLINE_COLOR :: Color{150, 150, 150, 255}
+
+
 VISUAL_BREAK_COLOR :: Color{50,50,50, 255}
 BACKGROUND_COLOR :: Color{25, 25, 25, 255}
 //BACKGROUND_COLOR :: Color{200, 200, 200, 255}
@@ -132,6 +135,7 @@ ui_state_default_values :: proc() -> UserInterfaceState {
 
 UiColors :: struct {
 	passiveOutlineColor: Color,
+	hoveredResizeBarColor: Color,
 	hoveredOutlineColor: Color,
 	backgroundColor: Color,
 	highlightColor: Color,
@@ -141,6 +145,7 @@ UiColors :: struct {
 get_default_ui_colors :: proc() -> UiColors {
 	return UiColors{
 		passiveOutlineColor = PASSIVE_OUTLINE_COLOR,
+		hoveredResizeBarColor = HOVERED_RESIZE_BAR_COLOR,
 		hoveredOutlineColor = HOVERED_OUTLINE_COLOR,
 		backgroundColor = BACKGROUND_COLOR,
 		highlightColor = HIGHLIGHT_COLOR,
@@ -1147,7 +1152,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 
 				color := uiData.colors.passiveOutlineColor
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
-					color = uiData.colors.hoveredOutlineColor
+					color = uiData.colors.hoveredResizeBarColor
 				}
 				rl.DrawRectangle(x, y, n.resizeBarWidth, child.h, color_to_rl_color(color))
 			}
@@ -1179,7 +1184,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 
 				color := uiData.colors.passiveOutlineColor
 				if child == state.hoveredResizeBar || child == state.selectedResizeBar {
-					color = uiData.colors.hoveredOutlineColor
+					color = uiData.colors.hoveredResizeBarColor
 				}
 				rl.DrawRectangle(x, y, child.w, n.resizeBarHeight, color_to_rl_color(color))
 			}
