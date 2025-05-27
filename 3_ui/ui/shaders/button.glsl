@@ -127,9 +127,9 @@ void main() {
 
 	vec4 theOutlineColor = vec4(outline_color.r, outline_color.g, outline_color.b, outline * outline_color.a);
 
-	bool top = draw_upper_highlight && y == 0;
+	/*bool top = draw_upper_highlight && y == 0;
 	float v = float(top) * 1.37;
-	theOutlineColor.rgb += v;
+	theOutlineColor.rgb += v;*/
 
 	vec4 colorAndDropshadow = blend(theColor, theDropshadowColor);
 
