@@ -53,6 +53,7 @@ main :: proc() {
 	debugVert.minimumSize = debugSize
 
 	debugSection := ui.new_container_simple(nil, debugVert, ui.BACKGROUND_COLOR)
+	(&debugSection.element.(ui.Container)).allowOuterBoxInput = true
 	middle := ui.new_horizontal_split_unresizeable_from_nodes(nil, {debugSection, boxes[1]})
 
 	vert1 := ui.new_vertical_split_from_nodes(nil, {boxes[0], middle, horizSplit1})
