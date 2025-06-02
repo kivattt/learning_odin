@@ -168,6 +168,7 @@ get_default_ui_colors :: proc() -> UiColors {
 
 UserInterfaceData :: struct {
 	colors: UiColors,
+	debug: bool,
 
 	fontSize: i32,
 	fontVariable: rl.Font,
@@ -1153,7 +1154,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 	}
 
 	if inputs.controllerDirection != nil {
-		if state.controllerHoveredNode == nil {
+		if true || state.controllerHoveredNode == nil {
 			if is_interactable(state.hoveredNode) {
 				state.controllerHoveredNode = state.hoveredNode
 			} else {

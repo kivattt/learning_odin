@@ -26,9 +26,10 @@ main :: proc() {
 	for i := 0; i < nBoxes; i += 1 {
 		if i == 1 { // A label
 			boxes[i] = ui.new_label(nil, "Text goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\n", .Middle, .Middle, ui.TEXT_COLOR, ui.BACKGROUND_COLOR)
+			boxes[i].preferResize = true
 		} else {
 			c: u8 = u8(i) * 20
-			boxes[i] = ui.new_padding_rect(nil, ui.Color{c, c, c, 255})
+			boxes[i] = ui.new_padding_rect(nil, 100, ui.Color{c, c, c, 255})
 		}
 	}
 
@@ -42,7 +43,19 @@ main :: proc() {
 		append_elem(&(&vertSplitMoment.element.(ui.VerticalSplit)).children, nil)
 	}
 
-	vert1 := ui.new_vertical_split_from_nodes(nil, {boxes[0], boxes[1], horizSplit1})
+	debugSize: i32 = 27
+
+	debugCheckbox := ui.new_checkbox(nil)
+	debugCheckbox.minimumSize = debugSize - 10
+
+	debugLabel := ui.new_label_simple(nil, "Debug mode", .Middle, .Left)
+	debugVert := ui.new_vertical_split_unresizeable_from_nodes(nil, {debugCheckbox, ui.new_padding_rect_extra(nil, 5, ui.UNSET_DEFAULT_COLOR), debugLabel})
+	debugVert.minimumSize = debugSize
+
+	debugSection := ui.new_container_simple(nil, debugVert, ui.BACKGROUND_COLOR)
+	middle := ui.new_horizontal_split_unresizeable_from_nodes(nil, {debugSection, boxes[1]})
+
+	vert1 := ui.new_vertical_split_from_nodes(nil, {boxes[0], middle, horizSplit1})
 	vert1.element.(ui.VerticalSplit).children[1].w = 2
 	vert1.element.(ui.VerticalSplit).children[0].minimumSize = 74 // correct krita minsize
 
@@ -197,6 +210,7 @@ main :: proc() {
 		inputs := ui.inputs_from_raylib()
 		t = time.now()
 		ui.handle_input(rootNode, &state, platformProcs, inputs)
+		uiData.debug = debugCheckbox.element.(ui.Checkbox).checked
 		debug = rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplitUnresizeable).children[0].element.(ui.Container).child.element.(ui.VerticalSplitUnresizeable).children[0].element.(ui.Checkbox).checked
 		if debug do fmt.println("handle_input()             time:", time.since(t))
 

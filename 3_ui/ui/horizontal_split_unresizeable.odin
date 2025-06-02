@@ -84,6 +84,8 @@ horizontal_split_unresizeable_draw :: proc(node: ^Node, state: ^UserInterfaceSta
 		theY += child.h
 
 		draw(child, state, uiData, screenHeight, inputs)
-		//rl.DrawRectangleLines(child.x+1, child.y+1, child.w-1, child.h-1, {0,255,0,100})
+		if uiData.debug {
+			rl.DrawRectangleLines(child.x+1, child.y+1, child.w-1, child.h-1, {0,255,0,100})
+		}
 	}
 }
