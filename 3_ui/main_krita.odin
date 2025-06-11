@@ -165,12 +165,9 @@ main :: proc() {
 		})
 	}
 
-	rootNode.w = rl.GetScreenWidth()
-	rootNode.h = rl.GetScreenHeight()
-
 	t := time.now()
 
-	ui.scale_up_children(rootNode)
+	ui.scale_up_children(rootNode, rl.GetScreenWidth(), rl.GetScreenHeight())
 	boxes[2].h = 100
 
 	if debug do fmt.println("scale_up_children()         time:", time.since(t))

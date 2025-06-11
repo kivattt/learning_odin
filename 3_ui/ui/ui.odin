@@ -89,11 +89,15 @@ color_or :: proc(color, alternateColor: Color) -> Color {
 VerticalSplit :: struct {
 	children: [dynamic]^Node,
 	resizeBarWidth: i32,
+
+	linkedSplits: ^[]^Node,
 }
 
 HorizontalSplit :: struct {
 	children: [dynamic]^Node,
 	resizeBarHeight: i32,
+
+	linkedSplits: ^[]^Node,
 }
 
 Element :: union {
@@ -333,7 +337,12 @@ first_parent_container :: proc(node: ^Node) -> ^Node {
 
 // Scales up all children to the node's size.
 // It respects their minimum sizes.
-scale_up_children :: proc(node: ^Node) {
+scale_up_children :: proc(node: ^Node, width, height: i32) {
+	if width != -1 && height != -1 {
+		node.w = width
+		node.h = height
+	}
+
 	#partial switch &e in node.element {
 		case VerticalSplit:
 			widthSum: i32 = 0
@@ -362,7 +371,7 @@ scale_up_children :: proc(node: ^Node) {
 			}
 
 			for &child in e.children {
-				scale_up_children(child)
+				scale_up_children(child, -1, -1)
 			}
 		case HorizontalSplit:
 			heightSum: i32 = 0
@@ -390,12 +399,12 @@ scale_up_children :: proc(node: ^Node) {
 			}
 
 			for &child in e.children {
-				scale_up_children(child)
+				scale_up_children(child, -1, -1)
 			}
 		case Container:
 			// We don't want to use container_inner_box() here, since container.allowOuterBoxInput shouldn't affect the scale up.
 			e.child.box = inner_box_from_box_n(node.box, node.element.(Container).borderPixels)
-			scale_up_children(e.child)
+			scale_up_children(e.child, -1, -1)
 	}
 }
 
@@ -652,6 +661,39 @@ resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) -
 		if diffCopy == 0 {
 			break
 		}
+	}
+
+	#partial switch &e in parentSplitNode.element {
+		case VerticalSplit:
+			if e.linkedSplits != nil {
+				for &linkedSplit in e.linkedSplits {
+					// Don't need to synchronize positions with ourselves
+					if linkedSplit == parentSplitNode {
+						continue
+					}
+
+					linkedSplitElement := linkedSplit.element.(VerticalSplit)
+					for i := 0; i < min(len(e.children), len(linkedSplitElement.children)); i += 1 {
+						linkedSplitElement.children[i].x = e.children[i].x
+						linkedSplitElement.children[i].w = e.children[i].w
+					}
+				}
+			}
+		case HorizontalSplit:
+			if e.linkedSplits != nil {
+				for &linkedSplit in e.linkedSplits {
+					// Don't need to synchronize positions with ourselves
+					if linkedSplit == parentSplitNode {
+						continue
+					}
+
+					linkedSplitElement := linkedSplit.element.(HorizontalSplit)
+					for i := 0; i < min(len(e.children), len(linkedSplitElement.children)); i += 1 {
+						linkedSplitElement.children[i].y = e.children[i].y
+						linkedSplitElement.children[i].h = e.children[i].h
+					}
+				}
+			}
 	}
 
 	return howMuchWeMoved

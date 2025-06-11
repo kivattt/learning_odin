@@ -26,9 +26,7 @@ scale_up_children_test :: proc(t: ^testing.T) {
 	rootNode := new_vertical_split_from_nodes(nil, debugSquares)
 	defer delete_node_and_its_children(rootNode)
 
-	rootNode.w = 1000
-	rootNode.h = 1000
-	scale_up_children(rootNode)
+	scale_up_children(rootNode, 1000, 1000)
 	testing.expect_value(t, debugSquares[0].x, 0)
 	testing.expect_value(t, debugSquares[0].y, 0)
 	testing.expect_value(t, debugSquares[0].w, 500)
@@ -73,9 +71,7 @@ vertical_resize_bar_hover_position_test :: proc(t: ^testing.T) {
 	defer delete_node_and_its_children(rootNode)
 
 	state := ui_state_default_values()
-	rootNode.w = 1000
-	rootNode.h = 1000
-	scale_up_children(rootNode)
+	scale_up_children(rootNode, 1000, 1000)
 
 	testing.expect_value(t, debugSquares[1].x + debugSquares[1].w, 500)
 
@@ -119,9 +115,7 @@ horizontal_resize_bar_hover_position_test :: proc(t: ^testing.T) {
 	defer delete_node_and_its_children(rootNode)
 
 	state := ui_state_default_values()
-	rootNode.w = 1000
-	rootNode.h = 1000
-	scale_up_children(rootNode)
+	scale_up_children(rootNode, 1000, 1000)
 
 	testing.expect_value(t, debugSquares[1].y + debugSquares[1].h, 500)
 
