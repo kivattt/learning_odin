@@ -90,14 +90,14 @@ VerticalSplit :: struct {
 	children: [dynamic]^Node,
 	resizeBarWidth: i32,
 
-	linkedSplits: ^[]^Node,
+	linkedSplits: ^[]^Node, // You can link resizeable splits of the same VerticalSplit type
 }
 
 HorizontalSplit :: struct {
 	children: [dynamic]^Node,
 	resizeBarHeight: i32,
 
-	linkedSplits: ^[]^Node,
+	linkedSplits: ^[]^Node, // You can link resizeable splits of the same HorizontalSplit type
 }
 
 Element :: union {
@@ -634,6 +634,7 @@ resize_child_until_minimum_size_for_individual_resize :: proc(node: ^Node, resiz
 }
 
 // Returns how much we moved
+// Also resizes linked splits
 resize_individual_child :: proc(parentSplitNode: ^Node, index: int, diff: i32) -> i32 {
 	if diff == 0 {
 		return 0
