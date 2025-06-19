@@ -29,6 +29,7 @@ BACKGROUND_COLOR :: Color{25, 25, 25, 255}
 TEXT_COLOR :: Color{230, 230, 230, 255}
 //TEXT_COLOR :: Color{0, 0, 0, 255}
 TEXTBOX_BACKGROUND_COLOR :: Color{10, 10, 10, 255}
+TEXTBOX_LABEL_COLOR :: Color{70, 70, 70, 255}
 HIGHLIGHT_COLOR :: Color{75, 110, 177, 255}
 DEFAULT_FONT_SIZE :: 18
 
@@ -163,6 +164,7 @@ UiColors :: struct {
 	highlightColor: Color,
 	textColor: Color,
 	textboxBackgroundColor: Color,
+	textboxLabelColor: Color,
 }
 
 get_default_ui_colors :: proc() -> UiColors {
@@ -177,6 +179,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		highlightColor = HIGHLIGHT_COLOR,
 		textColor = TEXT_COLOR,
 		textboxBackgroundColor = TEXTBOX_BACKGROUND_COLOR,
+		textboxLabelColor = TEXTBOX_LABEL_COLOR,
 	}
 }
 

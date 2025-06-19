@@ -25,7 +25,8 @@ main :: proc() {
 	boxes := make([]^ui.Node, nBoxes)
 	for i := 0; i < nBoxes; i += 1 {
 		if i == 1 { // A label
-			boxes[i] = ui.new_label(nil, "Text goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\n", .Middle, .Middle, ui.TEXT_COLOR, ui.BACKGROUND_COLOR)
+			label := ui.new_label(nil, "Text goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\nText goes here. Text goes here.\n", .Middle, .Middle, ui.TEXT_COLOR, ui.BACKGROUND_COLOR)
+			boxes[i] = ui.new_container(boxes[i], label, {0,0,0,0})
 			boxes[i].preferResize = true
 		} else {
 			c: u8 = u8(i) * 20
@@ -78,7 +79,7 @@ main :: proc() {
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = visualBreak
 			continue
 		} else if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
-			textbox := ui.new_textbox(horizSplit1)
+			textbox := ui.new_textbox(horizSplit1, "Search...")
 			container := ui.new_container(horizSplit1, textbox, {0,0,0,0})
 			size: i32 = 30
 

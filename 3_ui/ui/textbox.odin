@@ -15,11 +15,21 @@ TextBox :: struct {
 	outlineColor: Color,
 
 	str: [dynamic]rune,
+	labelStr: string,
 	cursorIndex: int,
 	cursorPosX: f32,
 }
 
-new_textbox :: proc(parent: ^Node) -> ^Node {
+new_textbox :: proc {
+	new_textbox_simple,
+	new_textbox_extra,
+}
+
+new_textbox_simple :: proc(parent: ^Node) -> ^Node {
+	return new_textbox_extra(parent, "")
+}
+
+new_textbox_extra :: proc(parent: ^Node, labelStr: string) -> ^Node {
 	node := new(Node)
 	textbox := TextBox{
 		color = UNSET_DEFAULT_COLOR,
@@ -28,6 +38,7 @@ new_textbox :: proc(parent: ^Node) -> ^Node {
 
 		pixels_rounded = 3,
 		str = make([dynamic]rune),
+		labelStr = labelStr,
 		cursorIndex = 0,
 		cursorPosX = 0,
 	}
@@ -117,10 +128,13 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
 
-	//xOffset: i32 = min(3, max(1, uiData.fontSize - node.h))
 	xOffset: i32 = 3
 	yOffset: i32 = min(3, max(1, uiData.fontSize - node.h))
-	rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
+	if len(t.str) == 0 {
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textboxLabelColor))
+	} else {
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
+	}
 
 	target := rl.MeasureTextEx(uiData.fontVariable, strings.unsafe_string_to_cstring(utf8.runes_to_string(t.str[:t.cursorIndex])), f32(uiData.fontSize), 0)[0]
 	if abs(t.cursorPosX - target) > 1 {
