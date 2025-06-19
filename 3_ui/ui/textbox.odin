@@ -103,55 +103,6 @@ delete_substring :: proc(str: ^[dynamic]rune, startIndex, endIndex: int) -> int 
 	return leftMostIndex
 }
 
-textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
-	t := &node.element.(TextBox)
-	firstParentContainer := first_parent_container(node)
-
-	screenHeightThing := screenHeight
-	//dropshadowColor: ColorVec4 = {0, 0, 0, 0.2}
-	dropshadowColor: ColorVec4 = {0, 0, 0, 0.0}
-	dropshadowSmoothness: f32 = 5
-	dropshadowOffset := [2]i32{0,1}
-	outlineColor := color_to_colorvec4(color_or(t.outlineColor, uiData.colors.buttonOutlineColor))
-	color := color_to_colorvec4(color_or(t.color, uiData.colors.textboxBackgroundColor))
-	pixelsRounded := t.pixels_rounded
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderRectLoc, &node.box, .IVEC4)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderScreenHeightLoc, &screenHeightThing, .INT)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderColorLoc, &color, .VEC4)
-	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderPixelsRoundedLoc, &pixelsRounded, .INT)
-
-	rl.BeginShaderMode(uiData.textboxShader)
-	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
-	rl.EndShaderMode()
-
-	xOffset: i32 = 3
-	yOffset: i32 = min(3, max(1, uiData.fontSize - node.h))
-	if len(t.str) == 0 {
-		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textboxLabelColor))
-	} else {
-		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
-	}
-
-	target := rl.MeasureTextEx(uiData.fontVariable, strings.unsafe_string_to_cstring(utf8.runes_to_string(t.str[:t.cursorIndex])), f32(uiData.fontSize), 0)[0]
-	if abs(t.cursorPosX - target) > 1 {
-		t.cursorPosX = linalg.lerp(t.cursorPosX, target, delta * 30)
-	}
-
-	yOffset += 1 // DEBUGGING
-	if node == state.selectedInteractableLockNode {
-		//heightDiff := i32(f32(uiData.fontSize) * 0.1)
-		heightDiff: f32 = f32(uiData.fontSize) * 0.1
-		color := Color{255,255,255,255}
-		if state.textCursorBlink {
-			rl.DrawRectangle(node.x + xOffset + i32(t.cursorPosX), node.y + yOffset + i32(heightDiff / 2), 1, i32(f32(uiData.fontSize) - heightDiff), color_to_rl_color(color))
-		}
-	}
-}
-
 textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProc: PlatformProcs, inputs: Inputs) {
 	t := &node.element.(TextBox)
 
@@ -227,4 +178,54 @@ textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformPr
 	}
 
 	reset_text_cursor_blink(state)
+}
+
+textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
+	t := &node.element.(TextBox)
+	firstParentContainer := first_parent_container(node)
+
+	visible := visible_area_for_drawing(node)
+	rl.BeginScissorMode(visible.x, visible.y, visible.w, visible.h)
+	defer rl.EndScissorMode()
+
+	screenHeightThing := screenHeight
+	dropshadowColor: ColorVec4 = {0, 0, 0, 0.0}
+	dropshadowSmoothness: f32 = 5
+	dropshadowOffset := [2]i32{0,1}
+	outlineColor := color_to_colorvec4(color_or(t.outlineColor, uiData.colors.buttonOutlineColor))
+	color := color_to_colorvec4(color_or(t.color, uiData.colors.textboxBackgroundColor))
+	pixelsRounded := t.pixels_rounded
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderRectLoc, &node.box, .IVEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderScreenHeightLoc, &screenHeightThing, .INT)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderColorLoc, &color, .VEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderPixelsRoundedLoc, &pixelsRounded, .INT)
+
+	rl.BeginShaderMode(uiData.textboxShader)
+	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
+	rl.EndShaderMode()
+
+	xOffset: i32 = 3
+	yOffset: i32 = min(3, max(2, uiData.fontSize - node.h))
+	if len(t.str) == 0 {
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textboxLabelColor))
+	} else {
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
+	}
+
+	target := rl.MeasureTextEx(uiData.fontVariable, strings.unsafe_string_to_cstring(utf8.runes_to_string(t.str[:t.cursorIndex])), f32(uiData.fontSize), 0)[0]
+	if abs(t.cursorPosX - target) > 1 {
+		t.cursorPosX = linalg.lerp(t.cursorPosX, target, delta * 30)
+	}
+
+	if node == state.selectedInteractableLockNode {
+		heightDiff: f32 = f32(uiData.fontSize) * 0.1
+		color := Color{210,210,210,255}
+		if state.textCursorBlink {
+			rl.DrawRectangle(node.x + xOffset + i32(t.cursorPosX), node.y + yOffset + i32(heightDiff / 2), 1, i32(f32(uiData.fontSize) - heightDiff), color_to_rl_color(color))
+		}
+	}
 }
