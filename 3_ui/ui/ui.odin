@@ -24,12 +24,14 @@ HOVERED_OUTLINE_COLOR :: Color{150, 150, 150, 255} // Currently unused
 CONTROLLER_OUTLINE_COLOR :: Color{136, 181, 255, 255}
 
 VISUAL_BREAK_COLOR :: Color{50,50,50, 255}
-BACKGROUND_COLOR :: Color{25, 25, 25, 255}
+BACKGROUND_COLOR :: Color{21, 21, 22, 255}
 //BACKGROUND_COLOR :: Color{220, 220, 222, 255}
 TEXT_COLOR :: Color{230, 230, 230, 255}
 //TEXT_COLOR :: Color{0, 0, 0, 255}
 TEXTBOX_BACKGROUND_COLOR :: Color{10, 10, 10, 255}
-TEXTBOX_LABEL_COLOR :: Color{70, 70, 70, 255}
+TEXTBOX_LABEL_COLOR :: Color{255, 255, 255, 100}
+TEXTBOX_OUTLINE_COLOR :: Color{255, 255, 255, 60}
+
 HIGHLIGHT_COLOR :: Color{75, 110, 177, 255}
 DEFAULT_FONT_SIZE :: 18
 
@@ -165,6 +167,7 @@ UiColors :: struct {
 	textColor: Color,
 	textboxBackgroundColor: Color,
 	textboxLabelColor: Color,
+	textboxOutlineColor: Color,
 }
 
 get_default_ui_colors :: proc() -> UiColors {
@@ -180,6 +183,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		textColor = TEXT_COLOR,
 		textboxBackgroundColor = TEXTBOX_BACKGROUND_COLOR,
 		textboxLabelColor = TEXTBOX_LABEL_COLOR,
+		textboxOutlineColor = TEXTBOX_OUTLINE_COLOR,
 	}
 }
 
@@ -1344,8 +1348,10 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 		if inputs.mouseLeftDown && state.hoveredNode != nil { // FIXME: Only run on mouse press, not down.
 			#partial switch &e in state.hoveredNode.element {
 				case TextBox:
-					state.selectedInteractableLockNode = state.hoveredNode
-					reset_text_cursor_blink(state)
+					if e.editable {
+						state.selectedInteractableLockNode = state.hoveredNode
+						reset_text_cursor_blink(state)
+					}
 			}
 		}
 

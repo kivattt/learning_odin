@@ -80,6 +80,10 @@ main :: proc() {
 			continue
 		} else if i >= len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 3 {
 			textbox := ui.new_textbox(horizSplit1, "Search...")
+			if i & 1 == 0 {
+				(&textbox.element.(ui.TextBox)).labelStr = "I'm uneditable..."
+				(&textbox.element.(ui.TextBox)).editable = false
+			}
 			container := ui.new_container(horizSplit1, textbox, {0,0,0,0})
 			size: i32 = 30
 

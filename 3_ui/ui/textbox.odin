@@ -13,9 +13,11 @@ TextBox :: struct {
 	color: Color,
 	background: Color,
 	outlineColor: Color,
+	labelColor: Color,
 
 	str: [dynamic]rune,
 	labelStr: string,
+	editable: bool,
 	cursorIndex: int,
 	cursorPosX: f32,
 }
@@ -35,10 +37,12 @@ new_textbox_extra :: proc(parent: ^Node, labelStr: string) -> ^Node {
 		color = UNSET_DEFAULT_COLOR,
 		background = {0,0,0,0},
 		outlineColor = UNSET_DEFAULT_COLOR,
+		labelColor = UNSET_DEFAULT_COLOR,
 
 		pixels_rounded = 3,
 		str = make([dynamic]rune),
 		labelStr = labelStr,
+		editable = true,
 		cursorIndex = 0,
 		cursorPosX = 0,
 	}
@@ -105,6 +109,9 @@ delete_substring :: proc(str: ^[dynamic]rune, startIndex, endIndex: int) -> int 
 
 textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProc: PlatformProcs, inputs: Inputs) {
 	t := &node.element.(TextBox)
+	if !t.editable {
+		return
+	}
 
 	if inputs.runePressed != 0 {
 		inject_at(&t.str, t.cursorIndex, inputs.runePressed)
@@ -192,7 +199,10 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 	dropshadowColor: ColorVec4 = {0, 0, 0, 0.0}
 	dropshadowSmoothness: f32 = 5
 	dropshadowOffset := [2]i32{0,1}
-	outlineColor := color_to_colorvec4(color_or(t.outlineColor, uiData.colors.buttonOutlineColor))
+	outlineColor := color_to_colorvec4(color_or(t.outlineColor, uiData.colors.textboxOutlineColor))
+	if !t.editable {
+		outlineColor.a /= 2
+	}
 	color := color_to_colorvec4(color_or(t.color, uiData.colors.textboxBackgroundColor))
 	pixelsRounded := t.pixels_rounded
 	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
@@ -202,6 +212,7 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
 	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
 	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderColorLoc, &color, .VEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderOutlineColorLoc, &outlineColor, .VEC4)
 	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderPixelsRoundedLoc, &pixelsRounded, .INT)
 
 	rl.BeginShaderMode(uiData.textboxShader)
@@ -211,7 +222,11 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 	xOffset: i32 = 3
 	yOffset: i32 = min(3, max(2, uiData.fontSize - node.h))
 	if len(t.str) == 0 {
-		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textboxLabelColor))
+		labelColor := color_or(t.labelColor, uiData.colors.textboxLabelColor)
+		if !t.editable {
+			labelColor.a /= 2
+		}
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(labelColor))
 	} else {
 		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
 	}
@@ -221,7 +236,7 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 		t.cursorPosX = linalg.lerp(t.cursorPosX, target, delta * 30)
 	}
 
-	if node == state.selectedInteractableLockNode {
+	if node == state.selectedInteractableLockNode && t.editable {
 		heightDiff: f32 = f32(uiData.fontSize) * 0.1
 		color := Color{210,210,210,255}
 		if state.textCursorBlink {
