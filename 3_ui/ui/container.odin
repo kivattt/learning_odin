@@ -122,7 +122,7 @@ is_interactable :: proc(node: ^Node) -> bool {
 	if node == nil do return false
 
 	#partial switch &e in node.element {
-		case Container, Button, Checkbox:
+		case Container, Button, Checkbox, TextBox:
 			return true
 	}
 

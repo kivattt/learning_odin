@@ -111,6 +111,7 @@ Element :: union {
 	HorizontalSplitUnresizeable,
 	VisualBreak,
 	Container,
+	TextBox,
 }
 
 Node :: struct {
@@ -280,6 +281,7 @@ MouseCursor :: enum {
 PlatformProcs :: struct {
 	setMouseCursorIconProc: proc(cursor: MouseCursor),
 	getWindowScaleDPI: proc() -> [2]f32,
+	getClipboardText: proc() -> string,
 }
 
 get_dummy_platform_procs :: proc() -> (procs: PlatformProcs) {
@@ -306,6 +308,10 @@ get_raylib_platform_procs :: proc() -> (procs: PlatformProcs) {
 		} else {
 			return rl.GetWindowScaleDPI()
 		}
+	}
+
+	procs.getClipboardText = proc() -> string {
+		return string(rl.GetClipboardText())
 	}
 
 	return
@@ -977,7 +983,7 @@ find_hovered_node :: proc(node: ^Node, x, y: i32) -> ^Node {
 			}
 		}
 		return nil
-	case Label, Button, Checkbox, PaddingRect:
+	case Label, Button, Checkbox, PaddingRect, TextBox:
 		if is_coord_in_box(node.box, x, y) {
 			return node
 		} else {
@@ -1122,6 +1128,19 @@ Inputs :: struct {
 	mouseX: i32,
 	mouseY: i32,
 
+	runePressed: rune,
+	backspacePressed: bool,
+	deletePressed: bool,
+	wPressed: bool,
+	leftPressed: bool,
+	rightPressed: bool,
+	homePressed: bool,
+	endPressed: bool,
+	vPressed: bool,
+
+	leftCtrlDown: bool,
+	rightCtrlDown: bool,
+
 	controllerPress: bool,
 	controllerDirection: ControllerDirection,
 }
@@ -1130,6 +1149,22 @@ inputs_from_raylib :: proc() -> (inputs: Inputs) {
 	inputs.mouseX = rl.GetMouseX()
 	inputs.mouseY = rl.GetMouseY()
 	inputs.mouseLeftDown = rl.IsMouseButtonDown(.LEFT)
+
+	rl_is_key_pressed := proc(key: rl.KeyboardKey) -> bool {
+		return rl.IsKeyPressed(key) || rl.IsKeyPressedRepeat(key)
+	}
+	inputs.backspacePressed = rl_is_key_pressed(.BACKSPACE)
+	inputs.deletePressed = rl_is_key_pressed(.DELETE)
+	inputs.wPressed = rl_is_key_pressed(.W)
+	inputs.leftPressed = rl_is_key_pressed(.LEFT)
+	inputs.rightPressed = rl_is_key_pressed(.RIGHT)
+	inputs.homePressed = rl_is_key_pressed(.HOME)
+	inputs.endPressed = rl_is_key_pressed(.END)
+	inputs.vPressed = rl_is_key_pressed(.V)
+
+	inputs.runePressed = rl.GetCharPressed()
+	inputs.leftCtrlDown = rl.IsKeyDown(.LEFT_CONTROL)
+	inputs.rightCtrlDown = rl.IsKeyDown(.RIGHT_CONTROL)
 
 	inputs.controllerDirection = nil
 	if rl.IsGamepadAvailable(0) {
@@ -1179,7 +1214,7 @@ find_first_interactable_node :: proc(node: ^Node) -> ^Node {
 		if found != nil do return found
 	case Label, PaddingRect, VisualBreak:
 		return nil
-	case Button, Checkbox:
+	case Button, Checkbox, TextBox:
 		return node
 	}
 
@@ -1259,10 +1294,13 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 		if state.hoveredNode != nil {
 			#partial switch &e in state.hoveredNode.element {
 				case Button:
-					button_handle_input(state.hoveredNode, state, inputs)
+					button_handle_input(state.hoveredNode, state, platformProcs, inputs)
 					cursorWanted = MouseCursor.POINTING_HAND
 				case Checkbox:
-					checkbox_handle_input(state.hoveredNode, state, inputs)
+					checkbox_handle_input(state.hoveredNode, state, platformProcs, inputs)
+					cursorWanted = MouseCursor.POINTING_HAND
+				case TextBox:
+					textbox_handle_input(state.hoveredNode, state, platformProcs, inputs)
 					cursorWanted = MouseCursor.POINTING_HAND
 			}
 		}
@@ -1364,6 +1402,8 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 			label_draw(node, state, uiData, screenHeight, inputs)
 		case VisualBreak:
 			visual_break_draw(node, state, uiData, screenHeight, inputs)
+		case TextBox:
+			textbox_draw(node, state, uiData, screenHeight, inputs)
 	}
 }
 
@@ -1462,6 +1502,9 @@ delete_node_and_its_children :: proc(node: ^Node) {
 			free(node)
 		case Container:
 			delete_node_and_its_children(e.child)
+			free(node)
+		case TextBox:
+			delete(e.str)
 			free(node)
 		case PaddingRect, Button, Checkbox, Label, VisualBreak:
 			free(node)

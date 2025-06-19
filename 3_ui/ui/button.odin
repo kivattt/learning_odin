@@ -115,7 +115,7 @@ button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterf
 	}
 }
 
-button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
+button_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: PlatformProcs, inputs: Inputs) {
 	if state.lastMouse1Pressed {
 		return
 	}

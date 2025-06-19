@@ -34,7 +34,7 @@ main :: proc() {
 	}
 
 	horizSplit1 := ui.new_horizontal_split_unresizeable(nil)
-	for i := 0; i < 7; i += 1 {
+	for i := 0; i < 8; i += 1 {
 		append_elem(&(&horizSplit1.element.(ui.HorizontalSplitUnresizeable)).children, nil)
 	}
 
@@ -73,11 +73,15 @@ main :: proc() {
 	rootNode := horizSplit2
 
 	for i := 0; i < len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children); i += 1 {
-		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 3 {
+		if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 4 {
 			visualBreak := ui.new_visual_break(horizSplit1, .Horizontal, 12)
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = visualBreak
 			continue
-		} else if i >= len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 3 {
+		} else if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
+			textbox := ui.new_textbox(horizSplit1)
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = textbox
+			continue
+		} else if i >= len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 4 {
 			s := i & 1 == 1 ? "Long" : "Long2"
 
 			label := ui.new_label(nil, s, .Middle, .Left)

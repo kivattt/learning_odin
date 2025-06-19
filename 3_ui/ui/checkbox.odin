@@ -92,7 +92,7 @@ checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInte
 	}
 }
 
-checkbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, inputs: Inputs) {
+checkbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: PlatformProcs, inputs: Inputs) {
 	if state.lastMouse1Pressed {
 		return
 	}
