@@ -37,7 +37,7 @@ new_button :: proc(parent: ^Node) -> ^Node {
 	return node
 }
 
-button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+button_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	assert(node.parent != nil)
 
 	firstParentContainer := first_parent_container(node)

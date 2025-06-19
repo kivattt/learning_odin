@@ -51,7 +51,7 @@ container_inner_box :: proc(node: ^Node) -> Box {
 	return inner_box_from_box_n(node.box, node.element.(Container).borderPixels)
 }
 
-container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	container := node.element.(Container)
 
 	visible := visible_area_for_drawing(node)
@@ -60,7 +60,7 @@ container_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInt
 	}
 
 	container.child.box = inner_box_from_box(node.box, container.borderPixels)
-	draw(container.child, state, uiData, screenHeight, inputs)
+	draw(container.child, state, uiData, screenHeight, inputs, delta)
 
 	//rl.DrawRectangleLines(node.x+1, node.y+1, node.w-1, node.h-1, {0,255,0,80})
 }

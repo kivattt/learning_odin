@@ -30,7 +30,7 @@ new_padding_rect_simple :: proc(parent: ^Node) -> ^Node {
 }
 
 
-padding_rect_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+padding_rect_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	paddingRect := node.element.(PaddingRect)
 	if paddingRect.color.a != 0 {
 		rl.DrawRectangle(node.x, node.y, node.w, node.h, color_to_rl_color(color_or(paddingRect.color, {0,0,0,0})))

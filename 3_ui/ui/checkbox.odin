@@ -29,7 +29,7 @@ new_checkbox :: proc(parent: ^Node) -> ^Node {
 	return node
 }
 
-checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+checkbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	assert(node.parent != nil)
 	notSquare := node.w != node.h
 	if notSquare {

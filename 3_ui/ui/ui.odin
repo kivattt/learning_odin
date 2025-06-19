@@ -1320,7 +1320,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 	state.lastMouse1Pressed = isLeftDown
 }
 
-draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	switch n in node.element {
 		case VerticalSplit:
 			for child in n.children {
@@ -1328,7 +1328,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 					break
 				}
 
-				draw(child, state, uiData, screenHeight, inputs)
+				draw(child, state, uiData, screenHeight, inputs, delta)
 			}
 
 			// Resize bars
@@ -1360,7 +1360,7 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 					break
 				}
 
-				draw(child, state, uiData, screenHeight, inputs)
+				draw(child, state, uiData, screenHeight, inputs, delta)
 			}
 
 			// Resize bars
@@ -1387,23 +1387,23 @@ draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData
 				}
 			}
 		case VerticalSplitUnresizeable:
-			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
+			vertical_split_unresizeable_draw(node, state, uiData, screenHeight, inputs, delta)
 		case HorizontalSplitUnresizeable:
-			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs)
+			horizontal_split_unresizeable_draw(node, state, uiData, screenHeight, inputs, delta)
 		case Container:
-			container_draw(node, state, uiData, screenHeight, inputs)
+			container_draw(node, state, uiData, screenHeight, inputs, delta)
 		case PaddingRect:
-			padding_rect_draw(node, state, uiData, screenHeight, inputs)
+			padding_rect_draw(node, state, uiData, screenHeight, inputs, delta)
 		case Button:
-			button_draw(node, state, uiData, screenHeight, inputs)
+			button_draw(node, state, uiData, screenHeight, inputs, delta)
 		case Checkbox:
-			checkbox_draw(node, state, uiData, screenHeight, inputs)
+			checkbox_draw(node, state, uiData, screenHeight, inputs, delta)
 		case Label:
-			label_draw(node, state, uiData, screenHeight, inputs)
+			label_draw(node, state, uiData, screenHeight, inputs, delta)
 		case VisualBreak:
-			visual_break_draw(node, state, uiData, screenHeight, inputs)
+			visual_break_draw(node, state, uiData, screenHeight, inputs, delta)
 		case TextBox:
-			textbox_draw(node, state, uiData, screenHeight, inputs)
+			textbox_draw(node, state, uiData, screenHeight, inputs, delta)
 	}
 }
 

@@ -39,7 +39,7 @@ new_visual_break :: proc(parent: ^Node, direction: Direction, size: i32) -> ^Nod
 	return node
 }
 
-visual_break_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+visual_break_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	assert(node.parent != nil)
 
 	visualBreak := node.element.(VisualBreak)

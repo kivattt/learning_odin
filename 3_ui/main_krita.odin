@@ -228,7 +228,7 @@ main :: proc() {
 		if debug do fmt.println("correct_boxes(..., false)  time:", time.since(t))
 
 		t = time.now()
-		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight(), inputs)
+		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight(), inputs, rl.GetFrameTime())
 		if debug do fmt.println("draw()                     time:", time.since(t))
 
 		t = time.now()

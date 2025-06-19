@@ -55,7 +55,7 @@ new_label_simple :: proc(parent: ^Node, text: string, verticalAlignment: Vertica
 	return new_label_extra(parent, text, verticalAlignment, horizontalAlignment, TEXT_COLOR, {0,0,0,0})
 }
 
-label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs) {
+label_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
 	assert(node.parent != nil)
 
 	label := node.element.(Label)
