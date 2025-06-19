@@ -4,6 +4,7 @@ import "core:fmt"
 import "core:strings"
 import "core:unicode/utf8"
 import "core:math/linalg"
+import "core:math"
 import rl "vendor:raylib"
 
 TEXT_FIELD_DELIMITERS :: " #@%/\\.?!§*-_:;\",&(){}[]"
@@ -220,15 +221,15 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 	rl.EndShaderMode()
 
 	xOffset: i32 = 3
-	yOffset: i32 = min(3, max(2, uiData.fontSize - node.h))
+	yOffset: f32 = math.ceil(max(2, (f32(node.h) - f32(uiData.fontSize)) / 2))
 	if len(t.str) == 0 {
 		labelColor := color_or(t.labelColor, uiData.colors.textboxLabelColor)
 		if !t.editable {
 			labelColor.a /= 2
 		}
-		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(labelColor))
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(i32(node.x + xOffset)), f32(i32(f32(node.y) + yOffset))}, f32(uiData.fontSize), 0, color_to_rl_color(labelColor))
 	} else {
-		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(i32(node.x + xOffset)), f32(i32(f32(node.y) + yOffset))}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
 	}
 
 	target := rl.MeasureTextEx(uiData.fontVariable, strings.unsafe_string_to_cstring(utf8.runes_to_string(t.str[:t.cursorIndex])), f32(uiData.fontSize), 0)[0]
@@ -240,7 +241,7 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 		heightDiff: f32 = f32(uiData.fontSize) * 0.1
 		color := Color{210,210,210,255}
 		if state.textCursorBlink {
-			rl.DrawRectangle(node.x + xOffset + i32(t.cursorPosX), node.y + yOffset + i32(heightDiff / 2), 1, i32(f32(uiData.fontSize) - heightDiff), color_to_rl_color(color))
+			rl.DrawRectangle(node.x + xOffset + i32(t.cursorPosX), i32(f32(node.y) + yOffset + heightDiff / 2), 1, i32(f32(uiData.fontSize) - heightDiff), color_to_rl_color(color))
 		}
 	}
 }

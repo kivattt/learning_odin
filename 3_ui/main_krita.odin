@@ -85,7 +85,7 @@ main :: proc() {
 				(&textbox.element.(ui.TextBox)).editable = false
 			}
 			container := ui.new_container(horizSplit1, textbox, {0,0,0,0})
-			size: i32 = 30
+			size: i32 = 35
 
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
 			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
