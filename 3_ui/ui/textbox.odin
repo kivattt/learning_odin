@@ -222,5 +222,9 @@ textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformPr
 		s, _ = strings.remove_all(s, "\n")
 		inject_at(&t.str, t.cursorIndex, ..utf8.string_to_runes(s, context.temp_allocator))
 		t.cursorIndex += len(s)
+	} else {
+		return // Skip resetting cursor blink
 	}
+
+	reset_text_cursor_blink(state)
 }

@@ -1345,9 +1345,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 			#partial switch &e in state.hoveredNode.element {
 				case TextBox:
 					state.selectedInteractableLockNode = state.hoveredNode
-					// Reset cursor blink to enabled
-					state.textCursorLastBlinkTime = time.now()
-					state.textCursorBlink = true
+					reset_text_cursor_blink(state)
 			}
 		}
 
@@ -1593,4 +1591,9 @@ draw_controller_outline :: proc(rect: Box, visibleArea: Box, screenHeight: i32, 
 	rl.BeginShaderMode(uiData.controllerOutlineShader)
 	rl.DrawRectangle(visibleArea.x, visibleArea.y, visibleArea.w, visibleArea.h, {0,0,0,0}) // outer box
 	rl.EndShaderMode()
+}
+
+reset_text_cursor_blink :: proc(state: ^UserInterfaceState) {
+	state.textCursorLastBlinkTime = time.now()
+	state.textCursorBlink = true
 }
