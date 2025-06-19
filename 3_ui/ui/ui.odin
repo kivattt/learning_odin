@@ -9,6 +9,7 @@ import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
 import "core:math"
+import "core:time"
 import "core:c"
 import "core:testing"
 
@@ -27,6 +28,7 @@ BACKGROUND_COLOR :: Color{25, 25, 25, 255}
 //BACKGROUND_COLOR :: Color{220, 220, 222, 255}
 TEXT_COLOR :: Color{230, 230, 230, 255}
 //TEXT_COLOR :: Color{0, 0, 0, 255}
+TEXTBOX_BACKGROUND_COLOR :: Color{10, 10, 10, 255}
 HIGHLIGHT_COLOR :: Color{75, 110, 177, 255}
 DEFAULT_FONT_SIZE :: 18
 
@@ -127,8 +129,14 @@ UserInterfaceState :: struct {
 	lastFrameCursor: MouseCursor,
 	lastMouse1Pressed: bool,
 
+	textCursorBlinkIntervalMilliseconds: f64,
+	textCursorLastBlinkTime: time.Time,
+	textCursorBlink: bool,
+
 	hoveredNode: ^Node,
 	controllerHoveredNode: ^Node,
+
+	selectedInteractableLockNode: ^Node,
 
 	hoveredResizeBar: ^Node,
 	selectedResizeBar: ^Node,
@@ -139,11 +147,10 @@ UserInterfaceState :: struct {
 
 ui_state_default_values :: proc() -> UserInterfaceState {
 	return UserInterfaceState{
-		selectedResizeBarIndexInParent = -1
+		textCursorBlinkIntervalMilliseconds = 500,
+		selectedResizeBarIndexInParent = -1,
 	}
 }
-
-
 
 UiColors :: struct {
 	interactableColor: Color,
@@ -155,6 +162,7 @@ UiColors :: struct {
 	backgroundColor: Color,
 	highlightColor: Color,
 	textColor: Color,
+	textboxBackgroundColor: Color,
 }
 
 get_default_ui_colors :: proc() -> UiColors {
@@ -168,6 +176,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		backgroundColor = BACKGROUND_COLOR,
 		highlightColor = HIGHLIGHT_COLOR,
 		textColor = TEXT_COLOR,
+		textboxBackgroundColor = TEXTBOX_BACKGROUND_COLOR,
 	}
 }
 
@@ -211,6 +220,18 @@ UserInterfaceData :: struct {
 	controllerOutlineShaderScreenHeightLoc: c.int,
 	controllerOutlineShaderColorLoc: c.int,
 	controllerOutlineShaderPixelsRoundedLoc: c.int,
+
+	// Textbox shader
+	textboxShader: rl.Shader,
+	textboxShaderDPIScaleLoc: c.int,
+	textboxShaderRectLoc: c.int,
+	textboxShaderScreenHeightLoc: c.int,
+	textboxShaderColorLoc: c.int,
+	textboxShaderPixelsRoundedLoc: c.int,
+	textboxShaderDropshadowColorLoc: c.int,
+	textboxShaderDropshadowOffsetLoc: c.int,
+	textboxShaderDropshadowSmoothnessLoc: c.int,
+	textboxShaderOutlineColorLoc: c.int,
 }
 
 FONT_VARIABLE_DATA :: #load("fonts/Adwaita/AdwaitaSans-Regular.ttf")
@@ -262,6 +283,18 @@ init_ui_data :: proc(procs: PlatformProcs) -> (data: UserInterfaceData) {
 	data.controllerOutlineShaderColorLoc = rl.GetShaderLocation(data.controllerOutlineShader, "color")
 	data.controllerOutlineShaderPixelsRoundedLoc = rl.GetShaderLocation(data.controllerOutlineShader, "pixels_rounded_in")
 
+	// Textbox shader
+	data.textboxShader = rl.LoadShader(nil, "ui/shaders/textbox.glsl")
+	data.textboxShaderDPIScaleLoc = rl.GetShaderLocation(data.textboxShader, "dpi_scale")
+	data.textboxShaderRectLoc = rl.GetShaderLocation(data.textboxShader, "rect")
+	data.textboxShaderScreenHeightLoc = rl.GetShaderLocation(data.textboxShader, "screen_height")
+	data.textboxShaderColorLoc = rl.GetShaderLocation(data.textboxShader, "color")
+	data.textboxShaderPixelsRoundedLoc = rl.GetShaderLocation(data.textboxShader, "pixels_rounded_in")
+	data.textboxShaderDropshadowColorLoc = rl.GetShaderLocation(data.textboxShader, "dropshadow_color")
+	data.textboxShaderDropshadowOffsetLoc = rl.GetShaderLocation(data.textboxShader, "dropshadow_offset")
+	data.textboxShaderDropshadowSmoothnessLoc = rl.GetShaderLocation(data.textboxShader, "dropshadow_smoothness")
+	data.textboxShaderOutlineColorLoc = rl.GetShaderLocation(data.textboxShader, "outline_color")
+
 	return
 }
 
@@ -269,10 +302,12 @@ deinit_ui_data :: proc(uiData: ^UserInterfaceData) {
 	rl.UnloadShader(uiData.buttonShader)
 	rl.UnloadShader(uiData.checkboxShader)
 	rl.UnloadShader(uiData.controllerOutlineShader)
+	rl.UnloadShader(uiData.textboxShader)
 }
 
 MouseCursor :: enum {
 	DEFAULT,
+	IBEAM,
 	RESIZE_EW,
 	RESIZE_NS,
 	POINTING_HAND,
@@ -293,6 +328,8 @@ get_raylib_platform_procs :: proc() -> (procs: PlatformProcs) {
 		switch cursor {
 			case .DEFAULT:
 				rl.SetMouseCursor(.DEFAULT)
+			case .IBEAM:
+				rl.SetMouseCursor(.IBEAM)
 			case .RESIZE_EW:
 				rl.SetMouseCursor(.RESIZE_EW)
 			case .RESIZE_NS:
@@ -1231,6 +1268,11 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 		return
 	}
 
+	if time.duration_milliseconds(time.since(state.textCursorLastBlinkTime)) > state.textCursorBlinkIntervalMilliseconds {
+		state.textCursorLastBlinkTime = time.now()
+		state.textCursorBlink = !state.textCursorBlink
+	}
+
 	if inputs.controllerDirection != nil {
 		if true || state.controllerHoveredNode == nil {
 			if is_interactable(state.hoveredNode) {
@@ -1278,6 +1320,10 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 
 	state.hoveredResizeBar = find_hovered_resize_bar(node, x, y)
 
+	if inputs.mouseLeftDown {
+		state.selectedInteractableLockNode = nil
+	}
+
 	cursorWanted := MouseCursor.DEFAULT
 	if state.hoveredResizeBar != nil {
 		state.hoveredNode = nil
@@ -1291,6 +1337,24 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 		}
 	} else {
 		state.hoveredNode = find_hovered_node(node, x, y)
+
+		if inputs.mouseLeftDown && state.hoveredNode != nil { // FIXME: Only run on mouse press, not down.
+			#partial switch &e in state.hoveredNode.element {
+				case TextBox:
+					state.selectedInteractableLockNode = state.hoveredNode
+					// Reset cursor blink to enabled
+					state.textCursorLastBlinkTime = time.now()
+					state.textCursorBlink = true
+			}
+		}
+
+		if state.selectedInteractableLockNode != nil {
+			#partial switch &e in state.selectedInteractableLockNode.element {
+				case TextBox:
+					textbox_handle_input(state.selectedInteractableLockNode, state, platformProcs, inputs)
+			}
+		}
+
 		if state.hoveredNode != nil {
 			#partial switch &e in state.hoveredNode.element {
 				case Button:
@@ -1300,8 +1364,7 @@ handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProcs: Pla
 					checkbox_handle_input(state.hoveredNode, state, platformProcs, inputs)
 					cursorWanted = MouseCursor.POINTING_HAND
 				case TextBox:
-					textbox_handle_input(state.hoveredNode, state, platformProcs, inputs)
-					cursorWanted = MouseCursor.POINTING_HAND
+					cursorWanted = MouseCursor.IBEAM
 			}
 		}
 	}

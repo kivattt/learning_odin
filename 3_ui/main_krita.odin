@@ -79,7 +79,11 @@ main :: proc() {
 			continue
 		} else if i == len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 1 {
 			textbox := ui.new_textbox(horizSplit1)
-			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = textbox
+			container := ui.new_container(horizSplit1, textbox, {0,0,0,0})
+			size: i32 = 30
+
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i] = container
+			horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[i].minimumSize = size
 			continue
 		} else if i >= len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children) - 4 {
 			s := i & 1 == 1 ? "Long" : "Long2"

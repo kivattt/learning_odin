@@ -9,6 +9,11 @@ import rl "vendor:raylib"
 TEXT_FIELD_DELIMITERS :: " #@%/\\.?!§*-_:;\",&(){}[]"
 
 TextBox :: struct {
+	pixels_rounded: i32,
+	color: Color,
+	background: Color,
+	outlineColor: Color,
+
 	str: [dynamic]rune,
 	cursorIndex: int,
 	cursorPosX: f32,
@@ -17,6 +22,11 @@ TextBox :: struct {
 new_textbox :: proc(parent: ^Node) -> ^Node {
 	node := new(Node)
 	textbox := TextBox{
+		color = UNSET_DEFAULT_COLOR,
+		background = {0,0,0,0},
+		outlineColor = UNSET_DEFAULT_COLOR,
+
+		pixels_rounded = 3,
 		str = make([dynamic]rune),
 		cursorIndex = 0,
 		cursorPosX = 0,
@@ -83,23 +93,54 @@ delete_substring :: proc(str: ^[dynamic]rune, startIndex, endIndex: int) -> int 
 }
 
 textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInterfaceData, screenHeight: i32, inputs: Inputs, delta: f32) {
-	t := node.element.(TextBox)
+	t := &node.element.(TextBox)
+	firstParentContainer := first_parent_container(node)
 
-	rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x), f32(node.y)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
+	screenHeightThing := screenHeight
+	//dropshadowColor: ColorVec4 = {0, 0, 0, 0.2}
+	dropshadowColor: ColorVec4 = {0, 0, 0, 0.0}
+	dropshadowSmoothness: f32 = 5
+	dropshadowOffset := [2]i32{0,1}
+	outlineColor := color_to_colorvec4(color_or(t.outlineColor, uiData.colors.buttonOutlineColor))
+	color := color_to_colorvec4(color_or(t.color, uiData.colors.textboxBackgroundColor))
+	pixelsRounded := t.pixels_rounded
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDPIScaleLoc, &uiData.dpiScale, .VEC2)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderRectLoc, &node.box, .IVEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderScreenHeightLoc, &screenHeightThing, .INT)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowColorLoc, &dropshadowColor, .VEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowOffsetLoc, &dropshadowOffset, .IVEC2)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderDropshadowSmoothnessLoc, &dropshadowSmoothness, .FLOAT)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderColorLoc, &color, .VEC4)
+	rl.SetShaderValue(uiData.textboxShader, uiData.textboxShaderPixelsRoundedLoc, &pixelsRounded, .INT)
+
+	rl.BeginShaderMode(uiData.textboxShader)
+	rl.DrawRectangle(firstParentContainer.x, firstParentContainer.y, firstParentContainer.w, firstParentContainer.h, {0,0,0,0}) // outer box
+	rl.EndShaderMode()
+
+	//xOffset: i32 = min(3, max(1, uiData.fontSize - node.h))
+	xOffset: i32 = 3
+	yOffset: i32 = min(3, max(1, uiData.fontSize - node.h))
+	rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(node.x + xOffset), f32(node.y + yOffset)}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
 
 	target := rl.MeasureTextEx(uiData.fontVariable, strings.unsafe_string_to_cstring(utf8.runes_to_string(t.str[:t.cursorIndex])), f32(uiData.fontSize), 0)[0]
-	fmt.println(target)
-	//t.cursorPosX = target
-	if (abs(t.cursorPosX - target) > 1) {
-		t.cursorPosX = linalg.lerp(t.cursorPosX, target, delta * 15)
+	if abs(t.cursorPosX - target) > 1 {
+		t.cursorPosX = linalg.lerp(t.cursorPosX, target, delta * 30)
 	}
 
-	heightDiff := i32(f32(uiData.fontSize) * 0.1)
-	rl.DrawRectangle(node.x + i32(t.cursorPosX), node.y + i32(heightDiff / 2), 1, i32(uiData.fontSize - heightDiff), {255,255,255,255})
+	yOffset += 1 // DEBUGGING
+	if node == state.selectedInteractableLockNode {
+		//heightDiff := i32(f32(uiData.fontSize) * 0.1)
+		heightDiff: f32 = f32(uiData.fontSize) * 0.1
+		color := Color{255,255,255,255}
+		if state.textCursorBlink {
+			rl.DrawRectangle(node.x + xOffset + i32(t.cursorPosX), node.y + yOffset + i32(heightDiff / 2), 1, i32(f32(uiData.fontSize) - heightDiff), color_to_rl_color(color))
+		}
+	}
 }
 
 textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProc: PlatformProcs, inputs: Inputs) {
 	t := &node.element.(TextBox)
+
 	if inputs.runePressed != 0 {
 		inject_at(&t.str, t.cursorIndex, inputs.runePressed)
 		t.cursorIndex += 1
@@ -131,7 +172,7 @@ textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformPr
 
 		if isCtrlDown {
 			if len(t.str) != 0 {
-				t.cursorIndex = delete_substring(&t.str, t.cursorIndex, nextWordLeft(&t.str, t.cursorIndex))
+				t.cursorIndex = delete_substring(&t.str, t.cursorIndex, nextWordRight(&t.str, t.cursorIndex))
 			}
 		} else {
 			ordered_remove(&t.str, max(0, t.cursorIndex))
