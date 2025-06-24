@@ -95,7 +95,13 @@ draw :: proc() {
 	gl.ClearColor(0, 0.3, 0, 1.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 
-	draw_rect(0, 0, 50, 50, f32(width), f32(height))
+	vlist: VList
+
+	for i: i32 = 0; i < 20; i += 1 {
+		draw_rect(&vlist, i*20, i*20, (i+1)*20, (i+1)*20, f32(width), f32(height))
+	}
+
+	draw_vlist(&vlist)
 }
 
 key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i32) {
