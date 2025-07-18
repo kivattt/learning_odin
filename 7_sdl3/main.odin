@@ -10,13 +10,15 @@ main :: proc() {
 		return
 	}
 
-	window := sdl.CreateWindow("ui test", 1280, 720, {.RESIZABLE})
+	window: ^sdl.Window
+	renderer: ^sdl.Renderer
+	sdl.CreateWindowAndRenderer("ui test", 1280, 720, {.RESIZABLE}, &window, &renderer)
 	if window == nil {
 		fmt.println("Failed to create window")
 		return
 	}
 
-	gpu := sdl.CreateGPUDevice({.SPIRV}, true, nil)
+	/*gpu := sdl.CreateGPUDevice({.SPIRV}, true, nil)
 	if gpu == nil {
 		fmt.println("Failed to create GPU device")
 		return
@@ -26,9 +28,15 @@ main :: proc() {
 	if !ok {
 		fmt.println("Failed to claim window for gpu")
 		return
-	}
+	}*/
 
 	running := true
+
+	bmp := sdl.LoadBMP("fox.bmp")
+	assert(bmp != nil)
+	texture := sdl.CreateTextureFromSurface(renderer, bmp)
+	assert(texture != nil)
+	sdl.DestroySurface(bmp)
 
 	for running {
 		ev: sdl.Event
@@ -40,7 +48,7 @@ main :: proc() {
 			}
 		}
 
-		cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
+		/*cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
 		swapchain_tex: ^sdl.GPUTexture
 		ok = sdl.WaitAndAcquireGPUSwapchainTexture(cmd_buf, window, &swapchain_tex, nil, nil)
 
@@ -49,11 +57,21 @@ main :: proc() {
 			load_op = .CLEAR,
 			clear_color = {0, 0.2, 0.4, 1},
 			store_op = .STORE,
-		}
+		}*/
 
-		render_pass := sdl.BeginGPURenderPass(cmd_buf, &color_target, 1, nil)
+		sdl.SetRenderDrawColor(renderer, 100, 0, 0, sdl.ALPHA_OPAQUE)
+		sdl.RenderClear(renderer)
+		//dstRect: sdl.FRect
+		dstRect: sdl.FRect
+		dstRect.x = 0.0
+		dstRect.y = 0.0
+		dstRect.w = 500
+		dstRect.h = 500
+		sdl.RenderTexture(renderer, texture, nil, &dstRect);
+		sdl.RenderPresent(renderer)
+
+		/*render_pass := sdl.BeginGPURenderPass(cmd_buf, &color_target, 1, nil)
 		sdl.EndGPURenderPass(render_pass)
-
-		ok = sdl.SubmitGPUCommandBuffer(cmd_buf)
+		ok = sdl.SubmitGPUCommandBuffer(cmd_buf)*/
 	}
 }
