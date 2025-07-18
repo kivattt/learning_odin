@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "vendor:stb/image"
 import "core:time"
 import "core:math"
 import "core:strings"
@@ -13,13 +14,17 @@ HEIGHT :: 720
 GL_MAJOR_VERSION: c.int : 4
 GL_MINOR_VERSION:: 6
 
-VERTEX_SHADER_SOURCE :: #load("vertex.glsl", cstring)
-
 running: b32 = true
 width: i32 = WIDTH
 height: i32 = HEIGHT
 
 main :: proc() {
+	fmt.println("Loading fox.jpg...")
+	x, y: i32 = 0, 0
+	channels: i32 = 3
+	foxImage := image.load("fox.jpg", &x, &y, &channels, 3)
+	fmt.println("Finished loading fox.jpg")
+
 	glfw.WindowHint(glfw.RESIZABLE, 1)
 	glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, GL_MAJOR_VERSION)
 	glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, GL_MINOR_VERSION)
@@ -45,52 +50,61 @@ main :: proc() {
 	glfw.SetFramebufferSizeCallback(window, size_callback)
 
 	gl.load_up_to(int(GL_MAJOR_VERSION), GL_MINOR_VERSION, glfw.gl_set_proc_address)
-	vertexShaderSource := VERTEX_SHADER_SOURCE
-	vertexShaderSourceLength: i32 = len(VERTEX_SHADER_SOURCE)
-	vertexShader := gl.CreateShader(gl.VERTEX_SHADER)
-	gl.ShaderSource(vertexShader, 1, &vertexShaderSource, nil)
-	gl.CompileShader(vertexShader)
-	isCompiled: i32 = 0
-	gl.GetShaderiv(vertexShader, gl.COMPILE_STATUS, &isCompiled)
-	if isCompiled == 0 {
-		maxLength: i32 = 0
-		gl.GetShaderiv(vertexShader, gl.INFO_LOG_LENGTH, &maxLength)
 
-		errorLog := make([]byte, maxLength)
-		gl.GetShaderInfoLog(vertexShader, maxLength, &maxLength, &errorLog[0])
-		fmt.println(string(errorLog))
-		gl.DeleteShader(vertexShader)
-		return
+	vertices := []f32{
+		-0.5, -0.5, 0.0, 0.0,
+		 0.5, -0.5, 1.0, 0.0,
+		 0.5,  0.5, 1.0, 1.0,
+		-0.5,  0.5, 0.0, 1.0,
+	}
+	indices := []u32{ // ???
+		0, 1, 2, 2, 3, 0
 	}
 
-	fmt.println("iscompiled:", isCompiled)
-	fmt.println("vertexshadersourcelength:", vertexShaderSourceLength)
+	vao, vbo, ebo: u32
+	gl.GenVertexArrays(1, &vao)
+	gl.GenBuffers(1, &vbo)
+	gl.GenBuffers(1, &ebo)
 
-	id := gl.CreateProgram()
-	gl.AttachShader(id, vertexShader)
-	gl.LinkProgram(id)
-	defer gl.DeleteShader(vertexShader)
+	gl.BindVertexArray(vao)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, 4 * len(vertices), &vertices, gl.STATIC_DRAW)
 
-	windowSize := gl.GetUniformLocation(id, "windowSize")
-	gl.UseProgram(id)
-	gl.Uniform2f(windowSize, f32(width), f32(height))
+	gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, 4 * len(indices), &indices, gl.STATIC_DRAW)
+
+	gl.VertexAttribPointer(0, 2, gl.FLOAT, gl.FALSE, 4 * 4, uintptr(0))
+	gl.EnableVertexAttribArray(0)
+
+	gl.VertexAttribPointer(1, 2, gl.FLOAT, gl.FALSE, 4 * 4, uintptr(2 * 4))
+	gl.EnableVertexAttribArray(1)
+	gl.BindVertexArray(0)
+
+	texture: u32
+	gl.GenTextures(1, &texture)
+	gl.BindTexture(gl.TEXTURE_2D, texture)
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, x, y, 0, gl.RGB, gl.UNSIGNED_BYTE, foxImage)
+	//gl.GenerateMipmap(gl.TEXTURE_2D)
+	image.image_free(foxImage)
 
 	t := time.now()
 	for !glfw.WindowShouldClose(window) && running {
 		glfw.PollEvents()
-		draw()
-		glfw.SwapBuffers(window)
 
-		gl.Uniform2f(windowSize, f32(width), f32(height))
+		gl.ClearColor(0.6313725490196078, 0.6039215686274509, 0.43137254901960786, 1.0)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.BindTexture(gl.TEXTURE_2D, texture)
+		gl.BindVertexArray(vao)
+		//gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, uintptr(0))
+
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, &vbo)
+
+		glfw.SwapBuffers(window)
 
 		//fmt.println(time.since(t))
 		t = time.now()
 	}
-}
-
-draw :: proc() {
-	gl.ClearColor(0.6313725490196078, 0.6039215686274509, 0.43137254901960786, 1.0)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
 }
 
 key_callback :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i32) {
