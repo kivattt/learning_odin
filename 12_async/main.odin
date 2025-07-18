@@ -23,12 +23,12 @@ main :: proc() {
 		ptrMutex = &ptrMutex,
 	}
 
-	thread := thread.create_and_start_with_data(
+	t := thread.create_and_start_with_data(
 		&threadData,
 		proc(raw: rawptr) {
 			threadData := transmute(^ThreadData)raw
 
-			time.sleep(5 * time.Second)
+			//time.sleep(10000 * time.Nanosecond)
 			sync.mutex_lock(threadData.ptrMutex)
 
 			data := new(Data)
@@ -37,9 +37,10 @@ main :: proc() {
 			sync.mutex_unlock(threadData.ptrMutex)
 		}
 	)
+	defer thread.join(t)
 
 	for {
-		time.sleep(333 * time.Millisecond)
+		//time.sleep(333 * time.Millisecond)
 		
 		sync.mutex_lock(&ptrMutex)
 		if ptr == nil {
@@ -51,5 +52,7 @@ main :: proc() {
 		fmt.println("found:", ptr.text)
 
 		sync.mutex_unlock(&ptrMutex)
+
+		break
 	}
 }
