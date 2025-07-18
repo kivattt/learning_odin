@@ -199,7 +199,7 @@ main :: proc() {
 		i += 0.05
 
 		rl.BeginDrawing()
-		rl.ClearBackground({255, 0, 0, 255})
+		rl.ClearBackground({0, 0, 0, 255})
 		//rl.DrawTexture(texture, 0, 0, {255,255,255,255})
 		//rl.ClearBackground({50, 50, 50, 255})
 
@@ -212,6 +212,7 @@ main :: proc() {
 			uiData.buttonShader = rl.LoadShader(nil, "ui/shaders/button.glsl") // FIXME: Use filepath join
 			uiData.checkboxShader = rl.LoadShader(nil, "ui/shaders/checkbox.glsl")
 			uiData.controllerOutlineShader = rl.LoadShader(nil, "ui/shaders/controller_outline.glsl")
+			uiData.textboxShader = rl.LoadShader(nil, "ui/shaders/textbox.glsl")
 		}
 
 		if rl.IsKeyPressed(.Q) || rl.IsKeyPressed(.CAPS_LOCK) {
@@ -221,6 +222,7 @@ main :: proc() {
 		inputs := ui.inputs_from_raylib()
 		t = time.now()
 		ui.handle_input(rootNode, &state, platformProcs, inputs)
+		(&horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[7].element.(ui.Container).child.element.(ui.TextBox)).pixels_rounded = i32(len(horizSplit1.element.(ui.HorizontalSplitUnresizeable).children[9].element.(ui.Container).child.element.(ui.TextBox).str))
 		uiData.debug = debugCheckbox.element.(ui.Checkbox).checked
 		debug = rootNode.element.(ui.HorizontalSplit).children[0].element.(ui.VerticalSplit).children[2].element.(ui.HorizontalSplitUnresizeable).children[0].element.(ui.Container).child.element.(ui.VerticalSplitUnresizeable).children[0].element.(ui.Checkbox).checked
 		if debug do fmt.println("handle_input()             time:", time.since(t))
@@ -250,7 +252,7 @@ main :: proc() {
 		//text := fmt.ctprintf("x: {}, y: {}", inputs.mouseX, inputs.mouseY)
 		//rl.DrawText(text, 5, 40, 24, {255,255,255,255})
 
-		rl.DrawFPS(5, 5)
+		//rl.DrawFPS(5, 5)
 		rl.EndDrawing()
 	}
 }

@@ -27,6 +27,7 @@ VISUAL_BREAK_COLOR :: Color{50,50,50, 255}
 BACKGROUND_COLOR :: Color{21, 21, 22, 255}
 //BACKGROUND_COLOR :: Color{220, 220, 222, 255}
 TEXT_COLOR :: Color{230, 230, 230, 255}
+TEXTBOX_TEXT_COLOR :: Color{200, 200, 200, 255}
 //TEXT_COLOR :: Color{0, 0, 0, 255}
 TEXTBOX_BACKGROUND_COLOR :: Color{10, 10, 10, 255}
 TEXTBOX_LABEL_COLOR :: Color{255, 255, 255, 100}
@@ -165,6 +166,7 @@ UiColors :: struct {
 	backgroundColor: Color,
 	highlightColor: Color,
 	textColor: Color,
+	textboxTextColor: Color,
 	textboxBackgroundColor: Color,
 	textboxLabelColor: Color,
 	textboxOutlineColor: Color,
@@ -181,6 +183,7 @@ get_default_ui_colors :: proc() -> UiColors {
 		backgroundColor = BACKGROUND_COLOR,
 		highlightColor = HIGHLIGHT_COLOR,
 		textColor = TEXT_COLOR,
+		textboxTextColor = TEXTBOX_TEXT_COLOR,
 		textboxBackgroundColor = TEXTBOX_BACKGROUND_COLOR,
 		textboxLabelColor = TEXTBOX_LABEL_COLOR,
 		textboxOutlineColor = TEXTBOX_OUTLINE_COLOR,

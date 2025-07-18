@@ -40,7 +40,7 @@ new_textbox_extra :: proc(parent: ^Node, labelStr: string) -> ^Node {
 		outlineColor = UNSET_DEFAULT_COLOR,
 		labelColor = UNSET_DEFAULT_COLOR,
 
-		pixels_rounded = 3,
+		pixels_rounded = 2,
 		str = make([dynamic]rune),
 		labelStr = labelStr,
 		editable = true,
@@ -108,6 +108,7 @@ delete_substring :: proc(str: ^[dynamic]rune, startIndex, endIndex: int) -> int 
 	return leftMostIndex
 }
 
+// FIXME: Take in a buffer of inputs, and loop over them
 textbox_handle_input :: proc(node: ^Node, state: ^UserInterfaceState, platformProc: PlatformProcs, inputs: Inputs) {
 	t := &node.element.(TextBox)
 	if !t.editable {
@@ -229,7 +230,7 @@ textbox_draw :: proc(node: ^Node, state: ^UserInterfaceState, uiData: ^UserInter
 		}
 		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(utf8.string_to_runes(t.labelStr)), i32(len(t.labelStr)), {f32(i32(node.x + xOffset)), f32(i32(f32(node.y) + yOffset))}, f32(uiData.fontSize), 0, color_to_rl_color(labelColor))
 	} else {
-		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(i32(node.x + xOffset)), f32(i32(f32(node.y) + yOffset))}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textColor))
+		rl.DrawTextCodepoints(uiData.fontVariable, raw_data(t.str[:]), i32(len(t.str)), {f32(i32(node.x + xOffset)), f32(i32(f32(node.y) + yOffset))}, f32(uiData.fontSize), 0, color_to_rl_color(uiData.colors.textboxTextColor))
 	}
 
 	target := rl.MeasureTextEx(uiData.fontVariable, strings.unsafe_string_to_cstring(utf8.runes_to_string(t.str[:t.cursorIndex])), f32(uiData.fontSize), 0)[0]

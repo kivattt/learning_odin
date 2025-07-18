@@ -30,8 +30,9 @@ main :: proc() {
 
 		inputs := ui.inputs_from_raylib()
 		ui.handle_input(rootNode, &state, platformProcs, inputs)
+		ui.recompute_children_boxes(rootNode)
 		ui.correct_boxes(rootNode, false)
-		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight(), inputs)
+		ui.draw(rootNode, &state, &uiData, rl.GetScreenHeight(), inputs, rl.GetFrameTime())
 		ui.correct_boxes(rootNode, true)
 
 		rl.EndDrawing()
