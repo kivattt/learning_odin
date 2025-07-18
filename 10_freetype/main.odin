@@ -57,7 +57,7 @@ main :: proc() {
 	i := 0
 	for !glfw.WindowShouldClose(window) && running {
 		if i == 1 {
-			break
+			//break
 		}
 		i += 1
 		//fontHeight: u32 = 18 * 64
@@ -73,21 +73,42 @@ main :: proc() {
 		assert(err == .Ok)
 		fmt.println(face.glyph.bitmap)
 
-		for y := 0; y < int(face.glyph.bitmap.rows); y += 1 {
+		txt: u32
+		gl.GenTextures(1, &txt)
+		gl.BindTexture(gl.TEXTURE_2D, txt)
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.ALPHA8, i32(face.glyph.bitmap.width), i32(face.glyph.bitmap.rows), 0, gl.ALPHA8, gl.UNSIGNED_BYTE, face.glyph.bitmap.buffer)
+
+		/*for y := 0; y < int(face.glyph.bitmap.rows); y += 1 {
 			for x := 0; x < int(face.glyph.bitmap.width); x += 1 {
 				os.write_byte(os.stdout, face.glyph.bitmap.buffer[y * int(face.glyph.bitmap.width) + x])
-				//fmt.printf("%c", face.glyph.bitmap.buffer[y * int(face.glyph.bitmap.width) + x])
 			}
-		}
-
-		/*for i := -5000; i < int(face.glyph.bitmap.width * face.glyph.bitmap.rows) + 5000; i += 1 {
-			fmt.printf("%c", face.glyph.bitmap.buffer[i])
 		}*/
 
 		glfw.PollEvents()
 
 		gl.ClearColor(0, 0.3, 0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		vertices := []f32{
+			 0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
+			 0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
+			-0.5, -0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
+			-0.5,  0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0,   // top left 
+		}
+		gl.VertexAttribPointer(2, 2, gl.FLOAT, gl.FALSE, 8 * 4, uintptr(6*4))
+		gl.EnableVertexAttribArray(2)
+
+		vao: u32
+		vbo: u32
+		gl.GenVertexArrays(1, &vao)
+		gl.GenBuffers(1, &vbo)
+
+		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+		gl.BindTexture(gl.TEXTURE_2D, txt)
+		gl.BindVertexArray(vao)
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, &vbo)
+		gl.BindVertexArray(0)
+		gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 
 		glfw.SwapBuffers(window)
 
